@@ -13,7 +13,7 @@
 	"parser": "@typescript-eslint/parser",
 	"parserOptions": {
 		"project": "./tsconfig.json",
-		"tsconfigRootDir" : "frontend",
+		"tsconfigRootDir" : "./frontend",
 		"ecmaFeatures": {
 			"jsx": true
 		},
@@ -25,6 +25,7 @@
 		"react-hooks/rules-of-hooks": "error",
 		"react-hooks/exhaustive-deps": "warn",
 		"@typescript-eslint/explicit-function-return-type": "off",
+		"react/react-in-jsx-scope": "off",
 		"react/jsx-filename-extension": [
 			2,
 			{ "extensions": [".js", ".jsx", ".ts", ".tsx", ".scss"] }
