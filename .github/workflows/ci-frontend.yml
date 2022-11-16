@@ -1,0 +1,29 @@
+name: ci-frontend
+
+on:
+  pull_request:
+    branches: ["main", "develop"]
+    paths:
+      - "frontend/**"
+jobs:
+  check-frontend:
+    name: check-frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: install dependencies
+        run: npm i
+
+      - name: lint test
+        run: npm run lint
+
+      - name: unit test
+        run: npm run test
+
+      - name: build
+        run: npm run build
