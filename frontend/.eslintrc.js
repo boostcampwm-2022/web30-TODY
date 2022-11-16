@@ -41,6 +41,11 @@ module.exports = {
         tsx: 'never',
       },
     ],
+    'import/prefer-default-export': 'off',
+    'react/function-component-definition': [
+      2,
+      { namedComponents: 'arrow-function' },
+    ],
   },
   settings: {
     'import/resolver': {
