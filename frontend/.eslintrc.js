@@ -44,7 +44,10 @@ module.exports = {
     'import/prefer-default-export': 'off',
     'react/function-component-definition': [
       2,
-      { namedComponents: 'arrow-function' },
+      {
+        namedComponents:
+          'function-declaration' | 'function-expression' | 'arrow-function',
+      },
     ],
   },
   settings: {
