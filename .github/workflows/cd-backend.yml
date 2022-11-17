@@ -2,9 +2,7 @@ name: cd-backend
 
 on:
   push:
-    branches: ["main"]
-    paths:
-      - "backend/**"
+    branches: ["main", "feat/cd"]
 
 jobs:
   CD:

@@ -2,9 +2,7 @@ name: cd-frontend
 
 on:
   push:
-    branches: ["main"]
-    paths:
-      - "frontend/**"
+    branches: ["main", "feat/cd"]
 
 jobs:
   deploy-frontend:
