@@ -29,7 +29,7 @@ jobs:
           password: ${{ secrets.BE_PASSWORD }}
           port: ${{ secrets.BE_PORT }}
           source: "backend/dist/*"
-          target: "/tody"
+          target: "/root/tody"
 
       - name: reload
         uses: appleboy/ssh-action@master
