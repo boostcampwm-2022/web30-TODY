@@ -2,7 +2,9 @@ name: cd-backend
 
 on:
   push:
-    branches: ["main", "feat/cd"]
+    branches: ["main"]
+    paths:
+      - "backend/**"
 
 jobs:
   deploy-backend:
@@ -18,7 +20,8 @@ jobs:
           port: ${{secrets.BE_PORT}}
           script: |
             cd tody
-            git pull origin feat/cd
+            git pull origin main
             cd backend
+            npm i
             npm run build
             pm2 reload main
