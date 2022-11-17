@@ -1,7 +1,7 @@
 import CustomButton from '@components/common/CustomButton';
 import styled from 'styled-components';
-import CustomInput from '../components/common/CustomInput';
-import StyledHeader1 from '../components/common/StyledHeader1';
+import CustomInput from '@components/common/CustomInput';
+import StyledHeader1 from '@components/common/StyledHeader1';
 
 const LoginPageLayout = styled.div`
   height: 100vh;
