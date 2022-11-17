@@ -1,0 +1,35 @@
+name: cd-frontend
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "frontend/**"
+
+jobs:
+  deploy-frontend:
+    name: deploy-frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: install dependencies
+        run: npm i
+
+      - name: build
+        run: npm run build
+
+      - name: deploy build outputs
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.FE_HOST }}
+          username: ${{ secrets.FE_USERNAME }}
+          password: ${{ secrets.FE_PASSWORD }}
+          port: ${{ secrets.FE_PORT }}
+          source: "frontend/build/*"
+          target: "/tody"
