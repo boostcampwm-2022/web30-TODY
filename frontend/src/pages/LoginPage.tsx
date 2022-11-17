@@ -11,6 +11,7 @@ const LoginPageLayout = styled.div`
 `;
 
 const Wrapper = styled.div`
+  width: 358px;
   display: flex;
   flex-direction: column;
   align-items: center;
