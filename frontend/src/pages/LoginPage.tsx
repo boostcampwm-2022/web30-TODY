@@ -24,7 +24,7 @@ export default function LoginPage() {
         <StyledHeader1>로그인</StyledHeader1>
         <CustomInput placeholder="로그인" />
         <CustomInput placeholder="비밀번호" type="password" />
-        <CustomButton>로그인</CustomButton>
+        <CustomButton margin="20px 0 0">로그인</CustomButton>
       </Wrapper>
     </LoginPageLayout>
   );
