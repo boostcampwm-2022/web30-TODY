@@ -18,7 +18,7 @@ jobs:
           port: ${{secrets.BE_PORT}}
           script: |
             cd tody
-            git pull
+            git pull origin fead/cd
             cd backend
             npm run build
             pm2 reload main
