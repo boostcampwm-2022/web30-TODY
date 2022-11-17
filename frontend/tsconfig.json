@@ -22,7 +22,7 @@
       "@hooks/*": ["hooks/*"],
       "@styles/*": ["styles/*"],
       "@utils/*": ["utils/*"],
-      "@assests/*": ["assests/*"]
+      "@assets/*": ["assets/*"]
     }
   },
   "include": ["src"]

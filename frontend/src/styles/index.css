@@ -28,3 +28,9 @@
 * {
   font-family: 'Pretendard-Regular';
 }
+
+html,
+body {
+  font-family: 'Pretendard-Regular';
+  padding: 20px;
+}
