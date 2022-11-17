@@ -28,7 +28,7 @@ jobs:
           username: ${{ secrets.BE_USERNAME }}
           password: ${{ secrets.BE_PASSWORD }}
           port: ${{ secrets.BE_PORT }}
-          source: "backend/dist/*"
+          source: "backend/dist/*,backend/node_modules/*"
           target: "/root/tody"
 
       - name: reload
