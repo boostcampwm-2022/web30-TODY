@@ -21,7 +21,6 @@ interface Props {
 export default function CustomButton(props: Props) {
   const { children, ...restProps } = props;
 
-  // eslint-disable-next-line react/jsx-props-no-spreading
   return <Button {...restProps}>{children}</Button>;
 }
 

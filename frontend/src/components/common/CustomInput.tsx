@@ -23,7 +23,6 @@ interface Props {
 }
 
 export default function CustomInput(props: Props) {
-  // eslint-disable-next-line react/jsx-props-no-spreading
   return <Input {...props} />;
 }
 
