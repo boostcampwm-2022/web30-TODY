@@ -2,11 +2,12 @@ import styled from 'styled-components';
 
 const Input = styled.input<Props>`
   padding: 21px 28px;
-  width: ${({ width }) => `${width}px`};
+  width: ${({ width }) => width};
   border: 2px solid #ff8a00;
   border-radius: 15px;
 
   font-family: 'Pretendard';
+  font-size: 20px;
 
   &::placeholder {
     color: #ffc7a1;
@@ -17,7 +18,7 @@ const Input = styled.input<Props>`
 `;
 
 interface Props {
-  width?: number;
+  width?: string;
   placeholder?: string;
   type?: string;
 }
@@ -27,7 +28,7 @@ export default function CustomInput(props: Props) {
 }
 
 CustomInput.defaultProps = {
-  width: 358,
+  width: '100%',
   placeholder: '',
   type: 'text',
 };
