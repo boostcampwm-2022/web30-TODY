@@ -24,3 +24,7 @@
   --orange: #ff8a00;
   --white: #ffffff;
 }
+
+* {
+  font-family: 'Pretendard-Regular';
+}
