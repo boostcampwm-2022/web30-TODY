@@ -7,6 +7,10 @@ import { User } from './user/entities/user.entity';
 import { CommentModule } from './comment/comment.module';
 import { QuestionBoardModule } from './question-board/question-board.module';
 import { StudyRoomModule } from './study-room/study-room.module';
+import { Comment } from './comment/entities/comments.entity';
+import { QuestionBoard } from './question-board/entities/questionBoard.entity';
+import { StudyRoom } from './study-room/entities/studyRoom.entity';
+import { Image } from './question-board/entities/image.entity';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -20,7 +24,7 @@ dotenv.config();
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      entities: [User],
+      entities: [User, Comment, QuestionBoard, StudyRoom, Image],
       synchronize: true,
     }),
     UserModule,

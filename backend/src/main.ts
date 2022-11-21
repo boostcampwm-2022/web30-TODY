@@ -8,10 +8,10 @@ dotenv.config();
 
 async function bootstrap() {
   const httpsOptions = {
-    key: fs.readFileSync(path.join(__dirname, '..', process.env.KEY_PATH)),
-    cert: fs.readFileSync(path.join(__dirname, '..', process.env.CERT_PATH)),
+    key: fs.readFileSync(path.join(__dirname, process.env.KEY_PATH)),
+    cert: fs.readFileSync(path.join(__dirname, process.env.CERT_PATH)),
   };
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { httpsOptions });
   await app.listen(3000);
 }
 bootstrap();
