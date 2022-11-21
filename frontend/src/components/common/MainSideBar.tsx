@@ -15,10 +15,9 @@ const SideBar = styled.div<Props>`
 
 const LogoStyle = styled.img`
   position: absolute;
-  width: 129px;
-  height: 48px;
-  top: 63px;
-  left: 83px;
+  top: 62px;
+  left: 50%;
+  transform: translate(-50%, 0);
 `;
 
 interface Props {
