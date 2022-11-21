@@ -23,6 +23,7 @@
   --red: #ff4545;
   --orange: #ff8a00;
   --white: #ffffff;
+  --guideText: #a3a3a3;
 }
 
 * {
@@ -32,5 +33,4 @@
 html,
 body {
   font-family: 'Pretendard-Regular';
-  padding: 20px;
 }

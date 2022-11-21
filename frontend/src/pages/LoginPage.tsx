@@ -23,7 +23,11 @@ export default function LoginPage() {
       <Wrapper>
         <StyledHeader1>로그인</StyledHeader1>
         <CustomInput placeholder="로그인" />
-        <CustomInput placeholder="비밀번호" type="password" />
+        <CustomInput
+          placeholder="비밀번호"
+          type="password"
+          warningText="틀린 비밀번호입니다."
+        />
         <CustomButton margin="20px 0 0">로그인</CustomButton>
       </Wrapper>
     </LoginPageLayout>

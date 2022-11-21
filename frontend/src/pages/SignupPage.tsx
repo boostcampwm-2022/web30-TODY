@@ -41,7 +41,10 @@ export default function SignupPage() {
           <CustomInput placeholder="닉네임" />
           <CustomButton width="68px">확인</CustomButton>
         </InputWrapper>
-        <CustomInput placeholder="비밀번호" />
+        <CustomInput
+          placeholder="비밀번호"
+          guideText="숫자, 문자 혼합 최소 8자리로 설정해주세요."
+        />
         <CustomInput placeholder="비밀번호 확인" />
         <CustomButton margin="20px 0 0 ">회원가입</CustomButton>
       </Wrapper>
