@@ -9,8 +9,9 @@ const MainPageLayout = styled.div`
 
 const Content = styled.div`
   flex: 1;
-  padding: 20px;
+  padding: 45px 30px;
 `;
+
 export default function MainPage() {
   return (
     <MainPageLayout>

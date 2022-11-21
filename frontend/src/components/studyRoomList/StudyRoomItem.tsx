@@ -5,6 +5,7 @@ import ParticipantsIcon from '@assets/icons/participants.svg';
 import HashTagIcon from '@assets/icons/hashtag.svg';
 
 const StudyRoomItemLayout = styled.div`
+  /* flex-grow: 1; */
   width: 355px;
   padding: 15px 13px;
   display: flex;
@@ -12,10 +13,6 @@ const StudyRoomItemLayout = styled.div`
   flex-direction: column;
   background-color: #ffc737;
   border-radius: 10px;
-
-  & + & {
-    margin-top: 10px;
-  }
 `;
 
 const NameLayout = styled.div`
