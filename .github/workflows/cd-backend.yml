@@ -1,0 +1,27 @@
+name: cd-backend
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "backend/**"
+
+jobs:
+  deploy-backend:
+    name: deploy-backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploy to prod
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{secrets.BE_HOST}}
+          username: ${{secrets.BE_USERNAME}}
+          password: ${{secrets.BE_PASSWORD}}
+          port: ${{secrets.BE_PORT}}
+          script: |
+            cd tody
+            git pull origin main
+            cd backend
+            npm i
+            npm run build
+            pm2 reload main
