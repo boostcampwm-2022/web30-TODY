@@ -35,3 +35,11 @@ html,
 body {
   font-family: 'Pretendard-Regular';
 }
+
+.flex-row {
+  display: flex;
+  gap: 6px;
+}
+.space-between {
+  justify-content: space-between;
+}
