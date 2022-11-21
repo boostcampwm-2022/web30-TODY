@@ -22,7 +22,7 @@
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
-    "eject": "craco eject"
+    "eject": "craco eject",
     "lint" : "eslint src"
   },
   "browserslist": {
