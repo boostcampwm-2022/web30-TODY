@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import styled from 'styled-components';
 import MainSideBar from '@components/common/MainSideBar';
 import SearchBar from '@components/common/SearchBar';
@@ -5,6 +6,9 @@ import ViewConditionCheckBox from '@components/common/ViewConditionCheckBox';
 import CreateButton from '@components/common/CreatButton';
 import StudyRoomItem from '@components/studyRoomList/StudyRoomItem';
 import Pagination from '@components/common/Pagination';
+import Modal from '@components/common/Modal';
+import CustomInput from '@components/common/CustomInput';
+import CustomButton from '@components/common/CustomButton';
 
 const StudyRoomListPageLayout = styled.div`
   display: flex;
@@ -142,12 +146,18 @@ export default function StudyRoomListPage() {
     ],
   };
 
+  const [modal, setModal] = useState(false);
+
+  const openModal = () => {
+    setModal(true);
+  };
+
   return (
     <StudyRoomListPageLayout>
       <MainSideBar />
       <Content>
         <PageTitle>공부방 목록</PageTitle>
-        <CreateButton>공부방 생성</CreateButton>
+        <CreateButton onClick={openModal}>공부방 생성</CreateButton>
         <SearchBar guideText="👉 방 이름, 방 설명, 방 태그로 공부방을 검색해보세요" />
 
         <SearchInfoLayout>
@@ -174,6 +184,29 @@ export default function StudyRoomListPage() {
           currentPage={searchResult.currentPage}
         />
       </Content>
+      {modal && (
+        <Modal setModal={setModal}>
+          <PageTitle>새로운 공부방 만들기</PageTitle>
+          <CustomInput
+            placeholder="방 이름"
+            guideText="※ 방 이름은 10자 이내로 작성해주세요."
+          />
+          <CustomInput
+            placeholder="방 설명"
+            guideText="※ 방 설명은 100자 이내로 작성해주세요."
+          />
+          <CustomInput
+            placeholder="방 접속 최대 인원 수"
+            guideText="※ 인원수는 최소 1명 이상이어야 합니다."
+            type="number"
+          />
+          <CustomInput
+            placeholder="방 태그"
+            guideText="※ 태그는 최대 5개까지 입력 가능합니다."
+          />
+          <CustomButton margin="20px 0 0">공부하러 GO</CustomButton>
+        </Modal>
+      )}
     </StudyRoomListPageLayout>
   );
 }

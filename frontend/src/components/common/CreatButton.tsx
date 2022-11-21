@@ -18,13 +18,18 @@ const Button = styled.button`
 
 interface Props {
   children: string;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
-export default function CreateButton({ children }: Props) {
+export default function CreateButton({ children, onClick }: Props) {
   return (
-    <Button>
+    <Button onClick={onClick}>
       <img src={CreateIcon} alt="" />
       {children}
     </Button>
   );
 }
+
+CreateButton.defaultProps = {
+  onClick: () => {},
+};
