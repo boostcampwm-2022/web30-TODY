@@ -5,7 +5,6 @@ import ParticipantsIcon from '@assets/icons/participants.svg';
 import HashTagIcon from '@assets/icons/hashtag.svg';
 
 const StudyRoomItemLayout = styled.div`
-  /* flex-grow: 1; */
   width: 355px;
   padding: 15px 13px;
   display: flex;
@@ -116,7 +115,7 @@ export default function StudyRoomItem(props: Props) {
       <HashTagLayout>
         <img src={HashTagIcon} alt="태그 아이콘" />
         {tags.map((tag) => (
-          <Tag>{tag}</Tag>
+          <Tag key={tag}>{tag}</Tag>
         ))}
       </HashTagLayout>
     </StudyRoomItemLayout>

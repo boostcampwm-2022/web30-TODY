@@ -74,7 +74,7 @@ export default function StudyRoomListPage() {
         created: '2022-11-04 11:00:00',
       },
       {
-        studyRoomId: 1,
+        studyRoomId: 3,
         name: '한국사 1급 자격증 공부',
         content: '같이 공부해요',
         maxPersonnel: 8,
@@ -85,7 +85,7 @@ export default function StudyRoomListPage() {
         created: '2022-11-03 22:00:01',
       },
       {
-        studyRoomId: 2,
+        studyRoomId: 4,
         name: '국어방',
         content: '수능 대비 문제풀이',
         maxPersonnel: 5,
@@ -96,7 +96,7 @@ export default function StudyRoomListPage() {
         created: '2022-11-04 11:00:00',
       },
       {
-        studyRoomId: 1,
+        studyRoomId: 5,
         name: '한국사 1급 자격증 공부',
         content: '같이 공부해요',
         maxPersonnel: 8,
@@ -107,7 +107,7 @@ export default function StudyRoomListPage() {
         created: '2022-11-03 22:00:01',
       },
       {
-        studyRoomId: 2,
+        studyRoomId: 6,
         name: '국어방',
         content: '수능 대비 문제풀이',
         maxPersonnel: 5,
@@ -118,7 +118,7 @@ export default function StudyRoomListPage() {
         created: '2022-11-04 11:00:00',
       },
       {
-        studyRoomId: 1,
+        studyRoomId: 7,
         name: '한국사 1급 자격증 공부',
         content: '같이 공부해요',
         maxPersonnel: 8,
@@ -129,7 +129,7 @@ export default function StudyRoomListPage() {
         created: '2022-11-03 22:00:01',
       },
       {
-        studyRoomId: 2,
+        studyRoomId: 8,
         name: '국어방',
         content: '수능 대비 문제풀이',
         maxPersonnel: 5,
@@ -164,7 +164,7 @@ export default function StudyRoomListPage() {
         <RoomListLayout>
           <StudyRoomList>
             {searchResult.studyRoomList.map((room) => (
-              <StudyRoomItem {...room} />
+              <StudyRoomItem key={room.studyRoomId} {...room} />
             ))}
           </StudyRoomList>
         </RoomListLayout>

@@ -48,7 +48,7 @@ export default function MenuList() {
   return (
     <List>
       {menuList.map((menu) => (
-        <MenuItem>
+        <MenuItem key={menu.name}>
           <img src={menu.iconSrc} alt={`${menu.name} 페이지`} />
           {menu.name}
         </MenuItem>

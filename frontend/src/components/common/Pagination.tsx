@@ -31,8 +31,11 @@ export default function Pagination({ pageCount, currentPage }: Props) {
       <LeftArrowIcon />
       {Array(pageCount)
         .fill(0)
-        .map((_, index) => (
-          <Page selected={currentPage === index + 1}>{index + 1}</Page>
+        .map((x, index) => index + 1)
+        .map((page) => (
+          <Page key={page} selected={currentPage === page}>
+            {page}
+          </Page>
         ))}
       <RightArrowIcon />
     </PaginationLayout>
