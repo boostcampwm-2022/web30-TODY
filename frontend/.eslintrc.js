@@ -21,7 +21,7 @@ module.exports = {
     sourceType: 'module',
   },
   plugins: ['@typescript-eslint'],
-  ignorePatterns: ['.eslintrc.js'],
+  ignorePatterns: ['.eslintrc.js', 'craco.config.js'],
   rules: {
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
@@ -39,6 +39,23 @@ module.exports = {
         jsx: 'never',
         ts: 'never',
         tsx: 'never',
+      },
+    ],
+    'import/prefer-default-export': 'off',
+    'react/function-component-definition': [
+      2,
+      {
+        namedComponents: [
+          'function-declaration',
+          'function-expression',
+          'arrow-function',
+        ],
+      },
+    ],
+    'react/jsx-props-no-spreading': [
+      2,
+      {
+        custom: 'ignore',
       },
     ],
   },
