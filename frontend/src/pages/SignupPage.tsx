@@ -36,7 +36,7 @@ export default function SignupPage() {
   const [idIsUnique, setIdIsUnique] = useState(true);
   const [nicknameIsUnique, setNicknameIsUnique] = useState(true);
 
-  const onsubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const requestSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = Object.fromEntries(new FormData(form));
@@ -92,7 +92,7 @@ export default function SignupPage() {
     <SignupPageLayout>
       <Wrapper>
         <StyledHeader1>회원가입</StyledHeader1>
-        <form onSubmit={onsubmit}>
+        <form onSubmit={requestSignup}>
           <InputWrapper>
             <CustomInput
               inputRef={idInputRef}
