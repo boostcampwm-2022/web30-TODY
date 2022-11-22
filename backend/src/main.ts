@@ -13,7 +13,7 @@ async function bootstrap() {
     key: fs.readFileSync(path.join(__dirname, process.env.KEY_PATH)),
     cert: fs.readFileSync(path.join(__dirname, process.env.CERT_PATH)),
   };
-  const app = await NestFactory.create(AppModule, { httpsOptions });
+  const app = await NestFactory.create(AppModule, { httpsOptions, cors: true });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
