@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import styled from 'styled-components';
 
 const TagInputLayout = styled.div`
@@ -58,13 +57,15 @@ interface Props {
 
 export default function TagInput({ tagList, setTagList }: Props) {
   const addTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (tagList.length === 5) return;
+    if (tagList.length === 5) {
+      (e.target as HTMLInputElement).value = '';
+      return;
+    }
 
     const newTag = (e.target as HTMLInputElement).value.trim();
     if (newTag !== '' && !tagList.includes(newTag)) {
       setTagList([...tagList, (e.target as HTMLInputElement).value]);
     }
-
     (e.target as HTMLInputElement).value = '';
   };
 
