@@ -8,6 +8,8 @@ const UserProfileImage = styled.img`
   margin-bottom: 15px;
   width: 149px;
   height: 149px;
+  border-radius: 100%;
+  filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.25));
 `;
 
 const UserProfileName = styled.div`

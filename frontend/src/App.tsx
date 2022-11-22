@@ -1,7 +1,7 @@
-import LoginPage from '@pages/LoginPage';
+import StudyRoomListPage from '@pages/StudyRoomListPage';
 
 function App() {
-  return <LoginPage />;
+  return <StudyRoomListPage />;
 }
 
 export default App;

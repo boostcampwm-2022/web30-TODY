@@ -5,7 +5,9 @@ const SearchBarLayout = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
+  margin-bottom: 40px;
 `;
+
 const GuideText = styled.span`
   margin-bottom: 10px;
   padding-left: 12px;
