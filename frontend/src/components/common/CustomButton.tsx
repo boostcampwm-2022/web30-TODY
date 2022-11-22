@@ -14,6 +14,7 @@ const Button = styled.button<Props>`
 
 interface Props {
   children: string;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
   width?: string;
   color?: string;
   margin?: string;
@@ -26,6 +27,7 @@ export default function CustomButton(props: Props) {
 }
 
 CustomButton.defaultProps = {
+  onClick: () => {},
   width: '100%',
   color: 'var(--orange)',
   margin: '0',
