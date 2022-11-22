@@ -1,7 +1,10 @@
 import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
+import useAxios from '@hooks/useAxios';
 import CustomButton from '@components/common/CustomButton';
 import styled from 'styled-components';
+import axiosBackend from '../axios/instances/axiosBackend';
+import signupApi from '../axios/apis/signupApi';
 import CustomInput from '../components/common/CustomInput';
 import StyledHeader1 from '../components/common/StyledHeader1';
 
@@ -30,26 +33,33 @@ const InputWrapper = styled.div`
   }
 `;
 
+interface Data {
+  nickname: string;
+}
+
 export default function SignupPage() {
   const idInputRef = useRef<HTMLInputElement>(null);
   const nicknameInputRef = useRef<HTMLInputElement>(null);
   const [idIsUnique, setIdIsUnique] = useState(true);
   const [nicknameIsUnique, setNicknameIsUnique] = useState(true);
+  const [request, loading, error, data] = useAxios<Data>(signupApi);
 
-  const requestSignup = async (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    if (data != null) {
+      alert(`${data.nickname}님 환영합니다.`);
+      // 로그인 페이지로 이동
+    }
+  }, [data]);
+
+  useEffect(() => {
+    if (error) alert(error);
+  }, [error]);
+
+  const requestSignup = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = Object.fromEntries(new FormData(form));
-    try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/user/signup` || '',
-        formData,
-      );
-      alert('회원가입 성공');
-      // 로그인 페이지로 이동
-    } catch (error: any) {
-      alert('예상치 못한 에러가 발생하였습니다.');
-    }
+    request(formData);
   };
 
   const checkUniqueId = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -64,8 +74,8 @@ export default function SignupPage() {
       if (response.data.isUnique) {
         alert('아이디를 사용할 수 있습니다.');
       }
-    } catch (error: any) {
-      alert('예상치 못한 에러가 발생하였습니다.');
+    } catch (err) {
+      alert(err);
     }
   };
 
@@ -83,7 +93,7 @@ export default function SignupPage() {
       if (response.data.isUnique) {
         alert('닉네임을 사용할 수 있습니다.');
       }
-    } catch (error: any) {
+    } catch (err: any) {
       alert('예상치 못한 에러가 발생하였습니다.');
     }
   };
@@ -100,7 +110,10 @@ export default function SignupPage() {
               placeholder="아이디"
               warningText={idIsUnique ? '' : 'id가 중복입니다'}
             />
-            <CustomButton onClick={checkUniqueId} width="68px">
+            <CustomButton
+              disabled={loading}
+              onClick={checkUniqueId}
+              width="68px">
               확인
             </CustomButton>
           </InputWrapper>
@@ -111,7 +124,10 @@ export default function SignupPage() {
               placeholder="닉네임"
               warningText={nicknameIsUnique ? '' : 'nickname이 중복입니다'}
             />
-            <CustomButton onClick={checkUniqueNickname} width="68px">
+            <CustomButton
+              disabled={loading}
+              onClick={checkUniqueNickname}
+              width="68px">
               확인
             </CustomButton>
           </InputWrapper>
@@ -121,7 +137,9 @@ export default function SignupPage() {
             guideText="숫자, 문자 혼합 최소 8자리로 설정해주세요."
           />
           <CustomInput placeholder="비밀번호 확인" />
-          <CustomButton margin="20px 0 0 ">회원가입</CustomButton>
+          <CustomButton disabled={loading} margin="20px 0 0 ">
+            회원가입
+          </CustomButton>
         </form>
       </Wrapper>
     </SignupPageLayout>
