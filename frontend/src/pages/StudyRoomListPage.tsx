@@ -162,20 +162,25 @@ export default function StudyRoomListPage() {
     tags: string;
   }>(newRoomInfoInitState);
 
+  const validateInput = (name: string, value: string) => {
+    switch (name) {
+      case 'name':
+        return value.slice(0, 10);
+      case 'content':
+        return value.slice(0, 100);
+      case 'maxPersonnel':
+        return Number(value);
+      default:
+        return value;
+    }
+  };
+
   const onChangeNewRoomInfo = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    // if (name === 'tags') {
-    //   setNewRoomInfo({
-    //     ...newRoomInfo,
-    //     tags: [...newRoomInfo.tags, value],
-    //   });
-
-    //   return;
-    // }
 
     setNewRoomInfo({
       ...newRoomInfo,
-      [name]: name === 'maxPersonnel' ? Number(value) : value,
+      [name]: validateInput(name, value),
     });
   };
 
@@ -184,10 +189,8 @@ export default function StudyRoomListPage() {
   };
 
   const createNewStudyRoom = () => {
-    console.log('새로운 공부방 생성', newRoomInfo);
-
     axios
-      .post('http://localhost:5000/api/study-room', newRoomInfo)
+      .post(`${process.env.REACT_APP_API_URL}/study-room`, newRoomInfo)
       .then((res) => console.log(res))
       .catch((error) => console.log(error));
   };
@@ -246,6 +249,7 @@ export default function StudyRoomListPage() {
             guideText="※ 인원수는 최소 1명 이상이어야 합니다."
             type="number"
             name="maxPersonnel"
+            min={1}
             value={newRoomInfo.maxPersonnel}
             onChange={onChangeNewRoomInfo}
           />

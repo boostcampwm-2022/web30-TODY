@@ -42,6 +42,7 @@ interface Props {
   warningText?: string;
   guideText?: string;
   type?: string;
+  min?: number;
 }
 
 export default function CustomInput(props: Props) {
@@ -54,7 +55,9 @@ export default function CustomInput(props: Props) {
     name,
     value,
     onChange,
+    min,
   } = props;
+
   return (
     <CustomInputLayout>
       <Input
@@ -64,6 +67,7 @@ export default function CustomInput(props: Props) {
         name={name}
         value={value}
         onChange={onChange}
+        min={min}
       />
       {guideText && <GuideText>{guideText}</GuideText>}
       {warningText && <WarningText>{warningText}</WarningText>}
@@ -80,4 +84,5 @@ CustomInput.defaultProps = {
   placeholder: '',
   warningText: '',
   guideText: '',
+  min: undefined,
 };
