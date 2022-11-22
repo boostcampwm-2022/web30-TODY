@@ -1,4 +1,3 @@
-import { Expose } from 'class-transformer';
 import {
   IsNumber,
   IsOptional,
@@ -20,7 +19,6 @@ export class createRoomDto {
   @Min(1)
   readonly maxPersonnel: number;
 
-  // 배열이면 each true, 옵션값이면 IsOptional 사용
   @IsOptional()
   @IsString({ each: true })
   readonly tags: string[];
