@@ -34,6 +34,9 @@ const WarningText = styled.div`
 `;
 
 interface Props {
+  name?: string;
+  value?: string | number;
+  onChange?: React.ChangeEventHandler;
   width?: string;
   placeholder?: string;
   warningText?: string;
@@ -42,10 +45,26 @@ interface Props {
 }
 
 export default function CustomInput(props: Props) {
-  const { warningText, guideText, ...rest } = props;
+  const {
+    width,
+    type,
+    placeholder,
+    warningText,
+    guideText,
+    name,
+    value,
+    onChange,
+  } = props;
   return (
     <CustomInputLayout>
-      <Input {...rest} />
+      <Input
+        width={width}
+        type={type}
+        placeholder={placeholder}
+        name={name}
+        value={value}
+        onChange={onChange}
+      />
       {guideText && <GuideText>{guideText}</GuideText>}
       {warningText && <WarningText>{warningText}</WarningText>}
     </CustomInputLayout>
@@ -53,9 +72,12 @@ export default function CustomInput(props: Props) {
 }
 
 CustomInput.defaultProps = {
+  name: '',
+  value: '',
+  onChange: () => {},
   width: '100%',
+  type: 'text',
   placeholder: '',
   warningText: '',
   guideText: '',
-  type: 'text',
 };

@@ -9,6 +9,7 @@ import Pagination from '@components/common/Pagination';
 import Modal from '@components/common/Modal';
 import CustomInput from '@components/common/CustomInput';
 import CustomButton from '@components/common/CustomButton';
+import axios from 'axios';
 
 const StudyRoomListPageLayout = styled.div`
   display: flex;
@@ -148,8 +149,47 @@ export default function StudyRoomListPage() {
 
   const [modal, setModal] = useState(false);
 
+  const newRoomInfoInitState = {
+    name: '',
+    content: '',
+    maxPersonnel: 1,
+    tags: '',
+  };
+  const [newRoomInfo, setNewRoomInfo] = useState<{
+    name: string;
+    content: string;
+    maxPersonnel: number;
+    tags: string;
+  }>(newRoomInfoInitState);
+
+  const onChangeNewRoomInfo = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    // if (name === 'tags') {
+    //   setNewRoomInfo({
+    //     ...newRoomInfo,
+    //     tags: [...newRoomInfo.tags, value],
+    //   });
+
+    //   return;
+    // }
+
+    setNewRoomInfo({
+      ...newRoomInfo,
+      [name]: name === 'maxPersonnel' ? Number(value) : value,
+    });
+  };
+
   const openModal = () => {
     setModal(true);
+  };
+
+  const createNewStudyRoom = () => {
+    console.log('새로운 공부방 생성', newRoomInfo);
+
+    axios
+      .post('http://localhost:5000/api/study-room', newRoomInfo)
+      .then((res) => console.log(res))
+      .catch((error) => console.log(error));
   };
 
   return (
@@ -190,21 +230,35 @@ export default function StudyRoomListPage() {
           <CustomInput
             placeholder="방 이름"
             guideText="※ 방 이름은 10자 이내로 작성해주세요."
+            name="name"
+            value={newRoomInfo.name}
+            onChange={onChangeNewRoomInfo}
           />
           <CustomInput
             placeholder="방 설명"
             guideText="※ 방 설명은 100자 이내로 작성해주세요."
+            name="content"
+            value={newRoomInfo.content}
+            onChange={onChangeNewRoomInfo}
           />
           <CustomInput
             placeholder="방 접속 최대 인원 수"
             guideText="※ 인원수는 최소 1명 이상이어야 합니다."
             type="number"
+            name="maxPersonnel"
+            value={newRoomInfo.maxPersonnel}
+            onChange={onChangeNewRoomInfo}
           />
           <CustomInput
             placeholder="방 태그"
             guideText="※ 태그는 최대 5개까지 입력 가능합니다."
+            name="tags"
+            value={newRoomInfo.tags}
+            onChange={onChangeNewRoomInfo}
           />
-          <CustomButton margin="20px 0 0">공부하러 GO</CustomButton>
+          <CustomButton onClick={createNewStudyRoom} margin="20px 0 0">
+            공부하러 GO
+          </CustomButton>
         </Modal>
       )}
     </StudyRoomListPageLayout>
