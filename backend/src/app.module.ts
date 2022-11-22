@@ -11,12 +11,14 @@ import { Comment } from './comment/entities/comments.entity';
 import { QuestionBoard } from './question-board/entities/questionBoard.entity';
 import { StudyRoom } from './study-room/entities/studyRoom.entity';
 import { Image } from './question-board/entities/image.entity';
-import * as dotenv from 'dotenv';
+//import * as dotenv from 'dotenv';
+import { ConfigModule } from '@nestjs/config';
 
-dotenv.config();
+//dotenv.config();
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ envFilePath: `.env.${process.env.NODE_ENV}` }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,
