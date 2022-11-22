@@ -10,6 +10,7 @@ import Modal from '@components/common/Modal';
 import CustomInput from '@components/common/CustomInput';
 import CustomButton from '@components/common/CustomButton';
 import axios from 'axios';
+import TagInput from '@components/studyRoomList/TagInput';
 
 const StudyRoomListPageLayout = styled.div`
   display: flex;
@@ -153,14 +154,15 @@ export default function StudyRoomListPage() {
     name: '',
     content: '',
     maxPersonnel: 1,
-    tags: '',
   };
+
   const [newRoomInfo, setNewRoomInfo] = useState<{
     name: string;
     content: string;
     maxPersonnel: number;
-    tags: string;
   }>(newRoomInfoInitState);
+
+  const [tagList, setTagList] = useState<string[]>([]);
 
   const validateInput = (name: string, value: string) => {
     switch (name) {
@@ -190,9 +192,15 @@ export default function StudyRoomListPage() {
 
   const createNewStudyRoom = () => {
     axios
-      .post(`${process.env.REACT_APP_API_URL}/study-room`, newRoomInfo)
+      .post(`${process.env.REACT_APP_API_URL}/study-room`, {
+        ...newRoomInfo,
+        tags: tagList,
+      })
       .then((res) => console.log(res))
       .catch((error) => console.log(error));
+
+    setNewRoomInfo(newRoomInfoInitState);
+    setTagList([]);
   };
 
   return (
@@ -253,13 +261,7 @@ export default function StudyRoomListPage() {
             value={newRoomInfo.maxPersonnel}
             onChange={onChangeNewRoomInfo}
           />
-          <CustomInput
-            placeholder="방 태그"
-            guideText="※ 태그는 최대 5개까지 입력 가능합니다."
-            name="tags"
-            value={newRoomInfo.tags}
-            onChange={onChangeNewRoomInfo}
-          />
+          <TagInput tagList={tagList} setTagList={setTagList} />
           <CustomButton onClick={createNewStudyRoom} margin="20px 0 0">
             공부하러 GO
           </CustomButton>
