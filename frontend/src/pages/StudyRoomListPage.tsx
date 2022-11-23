@@ -20,9 +20,11 @@ const StudyRoomListPageLayout = styled.div`
 `;
 
 const Content = styled.div`
-  position: relative;
   flex: 1;
+  position: relative;
   padding: 45px 30px;
+  height: 100vh;
+  overflow: auto;
 `;
 
 const PageTitle = styled.h1`

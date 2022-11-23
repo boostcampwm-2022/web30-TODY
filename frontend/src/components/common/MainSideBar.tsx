@@ -6,7 +6,7 @@ import Logo from '../../assets/StyledLogo.png';
 const SideBar = styled.div<Props>`
   position: relative;
   width: 296px;
-  min-height: 100vh;
+  height: 100vh;
   background-color: #ffce70;
   display: flex;
   flex-direction: column;
