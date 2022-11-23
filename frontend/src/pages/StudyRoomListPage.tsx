@@ -191,6 +191,8 @@ export default function StudyRoomListPage() {
   };
 
   const createNewStudyRoom = () => {
+    if (newRoomInfo.name === '' || newRoomInfo.maxPersonnel < 1) return;
+
     axios
       .post(`${process.env.REACT_APP_API_URL}/study-room`, {
         ...newRoomInfo,
