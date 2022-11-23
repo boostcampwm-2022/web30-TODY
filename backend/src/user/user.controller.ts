@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Param } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/user.dto';
+import { CreateUserDto, ReadUserDto } from './dto/user.dto';
 
 @Controller('user')
 export class UserController {
@@ -26,5 +26,11 @@ export class UserController {
       nickname,
     });
     return checkNickname ? { isUnique: false } : { isUnique: true };
+  }
+
+  @Post('login')
+  async login(@Body() userData: ReadUserDto): Promise<{ accessToken: string }> {
+    const { accessToken } = await this.userService.login(userData);
+    return { accessToken };
   }
 }

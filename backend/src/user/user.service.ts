@@ -1,15 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { User } from '../user/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
-import { getSalt, getSecurePassword } from 'src/utils/salt';
-import { CreateUserDto, CheckIdDto, CheckNicknameDto } from './dto/user.dto';
+import { getSalt, getSecurePassword } from '../utils/salt';
+import {
+  CreateUserDto,
+  CheckIdDto,
+  CheckNicknameDto,
+  ReadUserDto,
+} from './dto/user.dto';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    private jwtService: JwtService,
   ) {}
 
   async createUser({
@@ -35,9 +42,38 @@ export class UserService {
   async findOneById({ id }: CheckIdDto): Promise<User> {
     return this.userRepository.findOne({ where: { userId: id } });
   }
+
   async findOneByNickname({ nickname }: CheckNicknameDto): Promise<User> {
     return this.userRepository.findOne({
       where: { nickname },
     });
+  }
+
+  async validateUser({ id, password }: ReadUserDto): Promise<boolean> {
+    const user = await this.userRepository.findOne({
+      where: { userId: id },
+    });
+    if (!user) return false;
+    const securePassword = await getSecurePassword(password, user.salt);
+    return user.userPw !== securePassword ? false : true;
+  }
+
+  async login(userData: ReadUserDto): Promise<{ accessToken: string }> {
+    const isValidated = await this.validateUser(userData);
+    console.log(isValidated);
+    if (isValidated) {
+      return {
+        accessToken: this.jwtService.sign(
+          {},
+          {
+            expiresIn: '10s',
+            issuer: 'tody',
+            subject: userData.id,
+          },
+        ),
+      };
+    } else {
+      throw new HttpException('로그인 실패', HttpStatus.UNAUTHORIZED);
+    }
   }
 }

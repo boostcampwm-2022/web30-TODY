@@ -1,4 +1,5 @@
 import { IsString, MinLength, MaxLength, Matches } from 'class-validator';
+import { OmitType } from '@nestjs/swagger';
 
 export class CreateUserDto {
   @IsString()
@@ -29,3 +30,7 @@ export class CheckIdDto {
   @MaxLength(15)
   readonly id: string;
 }
+
+export class ReadUserDto extends OmitType(CreateUserDto, [
+  'nickname',
+] as const) {}

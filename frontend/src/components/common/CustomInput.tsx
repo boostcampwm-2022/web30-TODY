@@ -39,13 +39,22 @@ interface Props {
   warningText?: string;
   guideText?: string;
   type?: string;
+  name?: string;
+  inputRef?: React.MutableRefObject<HTMLInputElement | null>;
 }
 
 export default function CustomInput(props: Props) {
-  const { warningText, guideText, ...rest } = props;
+  const { warningText, guideText, width, placeholder, type, name, inputRef } =
+    props;
   return (
     <CustomInputLayout>
-      <Input {...rest} />
+      <Input
+        width={width}
+        placeholder={placeholder}
+        type={type}
+        name={name}
+        ref={inputRef}
+      />
       {guideText && <GuideText>{guideText}</GuideText>}
       {warningText && <WarningText>{warningText}</WarningText>}
     </CustomInputLayout>
@@ -58,4 +67,6 @@ CustomInput.defaultProps = {
   warningText: '',
   guideText: '',
   type: 'text',
+  name: '',
+  inputRef: null,
 };
