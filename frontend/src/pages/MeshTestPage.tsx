@@ -1,18 +1,19 @@
 import { useEffect } from 'react';
-import socketIO from 'socket.io-client';
+import { io } from 'socket.io-client';
 
-const socket = socketIO('http://localhost:8000');
-
-socket.on('connect', () => {
-  console.log('connection success');
-});
+const socket = io('ws://localhost:8000', { autoConnect: false });
 
 export default function MestTestPage() {
   useEffect(() => {
-    console.log('??');
+    socket.connect();
+
     socket.on('connect', () => {
       console.log('connection success');
     });
+
+    return () => {
+      socket.off('connect');
+    };
   }, []);
   return <>meshtest</>;
 }

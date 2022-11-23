@@ -12,6 +12,7 @@ import { QuestionBoard } from './question-board/entities/questionBoard.entity';
 import { StudyRoom } from './study-room/entities/studyRoom.entity';
 import { Image } from './question-board/entities/image.entity';
 import { ConfigModule } from '@nestjs/config';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ConfigModule } from '@nestjs/config';
     CommentModule,
     QuestionBoardModule,
     StudyRoomModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
