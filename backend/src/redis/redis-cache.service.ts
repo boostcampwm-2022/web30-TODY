@@ -14,4 +14,31 @@ export class RedisCacheService {
     const valueFromKey = (await this.cacheManager.get(key)) as string;
     return valueFromKey;
   }
+
+  async enterRoom(body: {
+    studyRoomId: number;
+    userId: string;
+    nickname: string;
+    isMaster: boolean;
+  }): Promise<void> {
+    const studyRoomId = body.studyRoomId;
+    const userId = body.userId;
+    const nickname = body.nickname;
+    const isMaster = body.isMaster;
+    const key = `studyRoom${studyRoomId}`;
+    const roomValue = await this.cacheManager.get(key);
+
+    if (roomValue) {
+      roomValue[userId] = { nickname, isMaster };
+      await this.cacheManager.set(key, roomValue);
+      return;
+    }
+
+    if (!roomValue) {
+      const roomValue = {};
+      roomValue[userId] = { nickname, isMaster };
+      await this.cacheManager.set(key, roomValue);
+      return;
+    }
+  }
 }
