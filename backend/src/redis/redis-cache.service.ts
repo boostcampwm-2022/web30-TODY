@@ -15,6 +15,10 @@ export class RedisCacheService {
     return valueFromKey;
   }
 
+  async getRoomValue(studyRoomId: number): Promise<any> {
+    return await this.cacheManager.get(`studyRoom${studyRoomId}`);
+  }
+
   async enterRoom(body: {
     studyRoomId: number;
     userId: string;
