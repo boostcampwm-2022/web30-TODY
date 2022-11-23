@@ -34,6 +34,7 @@ export class StudyRoomService {
     }
     const currentPage = page > 0 ? page : 1;
     const studyRoomListData = await this.studyRoomRepository.find({
+      relations: { managerId: true },
       where: [
         { studyRoomName: Like('%' + keyword + '%') },
         { studyRoomContent: Like('%' + keyword + '%') },
@@ -68,6 +69,7 @@ export class StudyRoomService {
         currentPersonnel: 1,
         tags,
         created: dateFormatter(roomInfo.createTime),
+        managerNickname: roomInfo.managerId['nickname'],
       };
       return data;
     });

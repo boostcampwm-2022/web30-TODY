@@ -22,4 +22,7 @@ export class User {
 
   @ManyToMany(() => QuestionBoard, (QuestionBoard) => QuestionBoard.Users)
   QuestionBoards: QuestionBoard[];
+
+  @OneToMany(() => StudyRoom, (studyRoom) => studyRoom.managerId)
+  studyRoom: StudyRoom[];
 }
