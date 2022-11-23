@@ -1,7 +1,8 @@
-import LoginPage from '@pages/LoginPage';
+// import LoginPage from '@pages/LoginPage';
+import MeshTestPage from '@pages/MeshTestPage';
 
 function App() {
-  return <LoginPage />;
+  return <MeshTestPage />;
 }
 
 export default App;
