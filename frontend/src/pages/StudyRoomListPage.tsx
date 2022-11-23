@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import MainSideBar from '@components/common/MainSideBar';
 import SearchBar from '@components/common/SearchBar';
@@ -9,8 +9,11 @@ import Pagination from '@components/common/Pagination';
 import Modal from '@components/common/Modal';
 import CustomInput from '@components/common/CustomInput';
 import CustomButton from '@components/common/CustomButton';
-import axios from 'axios';
 import TagInput from '@components/studyRoomList/TagInput';
+
+import useAxios from '@hooks/useAxios';
+import Loader from '@components/common/Loader';
+import createStudyRoomRequest from '../axios/requests/createStudyRoomRequest';
 
 const StudyRoomListPageLayout = styled.div`
   display: flex;
@@ -148,6 +151,10 @@ export default function StudyRoomListPage() {
     ],
   };
 
+  const [request, loading, error, data] = useAxios<{ studyRoomId: number }>(
+    createStudyRoomRequest,
+  );
+
   const [modal, setModal] = useState(false);
 
   const newRoomInfoInitState = {
@@ -155,13 +162,11 @@ export default function StudyRoomListPage() {
     content: '',
     maxPersonnel: 1,
   };
-
   const [newRoomInfo, setNewRoomInfo] = useState<{
     name: string;
     content: string;
     maxPersonnel: number;
   }>(newRoomInfoInitState);
-
   const [tagList, setTagList] = useState<string[]>([]);
 
   const validateInput = (name: string, value: string) => {
@@ -193,22 +198,24 @@ export default function StudyRoomListPage() {
   const createNewStudyRoom = () => {
     if (newRoomInfo.name === '' || newRoomInfo.maxPersonnel < 1) return;
 
-    axios
-      .post(`${process.env.REACT_APP_API_URL}/study-room`, {
-        ...newRoomInfo,
-        tags: tagList,
-      })
-      .then((res) => console.log(res))
-      .catch((error) => console.log(error));
+    request({
+      ...newRoomInfo,
+      tags: tagList,
+    });
 
     setNewRoomInfo(newRoomInfoInitState);
     setTagList([]);
   };
 
+  useEffect(() => {
+    if (error) alert(error);
+  }, [error]);
+
   return (
     <StudyRoomListPageLayout>
       <MainSideBar />
       <Content>
+        {loading && <Loader />}
         <PageTitle>공부방 목록</PageTitle>
         <CreateButton onClick={openModal}>공부방 생성</CreateButton>
         <SearchBar guideText="👉 방 이름, 방 설명, 방 태그로 공부방을 검색해보세요" />

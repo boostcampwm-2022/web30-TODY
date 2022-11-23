@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import useAxios from '@hooks/useAxios';
 import CustomButton from '@components/common/CustomButton';
 import styled from 'styled-components';
-import Loading from '@components/common/Loading';
+import Loading from '@components/common/Loader';
 import signupRequest from '../axios/requests/signupRequest';
 import CustomInput from '../components/common/CustomInput';
 import StyledHeader1 from '../components/common/StyledHeader1';
