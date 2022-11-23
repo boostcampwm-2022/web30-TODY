@@ -1,15 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StudyRoom } from './entities/studyRoom.entity';
 import { Repository, Like } from 'typeorm';
 import { createRoomDto } from './dto/createRoom.dto';
 import { dateFormatter } from 'src/utils/dateFormatter';
+import { RedisCacheService } from '../redis/redis-cache.service';
 
 @Injectable()
 export class StudyRoomService {
   constructor(
     @InjectRepository(StudyRoom)
     private studyRoomRepository: Repository<StudyRoom>,
+    @Inject(RedisCacheService)
+    private redisCacheService: RedisCacheService,
   ) {}
 
   async createStudyRoom(roomInfo: createRoomDto) {
@@ -29,6 +32,8 @@ export class StudyRoomService {
     attendable: boolean,
     page: number,
   ) {
+    // test code
+    // await this.redisCacheService.setKey('test2', 'hello');
     if (!keyword) {
       keyword = '';
     }

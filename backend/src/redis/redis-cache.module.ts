@@ -14,5 +14,6 @@ const cacheModule = CacheModule.register({
   imports: [cacheModule],
   controllers: [RedisCacheController],
   providers: [RedisCacheService],
+  exports: [RedisCacheService],
 })
 export class RedisCacheModule {}
