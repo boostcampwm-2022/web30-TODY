@@ -7,9 +7,7 @@ export default function MestTestPage() {
   useEffect(() => {
     socket.connect();
 
-    socket.on('connect', () => {
-      console.log('connection success');
-    });
+    socket.on('connect', () => {});
 
     return () => {
       socket.off('connect');
