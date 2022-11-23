@@ -3,8 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import useAxios from '@hooks/useAxios';
 import CustomButton from '@components/common/CustomButton';
 import styled from 'styled-components';
-import axiosBackend from '../axios/instances/axiosBackend';
-import signupApi from '../axios/apis/signupApi';
+import Loading from '@components/common/Loading';
+import signupRequest from '../axios/requests/signupRequest';
 import CustomInput from '../components/common/CustomInput';
 import StyledHeader1 from '../components/common/StyledHeader1';
 
@@ -42,7 +42,7 @@ export default function SignupPage() {
   const nicknameInputRef = useRef<HTMLInputElement>(null);
   const [idIsUnique, setIdIsUnique] = useState(true);
   const [nicknameIsUnique, setNicknameIsUnique] = useState(true);
-  const [request, loading, error, data] = useAxios<Data>(signupApi);
+  const [request, loading, error, data] = useAxios<Data>(signupRequest);
 
   useEffect(() => {
     if (data != null) {
