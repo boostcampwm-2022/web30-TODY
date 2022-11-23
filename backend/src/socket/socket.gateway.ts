@@ -27,9 +27,16 @@ export class SocketGateway
     console.log(`disconnect: ${client.id}`);
   }
 
-  // @SubscribeMessage('events')
-  // handleEvent(@MessageBody() data: string): string {
-  //   console.log(data);
-  //   return data;
-  // }
+  @SubscribeMessage('answer')
+  handleAnswer(@MessageBody() data: string): string {
+    return data;
+  }
+  @SubscribeMessage('offer')
+  handleOffer(@MessageBody() data: string): string {
+    return data;
+  }
+  @SubscribeMessage('icecandidate')
+  handleIcecandidate(@MessageBody() data: string): string {
+    return data;
+  }
 }
