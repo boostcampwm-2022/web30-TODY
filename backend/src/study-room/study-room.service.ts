@@ -32,8 +32,6 @@ export class StudyRoomService {
     attendable: boolean,
     page: number,
   ) {
-    // test code
-    // await this.redisCacheService.setKey('test2', 'hello');
     if (!keyword) {
       keyword = '';
     }
@@ -54,10 +52,9 @@ export class StudyRoomService {
       take: 9,
       skip: 9 * (currentPage - 1),
     });
-    console.log(studyRoomListData);
     const totalCount = await this.studyRoomRepository.count();
     const pageCount = Math.ceil(totalCount / 9);
-    const studyRoomList = studyRoomListData.map((roomInfo) => {
+    const studyRoomPromiseList = studyRoomListData.map(async (roomInfo) => {
       const tags = [];
       if (roomInfo.tag1) {
         tags.push(roomInfo.tag1);
@@ -66,18 +63,35 @@ export class StudyRoomService {
         tags.push(roomInfo.tag2);
       }
 
+      const studyRoomValue = await this.redisCacheService.getRoomValue(
+        roomInfo.studyRoomId,
+      );
+
+      const currentPersonnel = studyRoomValue
+        ? Object.keys(studyRoomValue).length
+        : 0;
+
+      const nickNameOfParticipants = studyRoomValue
+        ? Object.keys(studyRoomValue).map((e) => {
+            return studyRoomValue[e].nickname;
+          })
+        : [];
+
       const data = {
         studyRoomId: roomInfo.studyRoomId,
         name: roomInfo.studyRoomName,
         content: roomInfo.studyRoomContent,
+        currentPersonnel,
         maxPersonnel: roomInfo.maxPersonnel,
-        currentPersonnel: 1,
-        tags,
-        created: dateFormatter(roomInfo.createTime),
         managerNickname: roomInfo.managerId['nickname'],
+        tags,
+        nickNameOfParticipants,
+        created: dateFormatter(roomInfo.createTime),
       };
       return data;
     });
+
+    const studyRoomList = await Promise.all(studyRoomPromiseList);
 
     const searchResult = {
       keyword,

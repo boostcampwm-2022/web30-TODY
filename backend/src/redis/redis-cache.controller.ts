@@ -17,4 +17,17 @@ export class RedisCacheController {
     const result = await this.redisCacheService.setKey(cache.key, cache.value);
     return result;
   }
+
+  @Post('/enterRoom')
+  async enter(
+    @Body()
+    body: {
+      studyRoomId: number;
+      userId: string;
+      nickname: string;
+      isMaster: boolean;
+    },
+  ): Promise<void> {
+    return await this.redisCacheService.enterRoom(body);
+  }
 }
