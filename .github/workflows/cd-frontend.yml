@@ -18,6 +18,13 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
+      - name: create env files
+        run: |
+          touch .env.production
+          cat << EOF >> .env.production
+          ${{ secrets.FE_ENV_PRODUCTION }}
+          EOF
+
       - name: install dependencies
         run: npm i
 
