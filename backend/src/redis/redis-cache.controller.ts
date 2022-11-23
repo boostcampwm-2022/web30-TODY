@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { RedisCacheService } from './redis-cache.service';
 
 @Controller()
@@ -6,8 +6,8 @@ export class RedisCacheController {
   constructor(private redisCacheService: RedisCacheService) {}
 
   @Get('/cache')
-  async getCache(): Promise<string> {
-    const value = await this.redisCacheService.getKey('test');
+  async getCache(@Query('key') key: string): Promise<string> {
+    const value = await this.redisCacheService.getKey(key);
     console.log(value);
     return value;
   }
