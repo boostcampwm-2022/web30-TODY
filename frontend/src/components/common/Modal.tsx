@@ -13,7 +13,7 @@ const ModalBackground = styled.section`
 `;
 
 const ModalContentLayout = styled.div`
-  padding: 75px 100px;
+  padding: 55px 100px;
   width: fit-content;
   border-radius: 25px;
   background-color: var(--white);
@@ -21,7 +21,7 @@ const ModalContentLayout = styled.div`
 const ModalContent = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
   align-items: center;
   width: 412px;
 `;
@@ -33,8 +33,7 @@ interface Props {
 
 export default function Modal({ children, setModal }: Props) {
   const closeModal = (e: React.MouseEvent<HTMLElement>) => {
-    if ((e.target as HTMLElement).closest('.content')) return;
-    setModal(false);
+    if ((e.target as HTMLElement).tagName === 'SECTION') setModal(false);
   };
 
   return (

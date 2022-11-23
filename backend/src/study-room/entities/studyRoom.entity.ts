@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('T_STUDY_ROOM', { schema: 'tody' })
 export class StudyRoom {
@@ -24,7 +31,9 @@ export class StudyRoom {
   @Column('varchar', { name: 'TAG2', nullable: true, length: 50 })
   tag2: string | null;
 
-  @Column('varchar', { name: 'MANAGER_ID', length: 50 })
+  //@Column('varchar', { name: 'MANAGER_ID', length: 50 })
+  @ManyToOne(() => User, (user) => user.userId)
+  @JoinColumn({ name: 'MANAGER_ID' })
   managerId: string;
 
   @Column('timestamp', { name: 'CREATE_TIME', nullable: true })

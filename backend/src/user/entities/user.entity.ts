@@ -1,4 +1,5 @@
-import { Column, Entity, ManyToMany } from 'typeorm';
+import { StudyRoom } from 'src/study-room/entities/studyRoom.entity';
+import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
 import { Comment } from '../../comment/entities/comments.entity';
 import { QuestionBoard } from '../../question-board/entities/questionBoard.entity';
 
@@ -21,4 +22,7 @@ export class User {
 
   @ManyToMany(() => QuestionBoard, (QuestionBoard) => QuestionBoard.Users)
   QuestionBoards: QuestionBoard[];
+
+  @OneToMany(() => StudyRoom, (studyRoom) => studyRoom.managerId)
+  studyRoom: StudyRoom[];
 }
