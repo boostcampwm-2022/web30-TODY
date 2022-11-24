@@ -2,45 +2,46 @@
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 
+const EVENTS = {
+  OFFER: 'offer',
+  ANSWER: 'answer',
+  ICECANDIDATE: 'icecandidate',
+  NOTICE_ALL_PEERS: 'notice-all-peers',
+};
+
 const socket = io('ws://localhost:8000', { autoConnect: false });
 
 export default function MestTestPage() {
   const [remoteStreams, setRemoteStreams] = useState<MediaStream[]>([]);
   const myVideoRef = useRef<HTMLVideoElement | null>(null);
-  const yourVideosRef = useRef<HTMLVideoElement[] | null>(null);
-  let myStream: MediaStream;
-  let myVideo: HTMLVideoElement;
-  const pcs: { [socketId: string]: RTCPeerConnection } = {};
+  const myStream = useRef<MediaStream | null>(null);
+  const pcs = useRef<{ [socketId: string]: RTCPeerConnection }>({});
 
   useEffect(() => {
-    console.log('remoteStreams: ', remoteStreams);
-    yourVideosRef.current?.forEach((video, i) => {
-      // eslint-disable-next-line no-param-reassign
-      video.srcObject = remoteStreams[i];
+    remoteStreams.forEach((remoteStream, i) => {
+      const video = document.querySelector<HTMLVideoElement>(`#socket${i}`);
+      if (!video) return;
+      video.srcObject = remoteStream;
     });
   }, [remoteStreams]);
 
   useEffect(() => {
     if (!myVideoRef.current) return;
-    myVideo = myVideoRef.current;
 
-    // connect socket
     socket.connect();
 
-    // get local stream
     navigator.mediaDevices
       .getUserMedia({
         video: true,
         audio: false,
       })
       .then((stream) => {
-        myStream = stream;
-        myVideo.srcObject = myStream;
-        // join room
+        myStream.current = stream;
+        if (!myVideoRef.current) return;
+        myVideoRef.current.srcObject = myStream.current;
         socket.emit('join', 'room1');
       });
 
-    // create offer from 새로운 peer to 기존 peers
     socket.on('notice-all-peers', (peerIdsInRoom) => {
       peerIdsInRoom.forEach(async (peerId: string) => {
         const pc = new RTCPeerConnection();
@@ -53,12 +54,14 @@ export default function MestTestPage() {
         });
         pc.addEventListener('track', (track) => {
           const remoteStream = track.streams[0];
-          setRemoteStreams([...remoteStreams, remoteStream]);
+          setRemoteStreams((prev) => [...prev, remoteStream]);
         });
-        myStream
-          .getTracks()
-          .forEach((track: MediaStreamTrack) => pc.addTrack(track, myStream));
-        pcs[peerId] = pc;
+        if (!myStream.current) return;
+        myStream.current.getTracks().forEach((track: MediaStreamTrack) => {
+          if (!myStream.current) return;
+          pc.addTrack(track, myStream.current);
+        });
+        pcs.current[peerId] = pc;
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
         socket.emit('offer', { offer, fromId: socket.id, toId: peerId });
@@ -74,39 +77,36 @@ export default function MestTestPage() {
           toId: fromId,
         });
       });
-      pc.addEventListener('track', (track: any) => {
+      pc.addEventListener('track', (track: RTCTrackEvent) => {
         const remoteStream = track.streams[0];
-        setRemoteStreams([...remoteStreams, remoteStream]);
+        setRemoteStreams((prev) => [...prev, remoteStream]);
       });
-      myStream
-        .getTracks()
-        .forEach((track: MediaStreamTrack) => pc.addTrack(track, myStream));
-      pcs[fromId] = pc;
+      if (!myStream.current) return;
+      myStream.current.getTracks().forEach((track: MediaStreamTrack) => {
+        if (!myStream.current) return;
+        pc.addTrack(track, myStream.current);
+      });
+      pcs.current[fromId] = pc;
       await pc.setRemoteDescription(offer);
-      const answer = await pc.createAnswer({
-        offerToReceiveVideo: true,
-        offerToReceiveAudio: true,
-      });
+      const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       socket.emit('answer', { answer, fromId: socket.id, toId: fromId });
     });
 
     socket.on('answer', async ({ answer, fromId, toId }) => {
-      const pc = pcs[fromId];
+      const pc = pcs.current[fromId];
       await pc.setRemoteDescription(answer);
     });
 
     socket.on('icecandidate', async ({ icecandidate, fromId, toId }) => {
-      const pc: RTCPeerConnection = pcs[fromId];
-      if (pc) {
-        pc.addIceCandidate(icecandidate);
-      }
+      const pc = pcs.current[fromId];
+      if (!icecandidate) return;
+      await pc.addIceCandidate(icecandidate);
     });
 
     // eslint-disable-next-line consistent-return
     return () => {
-      socket.off('all-peers');
-      socket.off('connect');
+      socket.off('notice-all-peers');
       socket.off('offer');
       socket.off('answer');
       socket.off('icecandidate');
@@ -114,14 +114,14 @@ export default function MestTestPage() {
   }, []);
 
   function toggleCam() {
-    myStream.getVideoTracks().forEach((track: MediaStreamTrack) => {
+    myStream.current!.getVideoTracks().forEach((track: MediaStreamTrack) => {
       // eslint-disable-next-line no-param-reassign
       track.enabled = !track.enabled;
     });
   }
 
   function toggleMic() {
-    myStream.getAudioTracks().forEach((track: MediaStreamTrack) => {
+    myStream.current!.getAudioTracks().forEach((track: MediaStreamTrack) => {
       // eslint-disable-next-line no-param-reassign
       track.enabled = !track.enabled;
     });
@@ -139,13 +139,15 @@ export default function MestTestPage() {
         toggleMic
       </button>
       {remoteStreams.map((remoteStream, i) => {
-        const getRef = (el: any) => {
-          if (!yourVideosRef.current) return;
-          yourVideosRef.current.push(el);
-        };
+        const id = `socket${i}`;
         return (
-          // eslint-disable-next-line react/no-array-index-key
-          <video key={i} autoPlay ref={getRef} width="400px" height="400px">
+          <video
+            // eslint-disable-next-line react/no-array-index-key
+            key={i}
+            id={id}
+            autoPlay
+            width="400px"
+            height="400px">
             <track default kind="cations" />
           </video>
         );
