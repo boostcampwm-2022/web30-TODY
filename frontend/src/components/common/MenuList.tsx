@@ -36,7 +36,7 @@ export default function MenuList() {
     {
       name: '홈',
       iconSrc: menuHome,
-      path: '/',
+      path: '/home',
     },
     {
       name: '공부방',
