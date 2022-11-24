@@ -17,6 +17,7 @@ import {
 import StudyRoomList from '@components/studyRoomList/StudyRoomList';
 import { useLocation } from 'react-router-dom';
 import qs from 'qs';
+import Pagination from '@components/common/Pagination';
 import getStudyRoomListRequest from '../axios/requests/getStudyRoomListRequest';
 import createStudyRoomRequest from '../axios/requests/createStudyRoomRequest';
 
@@ -62,13 +63,17 @@ export default function StudyRoomListPage() {
     searchResult,
   ] = useAxios<RoomListData>(getStudyRoomListRequest);
 
+  const [page, setPage] = useState(queryString.page || 1);
+  const [keyword, setKeyword] = useState(queryString.keyword || '');
+  const [attendable, setAttendable] = useState(queryString.attendable || false);
+
   useEffect(() => {
     getRoomListRequest({
-      page: 1,
-      keyword: '',
-      attenable: false,
+      page,
+      keyword,
+      attendable,
     });
-  }, []);
+  }, [page, keyword, attendable]);
 
   const [createRoomRequest, createRoomLoading, createRoomError, createdRoomId] =
     useAxios<{
@@ -149,6 +154,14 @@ export default function StudyRoomListPage() {
           </div>
         </SearchInfoLayout>
         <StudyRoomList searchResult={searchResult} />
+        {searchResult && (
+          <Pagination
+            pageCount={searchResult.pageCount}
+            currentPage={searchResult.currentPage}
+            setPage={setPage}
+            getRoomConditions={{ keyword, attendable }}
+          />
+        )}
       </Content>
       {modal && (
         <Modal setModal={setModal}>
