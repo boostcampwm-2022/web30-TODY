@@ -6,6 +6,7 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
+  ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
@@ -28,15 +29,27 @@ export class SocketGateway
   }
 
   @SubscribeMessage('answer')
-  handleAnswer(@MessageBody() data: string): string {
-    return data;
+  handleAnswer(
+    @ConnectedSocket()
+    socket: Socket,
+    @MessageBody() answer: RTCSessionDescriptionInit,
+  ) {
+    socket.broadcast.emit('answer', answer);
   }
   @SubscribeMessage('offer')
-  handleOffer(@MessageBody() data: string): string {
-    return data;
+  handleOffer(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() offer: RTCSessionDescriptionInit,
+  ) {
+    socket.broadcast.emit('offer', offer);
   }
+
+  //RTCIceCandidate
   @SubscribeMessage('icecandidate')
-  handleIcecandidate(@MessageBody() data: string): string {
-    return data;
+  handleIcecandidate(
+    @ConnectedSocket() socket: Socket,
+    @MessageBody() icecandidate: RTCSessionDescriptionInit,
+  ) {
+    socket.broadcast.emit('icecandidate', icecandidate);
   }
 }
