@@ -13,7 +13,7 @@ export default function MestTestPage() {
   const pcs: { [socketId: string]: RTCPeerConnection } = {};
 
   useEffect(() => {
-    console.log(remoteStreams);
+    console.log('remoteStreams: ', remoteStreams);
     yourVideosRef.current?.forEach((video, i) => {
       // eslint-disable-next-line no-param-reassign
       video.srcObject = remoteStreams[i];
@@ -31,7 +31,7 @@ export default function MestTestPage() {
     navigator.mediaDevices
       .getUserMedia({
         video: true,
-        audio: true,
+        audio: false,
       })
       .then((stream) => {
         myStream = stream;
@@ -45,7 +45,7 @@ export default function MestTestPage() {
       peerIdsInRoom.forEach(async (peerId: string) => {
         const pc = new RTCPeerConnection();
         pc.addEventListener('icecandidate', (ice) => {
-          socket.emit('icecandiate', {
+          socket.emit('icecandidate', {
             icecandidate: ice.candidate,
             fromId: socket.id,
             toId: peerId,
@@ -60,7 +60,7 @@ export default function MestTestPage() {
           .forEach((track: MediaStreamTrack) => pc.addTrack(track, myStream));
         pcs[peerId] = pc;
         const offer = await pc.createOffer();
-        await pc.setLocalDescription(new RTCSessionDescription(offer));
+        await pc.setLocalDescription(offer);
         socket.emit('offer', { offer, fromId: socket.id, toId: peerId });
       });
     });
@@ -68,7 +68,7 @@ export default function MestTestPage() {
     socket.on('offer', async ({ offer, fromId, toId }) => {
       const pc = new RTCPeerConnection();
       pc.addEventListener('icecandidate', (ice) => {
-        socket.emit('icecandiate', {
+        socket.emit('icecandidate', {
           icecandidate: ice.candidate,
           fromId: socket.id,
           toId: fromId,
@@ -82,23 +82,25 @@ export default function MestTestPage() {
         .getTracks()
         .forEach((track: MediaStreamTrack) => pc.addTrack(track, myStream));
       pcs[fromId] = pc;
-      await pc.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await pc.createAnswer();
-      await pc.setLocalDescription(new RTCSessionDescription(answer));
+      await pc.setRemoteDescription(offer);
+      const answer = await pc.createAnswer({
+        offerToReceiveVideo: true,
+        offerToReceiveAudio: true,
+      });
+      await pc.setLocalDescription(answer);
       socket.emit('answer', { answer, fromId: socket.id, toId: fromId });
     });
 
     socket.on('answer', async ({ answer, fromId, toId }) => {
       const pc = pcs[fromId];
-      // console.log(pc.connectionState, pc.signalingState);
-      // if (pc.signalingState === 'stable') return;
-      // await pc.setRemoteDescription(answer);
-      await pc.setRemoteDescription(new RTCSessionDescription(answer));
+      await pc.setRemoteDescription(answer);
     });
 
     socket.on('icecandidate', async ({ icecandidate, fromId, toId }) => {
-      const pc = pcs[fromId];
-      await pc.addIceCandidate(icecandidate);
+      const pc: RTCPeerConnection = pcs[fromId];
+      if (pc) {
+        pc.addIceCandidate(icecandidate);
+      }
     });
 
     // eslint-disable-next-line consistent-return

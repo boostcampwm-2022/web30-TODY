@@ -36,7 +36,6 @@ export class SocketGateway
   ) {
     client.join(roomName);
     const socketsInRoom = await this.server.in(roomName).fetchSockets();
-    console.log(socketsInRoom);
     const peerIdsInRoom = socketsInRoom
       .filter((socket) => socket.id !== client.id)
       .map((socket) => socket.id);
