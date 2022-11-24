@@ -52,7 +52,14 @@ export class StudyRoomService {
       take: 9,
       skip: 9 * (currentPage - 1),
     });
-    const totalCount = await this.studyRoomRepository.count();
+    const totalCount = await this.studyRoomRepository.count({
+      where: [
+        { studyRoomName: Like('%' + keyword + '%') },
+        { studyRoomContent: Like('%' + keyword + '%') },
+        { tag1: Like('%' + keyword + '%') },
+        { tag2: Like('%' + keyword + '%') },
+      ],
+    });
     const pageCount = Math.ceil(totalCount / 9);
     const studyRoomPromiseList = studyRoomListData.map(async (roomInfo) => {
       const tags = [];
