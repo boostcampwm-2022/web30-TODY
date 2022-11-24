@@ -80,7 +80,7 @@ export default function CustomInput(props: Props) {
 
 CustomInput.defaultProps = {
   name: '',
-  value: '',
+  value: undefined,
   onChange: () => {},
   width: '100%',
   type: 'text',

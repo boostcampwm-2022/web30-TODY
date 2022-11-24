@@ -74,7 +74,7 @@ interface Props {
   currentPersonnel: number;
   managerNickname: string;
   tags: string[];
-  nicknamesOfParticipants: string[];
+  nickNameOfParticipants: string[];
   created: string;
 }
 
@@ -86,7 +86,7 @@ export default function StudyRoomItem(props: Props) {
     currentPersonnel,
     managerNickname,
     tags,
-    nicknamesOfParticipants,
+    nickNameOfParticipants,
     created,
   } = props;
 

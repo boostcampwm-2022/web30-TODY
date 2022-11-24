@@ -4,15 +4,20 @@ import MainSideBar from '@components/common/MainSideBar';
 import SearchBar from '@components/common/SearchBar';
 import ViewConditionCheckBox from '@components/common/ViewConditionCheckBox';
 import CreateButton from '@components/common/CreatButton';
-import StudyRoomItem from '@components/studyRoomList/StudyRoomItem';
-import Pagination from '@components/common/Pagination';
 import Modal from '@components/common/Modal';
 import CustomInput from '@components/common/CustomInput';
 import CustomButton from '@components/common/CustomButton';
 import TagInput from '@components/studyRoomList/TagInput';
-
 import useAxios from '@hooks/useAxios';
 import Loader from '@components/common/Loader';
+import {
+  NewRoomInfoData,
+  RoomListData,
+} from '@components/studyRoomList/studyRoomList.types';
+import StudyRoomList from '@components/studyRoomList/StudyRoomList';
+import { useLocation } from 'react-router-dom';
+import qs from 'qs';
+import getStudyRoomListRequest from '../axios/requests/getStudyRoomListRequest';
 import createStudyRoomRequest from '../axios/requests/createStudyRoomRequest';
 
 const StudyRoomListPageLayout = styled.div`
@@ -44,132 +49,42 @@ const SearchResultText = styled.h3`
   font-size: 20px;
 `;
 
-const RoomListLayout = styled.div`
-  min-height: 485px;
-  margin: 30px 0 35px;
-`;
-
-const StudyRoomList = styled.ul`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-`;
-
 export default function StudyRoomListPage() {
-  const searchResult = {
-    keyword: '한국사',
-    currentPage: 1,
-    pageCount: 5,
-    totalCount: 45,
-    studyRoomList: [
-      {
-        studyRoomId: 1,
-        name: '한국사 1급 자격증 공부',
-        content: '같이 공부해요',
-        maxPersonnel: 8,
-        currentPersonnel: 3,
-        managerNickname: '숨숨',
-        tags: ['수학', '음소거'],
-        nicknamesOfParticipants: ['peter', '신신', '숨숨'],
-        created: '2022-11-03 22:00:01',
-      },
-      {
-        studyRoomId: 2,
-        name: '국어방',
-        content: '수능 대비 문제풀이',
-        maxPersonnel: 5,
-        currentPersonnel: 2,
-        managerNickname: '신신',
-        tags: ['국어'],
-        nicknamesOfParticipants: ['peter', '신신'],
-        created: '2022-11-04 11:00:00',
-      },
-      {
-        studyRoomId: 3,
-        name: '한국사 1급 자격증 공부',
-        content: '같이 공부해요',
-        maxPersonnel: 8,
-        currentPersonnel: 3,
-        managerNickname: '숨숨',
-        tags: ['수학', '음소거'],
-        nicknamesOfParticipants: ['peter', '신신', '숨숨'],
-        created: '2022-11-03 22:00:01',
-      },
-      {
-        studyRoomId: 4,
-        name: '국어방',
-        content: '수능 대비 문제풀이',
-        maxPersonnel: 5,
-        currentPersonnel: 2,
-        managerNickname: '신신',
-        tags: ['국어'],
-        nicknamesOfParticipants: ['peter', '신신'],
-        created: '2022-11-04 11:00:00',
-      },
-      {
-        studyRoomId: 5,
-        name: '한국사 1급 자격증 공부',
-        content: '같이 공부해요',
-        maxPersonnel: 8,
-        currentPersonnel: 3,
-        managerNickname: '숨숨',
-        tags: ['수학', '음소거'],
-        nicknamesOfParticipants: ['peter', '신신', '숨숨'],
-        created: '2022-11-03 22:00:01',
-      },
-      {
-        studyRoomId: 6,
-        name: '국어방',
-        content: '수능 대비 문제풀이',
-        maxPersonnel: 5,
-        currentPersonnel: 2,
-        managerNickname: '신신',
-        tags: ['국어'],
-        nicknamesOfParticipants: ['peter', '신신'],
-        created: '2022-11-04 11:00:00',
-      },
-      {
-        studyRoomId: 7,
-        name: '한국사 1급 자격증 공부',
-        content: '같이 공부해요',
-        maxPersonnel: 8,
-        currentPersonnel: 3,
-        managerNickname: '숨숨',
-        tags: ['수학', '음소거'],
-        nicknamesOfParticipants: ['peter', '신신', '숨숨'],
-        created: '2022-11-03 22:00:01',
-      },
-      {
-        studyRoomId: 8,
-        name: '국어방',
-        content: '수능 대비 문제풀이',
-        maxPersonnel: 5,
-        currentPersonnel: 2,
-        managerNickname: '신신',
-        tags: ['국어'],
-        nicknamesOfParticipants: ['peter', '신신'],
-        created: '2022-11-04 11:00:00',
-      },
-    ],
-  };
+  const location = useLocation();
+  const queryString = qs.parse(location.search, {
+    ignoreQueryPrefix: true,
+  });
 
-  const [request, loading, error, data] = useAxios<{ studyRoomId: number }>(
-    createStudyRoomRequest,
-  );
+  const [
+    getRoomListRequest,
+    getRoomListLoading,
+    getRoomListError,
+    searchResult,
+  ] = useAxios<RoomListData>(getStudyRoomListRequest);
 
-  const [modal, setModal] = useState(false);
+  useEffect(() => {
+    getRoomListRequest({
+      page: 1,
+      keyword: '',
+      attenable: false,
+    });
+  }, []);
+
+  const [createRoomRequest, createRoomLoading, createRoomError, createdRoomId] =
+    useAxios<{
+      studyRoomId: number;
+    }>(createStudyRoomRequest);
 
   const newRoomInfoInitState = {
     name: '',
     content: '',
     maxPersonnel: 1,
   };
-  const [newRoomInfo, setNewRoomInfo] = useState<{
-    name: string;
-    content: string;
-    maxPersonnel: number;
-  }>(newRoomInfoInitState);
+
+  const [newRoomInfo, setNewRoomInfo] =
+    useState<NewRoomInfoData>(newRoomInfoInitState);
   const [tagList, setTagList] = useState<string[]>([]);
+  const [modal, setModal] = useState(false);
 
   const validateInput = (name: string, value: string) => {
     switch (name) {
@@ -200,7 +115,7 @@ export default function StudyRoomListPage() {
   const createNewStudyRoom = () => {
     if (newRoomInfo.name === '' || newRoomInfo.maxPersonnel < 1) return;
 
-    request({
+    createRoomRequest({
       ...newRoomInfo,
       tags: tagList,
     });
@@ -210,41 +125,30 @@ export default function StudyRoomListPage() {
   };
 
   useEffect(() => {
-    if (error) alert(error);
-  }, [error]);
+    if (createRoomError) alert(createRoomError);
+    if (getRoomListError) alert(getRoomListError);
+  }, [createRoomError, getRoomListError]);
 
   return (
     <StudyRoomListPageLayout>
       <MainSideBar />
       <Content>
-        {loading && <Loader />}
+        {(createRoomLoading || getRoomListLoading) && <Loader />}
         <PageTitle>공부방 목록</PageTitle>
         <CreateButton onClick={openModal}>공부방 생성</CreateButton>
         <SearchBar guideText="👉 방 이름, 방 설명, 방 태그로 공부방을 검색해보세요" />
 
         <SearchInfoLayout>
           <SearchResultText>
-            {searchResult.keyword}에 대한 검색결과 총 {searchResult.totalCount}
-            건
+            {searchResult?.keyword && `{searchResult?.keyword}에 대한 검색결과`}{' '}
+            총 {searchResult?.totalCount}개의 방
           </SearchResultText>
           <div className="flex-row">
             <ViewConditionCheckBox>참여 가능한 방만 보기</ViewConditionCheckBox>
             <ViewConditionCheckBox>비밀 방만 보기</ViewConditionCheckBox>
           </div>
         </SearchInfoLayout>
-
-        <RoomListLayout>
-          <StudyRoomList>
-            {searchResult.studyRoomList.map((room) => (
-              <StudyRoomItem key={room.studyRoomId} {...room} />
-            ))}
-          </StudyRoomList>
-        </RoomListLayout>
-
-        <Pagination
-          pageCount={searchResult.pageCount}
-          currentPage={searchResult.currentPage}
-        />
+        <StudyRoomList searchResult={searchResult} />
       </Content>
       {modal && (
         <Modal setModal={setModal}>
