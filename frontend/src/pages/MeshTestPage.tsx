@@ -5,114 +5,109 @@ import { io } from 'socket.io-client';
 const socket = io('ws://localhost:8000', { autoConnect: false });
 
 export default function MestTestPage() {
+  const [remoteStreams, setRemoteStreams] = useState<MediaStream[]>([]);
   const myVideoRef = useRef<HTMLVideoElement | null>(null);
-  const yourVideoRef = useRef<HTMLVideoElement | null>(null);
+  const yourVideosRef = useRef<HTMLVideoElement[] | null>(null);
   let myStream: MediaStream;
   let myVideo: HTMLVideoElement;
-  let yourVideo: HTMLVideoElement;
-  let pc: RTCPeerConnection;
+  const pcs: { [socketId: string]: RTCPeerConnection } = {};
 
-  async function peerAStart() {
-    console.log('socket connected, peerAStart');
-    // getUserMedia
-    myStream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
+  useEffect(() => {
+    console.log(remoteStreams);
+    yourVideosRef.current?.forEach((video, i) => {
+      // eslint-disable-next-line no-param-reassign
+      video.srcObject = remoteStreams[i];
     });
-    myVideo.srcObject = myStream;
-
-    // addTrack(구addStream)
-    myStream
-      .getTracks()
-      .forEach((track: MediaStreamTrack) => pc.addTrack(track, myStream));
-
-    // createOffer
-    const offer = await pc.createOffer();
-
-    // setLocalDescription
-    await pc.setLocalDescription(offer);
-
-    return offer;
-  }
-
-  async function peerBStart(offer: RTCSessionDescriptionInit) {
-    console.log('offer received, peerBStart');
-    // setRemoteDescription
-    await pc.setRemoteDescription(offer);
-
-    // getUserMedia
-    myStream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-      audio: true,
-    });
-    myVideo.srcObject = myStream;
-
-    // addTrack(구addStream)
-    myStream
-      .getTracks()
-      .forEach((track: MediaStreamTrack) => pc.addTrack(track, myStream));
-
-    // createAnswer
-    const answer = await pc.createAnswer();
-
-    // setLocalDescription
-    await pc.setLocalDescription(answer);
-
-    return answer;
-  }
-
-  function sendCandidate(ice: RTCPeerConnectionIceEvent) {
-    console.log('candidate sent');
-    socket.emit('icecandidate', ice.candidate);
-  }
-
-  function updateYourVideo(track: RTCTrackEvent) {
-    console.log('yourVideo updated');
-    [yourVideo.srcObject] = track.streams;
-  }
+  }, [remoteStreams]);
 
   useEffect(() => {
     if (!myVideoRef.current) return;
-    if (!yourVideoRef.current) return;
     myVideo = myVideoRef.current;
-    yourVideo = yourVideoRef.current;
-  }, []);
 
-  useEffect(() => {
+    // connect socket
     socket.connect();
-    pc = new RTCPeerConnection();
 
-    socket.on('connect', async () => {
-      const offer = await peerAStart();
-      socket.emit('offer', offer);
+    // get local stream
+    navigator.mediaDevices
+      .getUserMedia({
+        video: true,
+        audio: true,
+      })
+      .then((stream) => {
+        myStream = stream;
+        myVideo.srcObject = myStream;
+        // join room
+        socket.emit('join', 'room1');
+      });
+
+    // create offer from 새로운 peer to 기존 peers
+    socket.on('notice-all-peers', (peerIdsInRoom) => {
+      peerIdsInRoom.forEach(async (peerId: string) => {
+        const pc = new RTCPeerConnection();
+        pc.addEventListener('icecandidate', (ice) => {
+          socket.emit('icecandiate', {
+            icecandidate: ice.candidate,
+            fromId: socket.id,
+            toId: peerId,
+          });
+        });
+        pc.addEventListener('track', (track) => {
+          const remoteStream = track.streams[0];
+          setRemoteStreams([...remoteStreams, remoteStream]);
+        });
+        myStream
+          .getTracks()
+          .forEach((track: MediaStreamTrack) => pc.addTrack(track, myStream));
+        pcs[peerId] = pc;
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(new RTCSessionDescription(offer));
+        socket.emit('offer', { offer, fromId: socket.id, toId: peerId });
+      });
     });
 
-    socket.on('offer', async (offer) => {
-      const answer = await peerBStart(offer);
-      socket.emit('answer', answer);
+    socket.on('offer', async ({ offer, fromId, toId }) => {
+      const pc = new RTCPeerConnection();
+      pc.addEventListener('icecandidate', (ice) => {
+        socket.emit('icecandiate', {
+          icecandidate: ice.candidate,
+          fromId: socket.id,
+          toId: fromId,
+        });
+      });
+      pc.addEventListener('track', (track: any) => {
+        const remoteStream = track.streams[0];
+        setRemoteStreams([...remoteStreams, remoteStream]);
+      });
+      myStream
+        .getTracks()
+        .forEach((track: MediaStreamTrack) => pc.addTrack(track, myStream));
+      pcs[fromId] = pc;
+      await pc.setRemoteDescription(new RTCSessionDescription(offer));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(new RTCSessionDescription(answer));
+      socket.emit('answer', { answer, fromId: socket.id, toId: fromId });
     });
 
-    socket.on('answer', async (answer) => {
-      console.log('peerA got answer');
-      await pc.setRemoteDescription(answer);
+    socket.on('answer', async ({ answer, fromId, toId }) => {
+      const pc = pcs[fromId];
+      // console.log(pc.connectionState, pc.signalingState);
+      // if (pc.signalingState === 'stable') return;
+      // await pc.setRemoteDescription(answer);
+      await pc.setRemoteDescription(new RTCSessionDescription(answer));
     });
 
-    pc.addEventListener('icecandidate', sendCandidate);
-
-    socket.on('icecandidate', async (icecandidate) => {
-      console.log('add candidate');
+    socket.on('icecandidate', async ({ icecandidate, fromId, toId }) => {
+      const pc = pcs[fromId];
       await pc.addIceCandidate(icecandidate);
     });
 
-    pc.addEventListener('track', updateYourVideo);
-
+    // eslint-disable-next-line consistent-return
     return () => {
+      socket.off('all-peers');
       socket.off('connect');
       socket.off('offer');
       socket.off('answer');
       socket.off('icecandidate');
-      pc.removeEventListener('icecandidate', sendCandidate);
-      pc.removeEventListener('track', updateYourVideo);
     };
   }, []);
 
@@ -141,9 +136,18 @@ export default function MestTestPage() {
       <button type="button" onClick={toggleMic}>
         toggleMic
       </button>
-      <video autoPlay ref={yourVideoRef} width="400px" height="400px">
-        <track default kind="cations" />
-      </video>
+      {remoteStreams.map((remoteStream, i) => {
+        const getRef = (el: any) => {
+          if (!yourVideosRef.current) return;
+          yourVideosRef.current.push(el);
+        };
+        return (
+          // eslint-disable-next-line react/no-array-index-key
+          <video key={i} autoPlay ref={getRef} width="400px" height="400px">
+            <track default kind="cations" />
+          </video>
+        );
+      })}
     </>
   );
 }

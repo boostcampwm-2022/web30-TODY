@@ -20,36 +20,51 @@ export class SocketGateway
     console.log('Socket server is running');
   }
 
-  handleConnection(client: Socket) {
+  async handleConnection(@ConnectedSocket() client: Socket) {
     console.log(`connected: ${client.id}`);
   }
 
-  handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {
     console.log(`disconnect: ${client.id}`);
+  }
+
+  @SubscribeMessage('join')
+  async handleJoin(
+    @ConnectedSocket()
+    client: Socket,
+    @MessageBody() roomName: any,
+  ) {
+    client.join(roomName);
+    const socketsInRoom = await this.server.in(roomName).fetchSockets();
+    console.log(socketsInRoom);
+    const peerIdsInRoom = socketsInRoom
+      .filter((socket) => socket.id !== client.id)
+      .map((socket) => socket.id);
+    client.emit('notice-all-peers', peerIdsInRoom);
   }
 
   @SubscribeMessage('answer')
   handleAnswer(
     @ConnectedSocket()
-    socket: Socket,
-    @MessageBody() answer: RTCSessionDescriptionInit,
+    client: Socket,
+    @MessageBody() { answer, fromId, toId }: any,
   ) {
-    socket.broadcast.emit('answer', answer);
-  }
-  @SubscribeMessage('offer')
-  handleOffer(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody() offer: RTCSessionDescriptionInit,
-  ) {
-    socket.broadcast.emit('offer', offer);
+    this.server.to(toId).emit('answer', { answer, fromId, toId });
   }
 
-  //RTCIceCandidate
+  @SubscribeMessage('offer')
+  handleOffer(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() { offer, fromId, toId }: any,
+  ) {
+    this.server.to(toId).emit('offer', { offer, fromId, toId });
+  }
+
   @SubscribeMessage('icecandidate')
   handleIcecandidate(
-    @ConnectedSocket() socket: Socket,
-    @MessageBody() icecandidate: RTCSessionDescriptionInit,
+    @ConnectedSocket() client: Socket,
+    @MessageBody() { icecandidate, fromId, toId }: any,
   ) {
-    socket.broadcast.emit('icecandidate', icecandidate);
+    this.server.to(toId).emit('icecandidate', { icecandidate, fromId, toId });
   }
 }
