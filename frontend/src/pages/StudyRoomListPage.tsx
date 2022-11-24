@@ -141,12 +141,18 @@ export default function StudyRoomListPage() {
         {(createRoomLoading || getRoomListLoading) && <Loader />}
         <PageTitle>공부방 목록</PageTitle>
         <CreateButton onClick={openModal}>공부방 생성</CreateButton>
-        <SearchBar guideText="👉 방 이름, 방 설명, 방 태그로 공부방을 검색해보세요" />
+        <SearchBar
+          guideText="👉 방 이름, 방 설명, 방 태그로 공부방을 검색해보세요"
+          setKeyword={setKeyword}
+          setPage={setPage}
+          attendable={attendable}
+        />
 
         <SearchInfoLayout>
           <SearchResultText>
-            {searchResult?.keyword && `{searchResult?.keyword}에 대한 검색결과`}{' '}
-            총 {searchResult?.totalCount}개의 방
+            {searchResult?.keyword &&
+              `"${searchResult?.keyword}"에 대한 검색결과`}{' '}
+            총 {searchResult?.totalCount}건
           </SearchResultText>
           <div className="flex-row">
             <ViewConditionCheckBox>참여 가능한 방만 보기</ViewConditionCheckBox>

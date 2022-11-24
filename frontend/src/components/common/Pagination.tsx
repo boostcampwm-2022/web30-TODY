@@ -43,7 +43,7 @@ export default function Pagination({
     const nextPage = e.target.innerText;
     if (currentPage === nextPage) return;
     navigate(
-      `/study-rooms?page=${nextPage}&keyword${keyword}&attendable=${attendable}`,
+      `/study-rooms?page=${nextPage}&keyword=${keyword}&attendable=${attendable}`,
     );
     setPage(nextPage);
   };

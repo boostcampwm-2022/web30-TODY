@@ -17,9 +17,9 @@ export default function MainPage() {
     <MainPageLayout>
       <MainSideBar />
       <Content>
-        <SearchBar guideText="👉 방 이름, 방 설명, 방 태그로 공부방을 검색해보세요" />
+        {/* <SearchBar guideText="👉 방 이름, 방 설명, 방 태그로 공부방을 검색해보세요" />
         <ViewConditionCheckBox>참여 가능한 방만 보기</ViewConditionCheckBox>
-        <ViewConditionCheckBox>비밀 방만 보기</ViewConditionCheckBox>
+        <ViewConditionCheckBox>비밀 방만 보기</ViewConditionCheckBox> */}
       </Content>
     </MainPageLayout>
   );
