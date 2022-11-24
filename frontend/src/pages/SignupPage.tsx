@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import useAxios from '@hooks/useAxios';
 import CustomButton from '@components/common/CustomButton';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import Loading from '@components/common/Loader';
 import signupRequest from '../axios/requests/signupRequest';
 import CustomInput from '../components/common/CustomInput';
@@ -38,6 +39,7 @@ interface Data {
 }
 
 export default function SignupPage() {
+  const navigate = useNavigate();
   const idInputRef = useRef<HTMLInputElement>(null);
   const nicknameInputRef = useRef<HTMLInputElement>(null);
   const [idIsUnique, setIdIsUnique] = useState(true);
@@ -47,7 +49,7 @@ export default function SignupPage() {
   useEffect(() => {
     if (data != null) {
       alert(`${data.nickname}님 환영합니다.`);
-      // 로그인 페이지로 이동
+      navigate('/login');
     }
   }, [data]);
 
@@ -137,7 +139,7 @@ export default function SignupPage() {
             guideText="숫자, 문자 혼합 최소 8자리로 설정해주세요."
           />
           <CustomInput placeholder="비밀번호 확인" />
-          <CustomButton disabled={loading} margin="20px 0 0 ">
+          <CustomButton type="submit" disabled={loading} margin="20px 0 0 ">
             회원가입
           </CustomButton>
         </form>
