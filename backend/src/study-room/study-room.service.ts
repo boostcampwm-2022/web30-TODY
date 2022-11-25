@@ -61,44 +61,44 @@ export class StudyRoomService {
       ],
     });
     const pageCount = Math.ceil(totalCount / 9);
-    const studyRoomPromiseList = studyRoomListData.map(async (roomInfo) => {
-      const tags = [];
-      if (roomInfo.tag1) {
-        tags.push(roomInfo.tag1);
-      }
-      if (roomInfo.tag2) {
-        tags.push(roomInfo.tag2);
-      }
+    const studyRoomList = await Promise.all(
+      studyRoomListData.map(async (roomInfo) => {
+        const tags = [];
+        if (roomInfo.tag1) {
+          tags.push(roomInfo.tag1);
+        }
+        if (roomInfo.tag2) {
+          tags.push(roomInfo.tag2);
+        }
 
-      const studyRoomValue = await this.redisCacheService.getRoomValue(
-        roomInfo.studyRoomId,
-      );
+        const studyRoomValue = await this.redisCacheService.getRoomValue(
+          roomInfo.studyRoomId,
+        );
 
-      const currentPersonnel = studyRoomValue
-        ? Object.keys(studyRoomValue).length
-        : 0;
+        const currentPersonnel = studyRoomValue
+          ? Object.keys(studyRoomValue).length
+          : 0;
 
-      const nickNameOfParticipants = studyRoomValue
-        ? Object.keys(studyRoomValue).map((e) => {
-            return studyRoomValue[e].nickname;
-          })
-        : [];
+        const nickNameOfParticipants = studyRoomValue
+          ? Object.keys(studyRoomValue).map((e) => {
+              return studyRoomValue[e].nickname;
+            })
+          : [];
 
-      const data = {
-        studyRoomId: roomInfo.studyRoomId,
-        name: roomInfo.studyRoomName,
-        content: roomInfo.studyRoomContent,
-        currentPersonnel,
-        maxPersonnel: roomInfo.maxPersonnel,
-        managerNickname: roomInfo.managerId['nickname'],
-        tags,
-        nickNameOfParticipants,
-        created: dateFormatter(roomInfo.createTime),
-      };
-      return data;
-    });
-
-    const studyRoomList = await Promise.all(studyRoomPromiseList);
+        const data = {
+          studyRoomId: roomInfo.studyRoomId,
+          name: roomInfo.studyRoomName,
+          content: roomInfo.studyRoomContent,
+          currentPersonnel,
+          maxPersonnel: roomInfo.maxPersonnel,
+          managerNickname: roomInfo.managerId['nickname'],
+          tags,
+          nickNameOfParticipants,
+          created: dateFormatter(roomInfo.createTime),
+        };
+        return data;
+      }),
+    );
 
     const searchResult = {
       keyword,
