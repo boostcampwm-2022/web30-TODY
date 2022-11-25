@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 import MenuList from './MenuList';
 import UserProfile from './UserProfile';
 import Logo from '../../assets/StyledLogo.png';
@@ -6,7 +7,7 @@ import Logo from '../../assets/StyledLogo.png';
 const SideBar = styled.div<Props>`
   position: relative;
   width: 296px;
-  min-height: 100vh;
+  height: 100vh;
   background-color: #ffce70;
   display: flex;
   flex-direction: column;
@@ -28,7 +29,9 @@ interface Props {
 export default function MainSideBar(props: Props) {
   return (
     <SideBar {...props}>
-      <LogoStyle src={Logo} alt="Logo" />
+      <Link to="/">
+        <LogoStyle src={Logo} alt="Logo" />
+      </Link>
       <UserProfile />
       <MenuList />
     </SideBar>

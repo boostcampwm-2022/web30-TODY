@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 import { ReactComponent as SearchIcon } from '@assets/icons/searchBarButton.svg';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const SearchBarLayout = styled.div`
   width: 100%;
@@ -46,16 +48,41 @@ const SearchBarButton = styled.button`
 
 interface Props {
   guideText?: string;
+  setKeyword: any;
+  setPage: any;
+  attendable: any;
 }
 
-export default function SearchBar(props: Props) {
-  const { guideText } = props;
+export default function SearchBar({
+  guideText,
+  setKeyword,
+  setPage,
+  attendable,
+}: Props) {
+  const navigate = useNavigate();
+  const [input, setInput] = useState('');
+  const onChange = (e: any) => {
+    setInput(e.target.value);
+  };
+
+  const searchRoomList = () => {
+    navigate(`/study-rooms?page=1&keyword=${input}&attendable=${attendable}`);
+    setKeyword(input);
+    setPage(1);
+    setInput('');
+  };
+
   return (
     <SearchBarLayout>
       <GuideText>{guideText}</GuideText>
       <SearchBarInputWrapper>
-        <SearchBarInput placeholder="검색어를 입력하세요" />
-        <SearchBarButton>
+        <SearchBarInput
+          placeholder="검색어를 입력하세요"
+          value={input}
+          onChange={onChange}
+          onKeyUp={(e) => (e.key === 'Enter' ? searchRoomList() : null)}
+        />
+        <SearchBarButton onClick={searchRoomList}>
           <SearchIcon />
         </SearchBarButton>
       </SearchBarInputWrapper>

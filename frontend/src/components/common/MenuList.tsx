@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Link, useLocation } from 'react-router-dom';
 import menuHome from '../../assets/home.png';
 import menuStudy from '../../assets/study.png';
 import menuQuestion from '../../assets/question.png';
@@ -22,35 +23,42 @@ const MenuItem = styled.div`
   font-family: 'Pretendard-Regular';
   font-size: 25px;
 
-  &:hover {
+  &:hover,
+  &.active {
     background-color: #ffb11a;
     box-shadow: inset 1px 1px 4px rgba(0, 0, 0, 0.25);
   }
 `;
 
 export default function MenuList() {
+  const location = useLocation();
   const menuList = [
     {
       name: '홈',
       iconSrc: menuHome,
+      path: '/home',
     },
     {
       name: '공부방',
       iconSrc: menuStudy,
+      path: '/study-rooms',
     },
     {
       name: '질문방',
       iconSrc: menuQuestion,
+      path: '/question-board',
     },
   ];
 
   return (
     <List>
       {menuList.map((menu) => (
-        <MenuItem key={menu.name}>
-          <img src={menu.iconSrc} alt={`${menu.name} 페이지`} />
-          {menu.name}
-        </MenuItem>
+        <Link to={menu.path} style={{ textDecoration: 'none' }} key={menu.name}>
+          <MenuItem className={location.pathname === menu.path ? 'active' : ''}>
+            <img src={menu.iconSrc} alt={`${menu.name} 페이지`} />
+            {menu.name}
+          </MenuItem>
+        </Link>
       ))}
     </List>
   );
