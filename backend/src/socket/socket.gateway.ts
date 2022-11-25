@@ -22,6 +22,11 @@ export class SocketGateway
 
   async handleConnection(@ConnectedSocket() client: Socket) {
     console.log(`connected: ${client.id}`);
+    client.on('disconnecting', () => {
+      [...client.rooms].slice(1).forEach((roomName) => {
+        client.to(roomName).emit('someone-left-your-room', client.id);
+      });
+    });
   }
 
   async handleDisconnect(client: Socket) {
