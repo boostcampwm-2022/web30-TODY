@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { StudyRoom } from './entities/studyRoom.entity';
 import { Repository, Like } from 'typeorm';
 import { createRoomDto } from './dto/createRoom.dto';
-import { dateFormatter } from 'src/utils/dateFormatter';
+import { dateFormatter } from '../utils/dateFormatter';
 import { RedisCacheService } from '../redis/redis-cache.service';
 
 @Injectable()
