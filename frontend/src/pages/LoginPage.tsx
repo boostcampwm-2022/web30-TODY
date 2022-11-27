@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import CustomInput from '@components/common/CustomInput';
 import StyledHeader1 from '@components/common/StyledHeader1';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const LoginPageLayout = styled.div`
   height: 100vh;
@@ -17,6 +17,21 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+`;
+
+const SignUpText = styled.div`
+  margin-top: 18px;
+  font-size: 15px;
+  text-align: center;
+
+  .bold {
+    font-weight: 700;
+  }
+`;
+
+const StyledLink = styled(Link)`
+  font-weight: 700;
+  text-decoration: none;
 `;
 
 export default function LoginPage() {
@@ -49,6 +64,9 @@ export default function LoginPage() {
           <CustomButton type="submit" margin="20px 0 0">
             로그인
           </CustomButton>
+          <SignUpText>
+            회원이 아니신가요? <StyledLink to="/signup">회원가입 GO</StyledLink>
+          </SignUpText>
         </form>
       </Wrapper>
     </LoginPageLayout>

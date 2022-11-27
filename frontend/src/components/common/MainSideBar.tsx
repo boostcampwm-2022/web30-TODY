@@ -29,7 +29,7 @@ interface Props {
 export default function MainSideBar(props: Props) {
   return (
     <SideBar {...props}>
-      <Link to="/">
+      <Link to="/home">
         <LogoStyle src={Logo} alt="Logo" />
       </Link>
       <UserProfile />
