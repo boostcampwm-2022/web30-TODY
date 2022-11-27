@@ -1,4 +1,4 @@
-import { StudyRoom } from 'src/study-room/entities/studyRoom.entity';
+import { StudyRoom } from '../../study-room/entities/studyRoom.entity';
 import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
 import { Comment } from '../../comment/entities/comments.entity';
 import { QuestionBoard } from '../../question-board/entities/questionBoard.entity';
