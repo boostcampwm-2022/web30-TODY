@@ -13,7 +13,9 @@ const EVENTS = {
   SOMEONE_LEFT_YOUR_ROOM: 'someone-left-your-room',
 };
 
-const socket = io('ws://localhost:8000', { autoConnect: false });
+const socket = io(process.env.REACT_APP_SOCKET_URL!, {
+  autoConnect: false,
+});
 
 interface RemoteVideoProps {
   remoteStream: MediaStream;

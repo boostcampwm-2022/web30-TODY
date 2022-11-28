@@ -5,6 +5,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './filter/all-exceptions.filter';
+import { SocketModule } from './socket/socket.module';
 
 dotenv.config();
 
@@ -13,7 +14,10 @@ async function bootstrap() {
     key: fs.readFileSync(path.join(__dirname, process.env.KEY_PATH)),
     cert: fs.readFileSync(path.join(__dirname, process.env.CERT_PATH)),
   };
-  const app = await NestFactory.create(AppModule, { httpsOptions, cors: true });
+  const app = await NestFactory.create(AppModule, {
+    httpsOptions,
+    cors: true,
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -23,6 +27,11 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new AllExceptionsFilter());
   await app.listen(5001);
+  const socketApp = await NestFactory.create(SocketModule, {
+    httpsOptions,
+    cors: true,
+  });
+  await socketApp.listen(8000);
   console.log('Server is running.');
 }
 bootstrap();
