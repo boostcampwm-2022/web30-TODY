@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import DownArrowIcon from '@assets/icons/down-triangle.svg';
 
 const StudyRoomSideBarLayout = styled.div`
   width: 420px;
@@ -54,13 +55,19 @@ const SelectReceiverLayout = styled.div`
 `;
 
 const SelectReceiver = styled.select`
+  width: 120px;
   padding: 5px 10px;
   border: 1px solid #ffce70;
   border-radius: 5px;
   font-size: 16px;
+  background: url(${DownArrowIcon}) no-repeat 93% 50%/12px auto;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  outline: none;
 `;
 
-export default function StudyRoomSideBar() {
+export default function ChatSideBar() {
   return (
     <StudyRoomSideBarLayout>
       <ChatTitle>채팅</ChatTitle>
@@ -70,6 +77,7 @@ export default function StudyRoomSideBar() {
           <span className="to">To.</span>
           <SelectReceiver id="">
             <option value="all">모두에게</option>
+            <option value="a">사용자 a</option>
           </SelectReceiver>
         </SelectReceiverLayout>
 

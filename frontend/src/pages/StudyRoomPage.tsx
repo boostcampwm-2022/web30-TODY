@@ -6,14 +6,12 @@ import { ReactComponent as VideoOffIcon } from '@assets/icons/video-off.svg';
 import { ReactComponent as CanvasIcon } from '@assets/icons/canvas.svg';
 import { ReactComponent as ChatIcon } from '@assets/icons/chat.svg';
 import { ReactComponent as ParticipantsIcon } from '@assets/icons/participants.svg';
-import StudyRoomSideBar from '@components/studyRoom/StudyRoomSideBar';
+import ChatSideBar from '@components/studyRoom/ChatSideBar';
 
 const StudyRoomPageLayout = styled.div`
   height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  // align-items: center;
   background-color: var(--yellow3);
 `;
 
@@ -80,7 +78,7 @@ const BottomBarLayout = styled.div`
 const MenuList = styled.div`
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
 `;
 const MenuItem = styled.button`
   width: 110px;
@@ -88,16 +86,24 @@ const MenuItem = styled.button`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  /* gap: 5px; */
+  gap: 5px;
   align-items: center;
   background: none;
   padding: 0;
-  font-size: 18px;
   border-radius: 10px;
+  font-size: 17px;
 
-  &:hover {
+  &:hover,
+  .active {
     background: rgba(255, 255, 255, 0.45);
   }
+`;
+
+const IconWrapper = styled.span`
+  height: 27.5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const RoomExitButton = styled.button`
@@ -129,36 +135,50 @@ export default function StudyRoomPage() {
             <VideoItem />
           </VideoList>
         </VideoListLayout>
-        <StudyRoomSideBar />
+        <ChatSideBar />
       </Content>
       <BottomBarLayout>
         <MenuList>
           <MenuItem>
-            <MicIcon />
+            <IconWrapper>
+              <MicIcon />
+            </IconWrapper>
             마이크 끄기
           </MenuItem>
           {/* <MenuItem>
-            <MicOffIcon />
+            <IconWrapper>
+              <MicOffIcon />
+            </IconWrapper>
             마이크 켜기
           </MenuItem> */}
           <MenuItem>
-            <VideoIcon />
+            <IconWrapper>
+              <VideoIcon />
+            </IconWrapper>
             비디오 끄기
           </MenuItem>
           {/* <MenuItem>
-            <VideoOffIcon />
+            <IconWrapper>
+              <VideoOffIcon />
+            </IconWrapper>
             비디오 켜기
           </MenuItem> */}
           <MenuItem>
-            <CanvasIcon />
+            <IconWrapper>
+              <CanvasIcon />
+            </IconWrapper>
             캔버스 공유
           </MenuItem>
           <MenuItem>
-            <ChatIcon />
+            <IconWrapper>
+              <ChatIcon />
+            </IconWrapper>
             채팅
           </MenuItem>
           <MenuItem>
-            <ParticipantsIcon />
+            <IconWrapper>
+              <ParticipantsIcon />
+            </IconWrapper>
             멤버
           </MenuItem>
         </MenuList>
