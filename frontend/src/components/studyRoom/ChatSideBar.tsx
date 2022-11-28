@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import DownArrowIcon from '@assets/icons/down-triangle.svg';
+import SpeechBubble from './SpeechBubble';
 
 const StudyRoomSideBarLayout = styled.div`
   width: 420px;
@@ -17,8 +18,7 @@ const ChatTitle = styled.h1`
 `;
 
 const ChatContent = styled.div`
-  margin-top: 48px;
-  margin-left: 17px;
+  margin: 48px 17px 0;
   flex: 1;
 `;
 
@@ -71,13 +71,24 @@ export default function ChatSideBar() {
   return (
     <StudyRoomSideBarLayout>
       <ChatTitle>채팅</ChatTitle>
-      <ChatContent> 채팅 내역</ChatContent>
+      <ChatContent>
+        {' '}
+        <SpeechBubble
+          chat={{ sender: '콩순이', message: '안녕안녕^-^', time: '오후 3:12' }}
+        />
+        <SpeechBubble
+          chat={{
+            sender: '멍냥',
+            message: '옹 들어왔구낭 안뇽',
+            time: '오후 3:12',
+          }}
+        />
+      </ChatContent>
       <ChatInputLayout>
         <SelectReceiverLayout>
           <span className="to">To.</span>
           <SelectReceiver id="">
             <option value="all">모두에게</option>
-            <option value="a">사용자 a</option>
           </SelectReceiver>
         </SelectReceiverLayout>
 
