@@ -1,5 +1,3 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import * as dotenv from 'dotenv';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
@@ -10,12 +8,7 @@ import { SocketModule } from './socket/socket.module';
 dotenv.config();
 
 async function bootstrap() {
-  const httpsOptions = {
-    key: fs.readFileSync(path.join(__dirname, process.env.KEY_PATH)),
-    cert: fs.readFileSync(path.join(__dirname, process.env.CERT_PATH)),
-  };
   const app = await NestFactory.create(AppModule, {
-    httpsOptions,
     cors: true,
   });
   app.useGlobalPipes(
@@ -28,7 +21,6 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
   await app.listen(5001);
   const socketApp = await NestFactory.create(SocketModule, {
-    httpsOptions,
     cors: true,
   });
   await socketApp.listen(8000);
