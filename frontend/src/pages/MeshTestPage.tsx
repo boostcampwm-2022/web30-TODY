@@ -55,7 +55,9 @@ export default function MestTestPage() {
 
     socket.on('notice-all-peers', (peerIdsInRoom) => {
       peerIdsInRoom.forEach(async (peerId: string) => {
-        const pc = new RTCPeerConnection();
+        const pc = new RTCPeerConnection({
+          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+        });
         pcs.current[peerId] = pc;
         addIcecandidateListener(pc, peerId);
         addTrackListener(pc, peerId);
@@ -72,7 +74,9 @@ export default function MestTestPage() {
     });
 
     socket.on('offer', async ({ offer, fromId, toId }) => {
-      const pc = new RTCPeerConnection();
+      const pc = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+      });
       pcs.current[fromId] = pc;
       addIcecandidateListener(pc, fromId);
       addTrackListener(pc, fromId);
