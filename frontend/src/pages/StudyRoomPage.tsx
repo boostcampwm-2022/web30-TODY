@@ -99,7 +99,7 @@ const MenuItem = styled.button`
   font-size: 17px;
 
   &:hover,
-  .active {
+  &.active {
     background: rgba(255, 255, 255, 0.45);
   }
 `;
@@ -138,9 +138,7 @@ export default function StudyRoomPage() {
     getParticipants(roomInfo.studyRoomId);
   }, []);
 
-  useEffect(() => {
-    console.log(participantsList);
-  }, [participantsList]);
+  useEffect(() => {}, [participantsList]);
 
   const [activeSideBar, setActiveSideBar] = useState('');
 
@@ -150,8 +148,18 @@ export default function StudyRoomPage() {
   };
 
   const onClickButtons = (e: any) => {
-    if (e.target.closest('button')) {
-      console.log(e.target.children);
+    const buttonEl = e.target.closest('button').textContent;
+
+    switch (buttonEl) {
+      case '':
+        break;
+      case '채팅':
+      case '멤버':
+        onClickSideBarMenu(buttonEl);
+        break;
+      default:
+        console.log(buttonEl);
+        break;
     }
   };
 
@@ -168,8 +176,12 @@ export default function StudyRoomPage() {
             <VideoItem />
           </VideoList>
         </VideoListLayout>
-        {/* <ChatSideBar /> */}
-        <ParticipantsSideBar participants={participantsList} />
+        {activeSideBar !== '' &&
+          (activeSideBar === '채팅' ? (
+            <ChatSideBar />
+          ) : (
+            <ParticipantsSideBar participants={participantsList} />
+          ))}
       </Content>
       <BottomBarLayout>
         <MenuList onClick={onClickButtons}>
@@ -203,13 +215,13 @@ export default function StudyRoomPage() {
             </IconWrapper>
             캔버스 공유
           </MenuItem>
-          <MenuItem>
+          <MenuItem className={activeSideBar === '채팅' ? 'active' : ''}>
             <IconWrapper>
               <ChatIcon />
             </IconWrapper>
             채팅
           </MenuItem>
-          <MenuItem>
+          <MenuItem className={activeSideBar === '멤버' ? 'active' : ''}>
             <IconWrapper>
               <ParticipantsIcon />
             </IconWrapper>
