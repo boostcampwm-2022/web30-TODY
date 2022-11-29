@@ -45,13 +45,12 @@ export default function ParticipantsSideBar({ participants }: any) {
     <ParticipantsSideBarLayout>
       <Title>참여자 목록</Title>
       <Content>
-        {participantsList.length &&
-          participantsList.map((participant: any) => (
-            <ParticipantItem key={participant.nickname}>
-              <ProfileImage />
-              <NickName>{participant.nickname}</NickName>
-            </ParticipantItem>
-          ))}
+        {participantsList.map((participant: any) => (
+          <ParticipantItem key={participant.nickname}>
+            <ProfileImage />
+            <NickName>{participant.nickname}</NickName>
+          </ParticipantItem>
+        ))}
       </Content>
     </ParticipantsSideBarLayout>
   );
