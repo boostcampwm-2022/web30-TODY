@@ -15,7 +15,7 @@ import {
   RoomListData,
 } from '@components/studyRoomList/studyRoomList.types';
 import StudyRoomList from '@components/studyRoomList/StudyRoomList';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import qs from 'qs';
 import Pagination from '@components/common/Pagination';
 import getStudyRoomListRequest from '../axios/requests/getStudyRoomListRequest';
@@ -51,6 +51,7 @@ const SearchResultText = styled.h3`
 `;
 
 export default function StudyRoomListPage() {
+  const navigate = useNavigate();
   const location = useLocation();
   const queryString = qs.parse(location.search, {
     ignoreQueryPrefix: true,
@@ -128,6 +129,12 @@ export default function StudyRoomListPage() {
     setNewRoomInfo(newRoomInfoInitState);
     setTagList([]);
   };
+
+  useEffect(() => {
+    if (createdRoomId) {
+      navigate(`/study-room/${createdRoomId}`);
+    }
+  }, [createdRoomId]);
 
   useEffect(() => {
     if (createRoomError) alert(createRoomError);

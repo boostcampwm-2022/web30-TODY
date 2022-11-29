@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import UserIcon from '@assets/icons/user.svg';
 import KingIcon from '@assets/icons/king.svg';
@@ -12,6 +13,7 @@ const StudyRoomItemLayout = styled.div`
   flex-direction: column;
   background-color: #ffc737;
   border-radius: 10px;
+  cursor: pointer;
 `;
 
 const NameLayout = styled.div`
@@ -76,6 +78,7 @@ interface Props {
   tags: string[];
   nickNameOfParticipants: string[];
   created: string;
+  studyRoomId: number;
 }
 
 export default function StudyRoomItem(props: Props) {
@@ -88,10 +91,16 @@ export default function StudyRoomItem(props: Props) {
     tags,
     nickNameOfParticipants,
     created,
+    studyRoomId,
   } = props;
 
+  const navigate = useNavigate();
+
   return (
-    <StudyRoomItemLayout>
+    <StudyRoomItemLayout
+      onClick={() => {
+        navigate(`/study-room/${studyRoomId}`);
+      }}>
       <NameLayout>
         <Name>{name}</Name>
         <NameDeco />

@@ -16,7 +16,7 @@ export class StudyRoomService {
   ) {}
 
   async createStudyRoom(roomInfo: createRoomDto) {
-    await this.studyRoomRepository.insert({
+    const result = await this.studyRoomRepository.insert({
       studyRoomName: roomInfo.name,
       studyRoomContent: roomInfo.content,
       maxPersonnel: roomInfo.maxPersonnel,
@@ -25,6 +25,9 @@ export class StudyRoomService {
       tag2: roomInfo.tags[1],
       createTime: new Date(),
     });
+
+    return result.raw.insertId;
+    // Todo: 방 이동을 시켜줄 정보를 리턴해줘야하는데 아직 없노....
   }
 
   async searchStudyRoomList(

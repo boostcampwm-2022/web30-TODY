@@ -17,9 +17,12 @@ export class StudyRoomController {
 
   @Post()
   @HttpCode(200)
-  async createRoom(@Body() roomInfo: createRoomDto): Promise<void> {
+  async createRoom(@Body() roomInfo: createRoomDto): Promise<any> {
     try {
-      await this.studyRoomService.createStudyRoom(roomInfo);
+      const createdRoomID = await this.studyRoomService.createStudyRoom(
+        roomInfo,
+      );
+      return createdRoomID;
     } catch (error) {
       throw new HttpException(
         {

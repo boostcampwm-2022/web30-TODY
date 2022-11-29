@@ -10,10 +10,11 @@ export default function Router() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<StudyRoomPage />} />
+        <Route path="/" element={<InitPage />} />
         <Route path="/home" element={<MainPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/study-room/:roomId" element={<StudyRoomPage />} />
         <Route path="/study-rooms" element={<StudyRoomListPage />} />
       </Routes>
     </BrowserRouter>

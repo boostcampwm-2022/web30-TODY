@@ -1,3 +1,4 @@
+import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { ReactComponent as MicIcon } from '@assets/icons/mic.svg';
 import { ReactComponent as MicOffIcon } from '@assets/icons/mic-off.svg';
@@ -122,6 +123,10 @@ const RoomExitButton = styled.button`
 `;
 
 export default function StudyRoomPage() {
+  const { roomId } = useParams();
+
+  console.log(roomId);
+
   return (
     <StudyRoomPageLayout>
       <Content>
