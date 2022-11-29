@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosPromise } from 'axios';
+import axios, { AxiosPromise } from 'axios';
 import { useCallback, useState } from 'react';
 
 export default function useAxios<T>(
@@ -6,11 +6,14 @@ export default function useAxios<T>(
 ): [
   (arg?: any) => Promise<void>,
   boolean,
-  AxiosError | Error | null,
+  { status: number | undefined; data: any } | null,
   T | null,
 ] {
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<AxiosError | Error | null>(null);
+  const [error, setError] = useState<{
+    status: number | undefined;
+    data: any;
+  } | null>(null);
   const [data, setData] = useState<T | null>(null);
 
   const request = useCallback(
@@ -22,8 +25,15 @@ export default function useAxios<T>(
         const response = await axiosFunction(arg);
         setData(response.data);
       } catch (err) {
-        setData(null);
-        setError(axios.isAxiosError(err) ? err : new Error('unexpected error'));
+        if (axios.isAxiosError(err)) {
+          if (err.response) {
+            setError(err.response);
+          } else {
+            setError({ status: undefined, data: 'network error' });
+          }
+        } else {
+          setError({ status: undefined, data: 'unexpected error' });
+        }
       }
       setLoading(false);
     },

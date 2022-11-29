@@ -46,7 +46,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loginError) return;
-    alert(loginError);
+    alert(loginError.data);
   }, [loginError]);
 
   useEffect(() => {
