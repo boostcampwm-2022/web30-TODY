@@ -1,10 +1,13 @@
-import axios from 'axios';
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable no-alert */
 import React, { useEffect, useRef, useState } from 'react';
 import useAxios from '@hooks/useAxios';
 import CustomButton from '@components/common/CustomButton';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import Loading from '@components/common/Loader';
+import useInputValidation from '@hooks/useInputValidation';
+import checkUniqueIdRequest from '../axios/requests/checkUniqueIdRequest';
+import checkUniqueNicknameRequest from '../axios/requests/checkUniqueNicknameRequest';
 import signupRequest from '../axios/requests/signupRequest';
 import CustomInput from '../components/common/CustomInput';
 import StyledHeader1 from '../components/common/StyledHeader1';
@@ -34,86 +37,136 @@ const InputWrapper = styled.div`
   }
 `;
 
-interface Data {
-  nickname: string;
-}
-
 export default function SignupPage() {
   const navigate = useNavigate();
   const idInputRef = useRef<HTMLInputElement>(null);
   const nicknameInputRef = useRef<HTMLInputElement>(null);
-  const [idIsUnique, setIdIsUnique] = useState(true);
-  const [nicknameIsUnique, setNicknameIsUnique] = useState(true);
-  const [request, loading, error, data] = useAxios<Data>(signupRequest);
+  const [selectedId, setSelectedId] = useState({
+    isUnique: false,
+    id: '',
+  });
+  const [selectedNickname, setSelectedNickname] = useState({
+    isUnique: false,
+    nickname: '',
+  });
+  const [isPasswordSame, setIsPasswordSame] = useState(true);
+  const [requestSignup, signupLoading, signupError, signupData] = useAxios<{
+    nickname: string;
+  }>(signupRequest);
+  const [
+    requestCheckUniqueId,
+    checkUniqueIdLoading,
+    checkUniqueIdError,
+    checkUniqueIdData,
+  ] = useAxios<{ isUnique: boolean }>(checkUniqueIdRequest);
+  const [
+    requestCheckUniqueNickname,
+    checkUniqueNicknameLoading,
+    checkUniqueNicknameError,
+    checkUniqueNicknameData,
+  ] = useAxios<{ isUnique: boolean }>(checkUniqueNicknameRequest);
 
   useEffect(() => {
-    if (data != null) {
-      alert(`${data.nickname}님 환영합니다.`);
-      navigate('/login');
-    }
-  }, [data]);
+    if (signupData === null) return;
+    alert(`${signupData.nickname}님 환영합니다.`);
+    navigate('/login');
+  }, [signupData, navigate]);
 
   useEffect(() => {
-    if (error) alert(error);
-  }, [error]);
+    if (checkUniqueIdData === null) return;
+    setSelectedId({
+      isUnique: checkUniqueIdData.isUnique,
+      id: idInputRef.current!.value,
+    });
+    alert(
+      checkUniqueIdData.isUnique
+        ? '사용할 수 있는 id입니다.'
+        : '다른 사용자가 사용중인 id입니다. 다른 id를 사용해주세요.',
+    );
+  }, [checkUniqueIdData]);
 
-  const requestSignup = (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    if (checkUniqueNicknameData === null) return;
+    setSelectedNickname({
+      isUnique: checkUniqueNicknameData.isUnique,
+      nickname: nicknameInputRef.current!.value,
+    });
+    alert(
+      checkUniqueNicknameData.isUnique
+        ? '사용할 수 있는 닉네임입니다.'
+        : '다른 사용자가 사용중인 닉네임입니다. 다른 닉네임을 사용해주세요.',
+    );
+  }, [checkUniqueNicknameData]);
+
+  useEffect(() => {
+    if (signupError) alert(signupError);
+  }, [signupError]);
+
+  useEffect(() => {
+    if (checkUniqueIdError) alert(checkUniqueIdError);
+  }, [checkUniqueIdError]);
+
+  useEffect(() => {
+    if (checkUniqueNicknameError) alert(checkUniqueNicknameError);
+  }, [checkUniqueNicknameError]);
+
+  const signup = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = Object.fromEntries(new FormData(form));
-    request(formData);
+    setIsPasswordSame(formData.password === formData.passwordSame);
+    if (formData.password !== formData.passwordSame) {
+      alert('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    delete formData.passwordSame;
+    requestSignup(formData);
   };
 
-  const checkUniqueId = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    if (!idInputRef.current) return;
-    const { value: id } = idInputRef.current;
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/user/checkID/${id}` || '',
-      );
-      setIdIsUnique(response.data.isUnique);
-      if (response.data.isUnique) {
-        alert('아이디를 사용할 수 있습니다.');
-      }
-    } catch (err) {
-      alert(err);
-    }
+  const checkUniqueId = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const { value: id } = idInputRef.current!;
+    requestCheckUniqueId(id);
   };
 
-  const checkUniqueNickname = async (
-    e: React.MouseEvent<HTMLButtonElement>,
-  ) => {
-    e.preventDefault();
-    if (!nicknameInputRef.current) return;
-    const { value: nickname } = nicknameInputRef.current;
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/user/checkNickname/${nickname}` || '',
-      );
-      setNicknameIsUnique(response.data.isUnique);
-      if (response.data.isUnique) {
-        alert('닉네임을 사용할 수 있습니다.');
-      }
-    } catch (err: any) {
-      alert('예상치 못한 에러가 발생하였습니다.');
-    }
+  const checkUniqueNickname = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const { value: nickname } = nicknameInputRef.current!;
+    requestCheckUniqueNickname(nickname);
   };
+
+  const [validateId, isIdValidated] = useInputValidation((value) => {
+    return value.length >= 4 && value.length <= 15;
+  }, '');
+  const [validateNickname, isNicknameValidated] = useInputValidation(
+    (value) => {
+      return value.length >= 4 && value.length <= 15;
+    },
+    '',
+  );
+  const [validatePw, isPwValidated] = useInputValidation((value) => {
+    return /^(?=.*[a-zA-Z])(?=.*[!@#$%^&*+=-])(?=.*[0-9]).{8,20}$/.test(value);
+  }, '');
 
   return (
     <SignupPageLayout>
       <Wrapper>
         <StyledHeader1>회원가입</StyledHeader1>
-        <form onSubmit={requestSignup}>
+        <form onSubmit={signup}>
           <InputWrapper>
             <CustomInput
+              onChange={validateId}
+              warningText={isIdValidated ? '' : '4~15자로 설정해주세요.'}
+              guideText={
+                selectedId.isUnique
+                  ? `${selectedId.id} : 사용 가능한 아이디입니다.`
+                  : ''
+              }
               inputRef={idInputRef}
               name="id"
               placeholder="아이디"
-              warningText={idIsUnique ? '' : 'id가 중복입니다'}
             />
             <CustomButton
-              disabled={loading}
+              type="button"
+              disabled={signupLoading || !isIdValidated}
               onClick={checkUniqueId}
               width="68px">
               확인
@@ -121,25 +174,53 @@ export default function SignupPage() {
           </InputWrapper>
           <InputWrapper>
             <CustomInput
+              onChange={validateNickname}
+              warningText={isNicknameValidated ? '' : '4~15자로 설정해주세요.'}
+              guideText={
+                selectedNickname.isUnique
+                  ? `${selectedNickname.nickname} : 사용 가능한 닉네임입니다.`
+                  : ''
+              }
               inputRef={nicknameInputRef}
               name="nickname"
               placeholder="닉네임"
-              warningText={nicknameIsUnique ? '' : 'nickname이 중복입니다'}
             />
             <CustomButton
-              disabled={loading}
+              type="button"
+              disabled={signupLoading || !isNicknameValidated}
               onClick={checkUniqueNickname}
               width="68px">
               확인
             </CustomButton>
           </InputWrapper>
           <CustomInput
+            onChange={validatePw}
+            warningText={
+              isPwValidated
+                ? ''
+                : '숫자, 문자, 특수기호를 포함하여 8~20자로 설정해주세요.'
+            }
             name="password"
             placeholder="비밀번호"
-            guideText="숫자, 문자 혼합 최소 8자리로 설정해주세요."
+            type="password"
           />
-          <CustomInput placeholder="비밀번호 확인" />
-          <CustomButton type="submit" disabled={loading} margin="20px 0 0 ">
+          <CustomInput
+            name="passwordSame"
+            placeholder="비밀번호 확인"
+            warningText={!isPasswordSame ? '비밀번호가 일치하지 않습니다.' : ''}
+            type="password"
+          />
+          <CustomButton
+            type="submit"
+            disabled={
+              signupLoading ||
+              !isPwValidated ||
+              !isIdValidated ||
+              !isNicknameValidated ||
+              !selectedNickname.isUnique ||
+              !selectedId.isUnique
+            }
+            margin="20px 0 0 ">
             회원가입
           </CustomButton>
         </form>
