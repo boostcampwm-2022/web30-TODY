@@ -6,5 +6,7 @@ interface FormData {
 }
 
 export default (formData: FormData) => {
-  return axiosBackend.post('/user/login', formData);
+  return axiosBackend.post('/user/login', formData, {
+    withCredentials: true,
+  });
 };

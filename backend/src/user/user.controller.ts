@@ -1,6 +1,15 @@
-import { Body, Controller, Get, Post, Param } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Param,
+  Res,
+  HttpCode,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, ReadUserDto } from './dto/user.dto';
+import { Response } from 'express';
 
 @Controller('user')
 export class UserController {
@@ -33,8 +42,15 @@ export class UserController {
   }
 
   @Post('login')
-  async login(@Body() userData: ReadUserDto): Promise<{ accessToken: string }> {
+  @HttpCode(204)
+  async login(
+    @Body() userData: ReadUserDto,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<void> {
     const { accessToken } = await this.userService.login(userData);
-    return { accessToken };
+    response.cookie('accessToken', accessToken, {
+      httpOnly: true,
+    });
+    return;
   }
 }

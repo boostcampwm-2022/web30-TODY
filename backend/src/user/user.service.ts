@@ -60,7 +60,6 @@ export class UserService {
 
   async login(userData: ReadUserDto): Promise<{ accessToken: string }> {
     const isValidated = await this.validateUser(userData);
-    console.log(isValidated);
     if (isValidated) {
       return {
         accessToken: this.jwtService.sign(
