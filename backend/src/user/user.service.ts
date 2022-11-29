@@ -19,6 +19,23 @@ export class UserService {
     private jwtService: JwtService,
   ) {}
 
+  async silentLogin(accessToken: string) {
+    try {
+      const verifiedToken = this.jwtService.verify(accessToken, {
+        secret: process.env.JWT_SECRET,
+      });
+      const { userId, nickname } = await this.findOneById({
+        id: verifiedToken.sub,
+      });
+      return { userId, nickname };
+    } catch (err) {
+      throw new HttpException(
+        { statusCode: HttpStatus.UNAUTHORIZED, message: '로그인 실패' },
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+  }
+
   async createUser({
     id,
     password,
@@ -58,21 +75,30 @@ export class UserService {
     return user.userPw !== securePassword ? false : true;
   }
 
-  async login(userData: ReadUserDto): Promise<{ accessToken: string }> {
+  async login(
+    userData: ReadUserDto,
+  ): Promise<{ accessToken: string; userId: string; nickname: string }> {
     const isValidated = await this.validateUser(userData);
     if (isValidated) {
+      const accessToken = this.jwtService.sign(
+        {},
+        {
+          expiresIn: '100s',
+          issuer: 'tody',
+          subject: userData.id,
+        },
+      );
+      const { userId, nickname } = await this.findOneById({ id: userData.id });
       return {
-        accessToken: this.jwtService.sign(
-          {},
-          {
-            expiresIn: '10s',
-            issuer: 'tody',
-            subject: userData.id,
-          },
-        ),
+        accessToken,
+        userId,
+        nickname,
       };
     } else {
-      throw new HttpException('로그인 실패', HttpStatus.UNAUTHORIZED);
+      throw new HttpException(
+        { statusCode: HttpStatus.UNAUTHORIZED, message: '로그인 실패' },
+        HttpStatus.UNAUTHORIZED,
+      );
     }
   }
 }

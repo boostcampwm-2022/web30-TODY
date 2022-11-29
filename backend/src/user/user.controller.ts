@@ -6,14 +6,26 @@ import {
   Param,
   Res,
   HttpCode,
+  Req,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, ReadUserDto } from './dto/user.dto';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
+
+  @Get('silent-login')
+  async silentLogin(
+    @Req() request: Request,
+  ): Promise<{ userId: string; nickname: string }> {
+    const { accessToken } = request.cookies;
+    const { userId, nickname } = await this.userService.silentLogin(
+      accessToken,
+    );
+    return { userId, nickname };
+  }
 
   @Post('signup')
   async signup(@Body() userData: CreateUserDto): Promise<{ nickname: string }> {
@@ -42,15 +54,16 @@ export class UserController {
   }
 
   @Post('login')
-  @HttpCode(204)
   async login(
     @Body() userData: ReadUserDto,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<void> {
-    const { accessToken } = await this.userService.login(userData);
+  ): Promise<{ userId: string; nickname: string }> {
+    const { accessToken, userId, nickname } = await this.userService.login(
+      userData,
+    );
     response.cookie('accessToken', accessToken, {
       httpOnly: true,
     });
-    return;
+    return { userId, nickname };
   }
 }
