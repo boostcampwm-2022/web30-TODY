@@ -1,5 +1,8 @@
+import { useRecoilValue } from 'recoil';
+import { userState } from 'recoil/atoms';
 import styled from 'styled-components';
 import sampleImage from '../../assets/sample.jpg';
+import Loader from './Loader';
 
 const Profile = styled.div``;
 
@@ -24,10 +27,11 @@ interface Props {
 }
 
 export default function UserProfile({ src }: Props) {
+  const user = useRecoilValue(userState);
   return (
     <Profile>
       <UserProfileImage src={src} alt="sample" />
-      <UserProfileName>멍냥</UserProfileName>
+      <UserProfileName>{user ? user.nickname : 'loading...'}</UserProfileName>
     </Profile>
   );
 }

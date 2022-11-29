@@ -8,6 +8,8 @@ import useAxios from '@hooks/useAxios';
 import { useCallback, useEffect } from 'react';
 import Loader from '@components/common/Loader';
 import useInputValidation from '@hooks/useInputValidation';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { userState } from 'recoil/atoms';
 import loginRequest from '../axios/requests/loginRequest';
 
 const LoginPageLayout = styled.div`
@@ -41,8 +43,16 @@ const StyledLink = styled(Link)`
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [requestLogin, loginLoading, loginError, loginData] =
-    useAxios(loginRequest);
+  const [requestLogin, loginLoading, loginError, loginData] = useAxios<{
+    userId: string;
+    nickname: string;
+  }>(loginRequest);
+  const [user, setUser] = useRecoilState(userState);
+
+  useEffect(() => {
+    if (user === null) return;
+    navigate('/home', { replace: true });
+  }, [user, navigate]);
 
   useEffect(() => {
     if (!loginError) return;
@@ -52,8 +62,9 @@ export default function LoginPage() {
   useEffect(() => {
     if (loginData === null) return;
     alert('로그인 성공');
+    setUser(loginData);
     navigate('/home');
-  }, [loginData, navigate]);
+  }, [loginData, navigate, setUser]);
 
   const login = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {

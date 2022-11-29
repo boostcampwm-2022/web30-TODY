@@ -4,13 +4,14 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './filter/all-exceptions.filter';
+import * as cookieParser from 'cookie-parser';
+import corsConfig from './config/cors.config';
 
 async function bootstrap() {
-  const httpsOptions = {
-    key: fs.readFileSync(path.join(__dirname, process.env.KEY_PATH)),
-    cert: fs.readFileSync(path.join(__dirname, process.env.CERT_PATH)),
-  };
-  const app = await NestFactory.create(AppModule, { httpsOptions, cors: true });
+  const app = await NestFactory.create(AppModule, {
+    cors: corsConfig,
+  });
+  app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
