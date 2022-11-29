@@ -38,18 +38,40 @@ const InputWrapper = styled.div`
   }
 `;
 
+const validations = {
+  id: {
+    minLength: 4,
+    maxLength: 15,
+  },
+  nickname: {
+    minLength: 4,
+    maxLength: 15,
+  },
+  password: {
+    reg: /^(?=.*[a-zA-Z])(?=.*[!@#$%^&*+=-])(?=.*[0-9]).{8,20}$/,
+  },
+};
+
+const notifications = {
+  welcomeNewUser: (nickname: string) => `${nickname}님 환영합니다.`,
+  idIsUnique: (id: string) => `${id} : 사용할 수 있는 아이디입니다.`,
+  idIsNotUnique:
+    '다른 사용자가 사용중인 아이디입니다. 다른 아이디를 사용해주세요.',
+  nicknameIsUnique: (nickname: string) =>
+    `${nickname} : 사용할 수 있는 닉네임입니다.`,
+  nicknameIsNotUnique:
+    '다른 사용자가 사용중인 닉네임입니다. 다른 닉네임을 사용해주세요.',
+  passwordDidntMatch: '비밀번호가 일치하지 않습니다.',
+  needsCheckUnique: '중복 확인이 필요합니다.',
+  idIsNotValidated: `${validations.id.minLength}~${validations.id.maxLength}자로 설정해주세요.`,
+  nicknameIsNotValidated: `${validations.nickname.minLength}~${validations.nickname.maxLength}자로 설정해주세요.`,
+  passwordIsNotValidated: `숫자, 문자 특수기호를 포함하여 8~20자로 설정해주세요.`,
+};
+
 export default function SignupPage() {
   const navigate = useNavigate();
   const idInputRef = useRef<HTMLInputElement>(null);
   const nicknameInputRef = useRef<HTMLInputElement>(null);
-  const [selectedId, setSelectedId] = useState({
-    isUnique: false,
-    id: '',
-  });
-  const [selectedNickname, setSelectedNickname] = useState({
-    isUnique: false,
-    nickname: '',
-  });
   const [isPasswordSame, setIsPasswordSame] = useState(true);
   const [requestSignup, signupLoading, signupError, signupData] = useAxios<{
     nickname: string;
@@ -59,43 +81,37 @@ export default function SignupPage() {
     checkUniqueIdLoading,
     checkUniqueIdError,
     checkUniqueIdData,
-  ] = useAxios<{ isUnique: boolean }>(checkUniqueIdRequest);
+  ] = useAxios<{ isUnique: boolean; id: string }>(checkUniqueIdRequest);
   const [
     requestCheckUniqueNickname,
     checkUniqueNicknameLoading,
     checkUniqueNicknameError,
     checkUniqueNicknameData,
-  ] = useAxios<{ isUnique: boolean }>(checkUniqueNicknameRequest);
+  ] = useAxios<{ isUnique: boolean; nickname: string }>(
+    checkUniqueNicknameRequest,
+  );
 
   useEffect(() => {
     if (signupData === null) return;
-    alert(`${signupData.nickname}님 환영합니다.`);
+    alert(notifications.welcomeNewUser(signupData.nickname));
     navigate('/login');
   }, [signupData, navigate]);
 
   useEffect(() => {
     if (checkUniqueIdData === null) return;
-    setSelectedId({
-      isUnique: checkUniqueIdData.isUnique,
-      id: idInputRef.current!.value,
-    });
     alert(
       checkUniqueIdData.isUnique
-        ? '사용할 수 있는 id입니다.'
-        : '다른 사용자가 사용중인 id입니다. 다른 id를 사용해주세요.',
+        ? notifications.idIsUnique(checkUniqueIdData.id)
+        : notifications.idIsNotUnique,
     );
   }, [checkUniqueIdData]);
 
   useEffect(() => {
     if (checkUniqueNicknameData === null) return;
-    setSelectedNickname({
-      isUnique: checkUniqueNicknameData.isUnique,
-      nickname: nicknameInputRef.current!.value,
-    });
     alert(
       checkUniqueNicknameData.isUnique
-        ? '사용할 수 있는 닉네임입니다.'
-        : '다른 사용자가 사용중인 닉네임입니다. 다른 닉네임을 사용해주세요.',
+        ? notifications.nicknameIsUnique(checkUniqueNicknameData.nickname)
+        : notifications.nicknameIsNotUnique,
     );
   }, [checkUniqueNicknameData]);
 
@@ -115,7 +131,7 @@ export default function SignupPage() {
     (formData: { [k: string]: FormDataEntryValue }) => {
       setIsPasswordSame(formData.password === formData.passwordSame);
       if (formData.password !== formData.passwordSame) {
-        alert('비밀번호가 일치하지 않습니다.');
+        alert(notifications.passwordDidntMatch);
         return false;
       }
       return true;
@@ -145,16 +161,21 @@ export default function SignupPage() {
   }, [requestCheckUniqueNickname]);
 
   const [validateId, isIdValidated] = useInputValidation((value) => {
-    return value.length >= 4 && value.length <= 15;
+    return (
+      value.length >= validations.id.minLength && validations.id.maxLength <= 15
+    );
   }, '');
   const [validateNickname, isNicknameValidated] = useInputValidation(
     (value) => {
-      return value.length >= 4 && value.length <= 15;
+      return (
+        value.length >= validations.nickname.minLength &&
+        value.length <= validations.nickname.maxLength
+      );
     },
     '',
   );
   const [validatePw, isPwValidated] = useInputValidation((value) => {
-    return /^(?=.*[a-zA-Z])(?=.*[!@#$%^&*+=-])(?=.*[0-9]).{8,20}$/.test(value);
+    return validations.password.reg.test(value);
   }, '');
 
   return (
@@ -167,11 +188,13 @@ export default function SignupPage() {
             <InputWrapper>
               <CustomInput
                 onChange={validateId}
-                warningText={isIdValidated ? '' : '4~15자로 설정해주세요.'}
+                warningText={
+                  isIdValidated ? '' : notifications.idIsNotValidated
+                }
                 guideText={
-                  selectedId.isUnique
-                    ? `${selectedId.id} : 사용 가능한 아이디입니다.`
-                    : '중복 확인이 필요합니다.'
+                  checkUniqueIdData?.isUnique
+                    ? notifications.idIsUnique(checkUniqueIdData.id)
+                    : notifications.needsCheckUnique
                 }
                 inputRef={idInputRef}
                 name="id"
@@ -189,12 +212,16 @@ export default function SignupPage() {
               <CustomInput
                 onChange={validateNickname}
                 warningText={
-                  isNicknameValidated ? '' : '4~15자로 설정해주세요.'
+                  isNicknameValidated
+                    ? ''
+                    : notifications.nicknameIsNotValidated
                 }
                 guideText={
-                  selectedNickname.isUnique
-                    ? `${selectedNickname.nickname} : 사용 가능한 닉네임입니다.`
-                    : '중복 확인이 필요합니다.'
+                  checkUniqueNicknameData?.isUnique
+                    ? notifications.nicknameIsUnique(
+                        checkUniqueNicknameData.nickname,
+                      )
+                    : notifications.needsCheckUnique
                 }
                 inputRef={nicknameInputRef}
                 name="nickname"
@@ -211,9 +238,7 @@ export default function SignupPage() {
             <CustomInput
               onChange={validatePw}
               warningText={
-                isPwValidated
-                  ? ''
-                  : '숫자, 문자, 특수기호를 포함하여 8~20자로 설정해주세요.'
+                isPwValidated ? '' : notifications.passwordIsNotValidated
               }
               name="password"
               placeholder="비밀번호"
@@ -223,7 +248,7 @@ export default function SignupPage() {
               name="passwordSame"
               placeholder="비밀번호 확인"
               warningText={
-                !isPasswordSame ? '비밀번호가 일치하지 않습니다.' : ''
+                !isPasswordSame ? notifications.passwordDidntMatch : ''
               }
               type="password"
             />
@@ -236,8 +261,8 @@ export default function SignupPage() {
                 !isIdValidated ||
                 !isNicknameValidated ||
                 !isPwValidated ||
-                !selectedNickname.isUnique ||
-                !selectedId.isUnique
+                !checkUniqueNicknameData?.isUnique ||
+                !checkUniqueNicknameData?.isUnique
               }
               margin="20px 0 0 ">
               회원가입
