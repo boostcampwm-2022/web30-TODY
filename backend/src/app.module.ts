@@ -12,10 +12,14 @@ import { QuestionBoard } from './question-board/entities/questionBoard.entity';
 import { StudyRoom } from './study-room/entities/studyRoom.entity';
 import { Image } from './question-board/entities/image.entity';
 import { ConfigModule } from '@nestjs/config';
+import { RedisCacheModule } from './redis/redis-cache.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ envFilePath: `.env.${process.env.NODE_ENV}` }),
+    ConfigModule.forRoot({
+      envFilePath: `.env.${process.env.NODE_ENV}`,
+      isGlobal: true,
+    }),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST,
@@ -26,6 +30,7 @@ import { ConfigModule } from '@nestjs/config';
       entities: [User, Comment, QuestionBoard, StudyRoom, Image],
       synchronize: false,
     }),
+    RedisCacheModule,
     UserModule,
     CommentModule,
     QuestionBoardModule,
