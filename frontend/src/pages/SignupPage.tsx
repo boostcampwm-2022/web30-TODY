@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import useAxios from '@hooks/useAxios';
 import CustomButton from '@components/common/CustomButton';
 import styled from 'styled-components';
+import Loader from '@components/common/Loader';
 import { useNavigate } from 'react-router-dom';
 import useInputValidation from '@hooks/useInputValidation';
 import checkUniqueIdRequest from '../axios/requests/checkUniqueIdRequest';
@@ -147,84 +148,93 @@ export default function SignupPage() {
   }, '');
 
   return (
-    <SignupPageLayout>
-      <Wrapper>
-        <StyledHeader1>회원가입</StyledHeader1>
-        <form onSubmit={signup}>
-          <InputWrapper>
+    <>
+      {signupLoading && <Loader />}
+      <SignupPageLayout>
+        <Wrapper>
+          <StyledHeader1>회원가입</StyledHeader1>
+          <form onSubmit={signup}>
+            <InputWrapper>
+              <CustomInput
+                onChange={validateId}
+                warningText={isIdValidated ? '' : '4~15자로 설정해주세요.'}
+                guideText={
+                  selectedId.isUnique
+                    ? `${selectedId.id} : 사용 가능한 아이디입니다.`
+                    : ''
+                }
+                inputRef={idInputRef}
+                name="id"
+                placeholder="아이디"
+              />
+              <CustomButton
+                type="button"
+                disabled={checkUniqueIdLoading || !isIdValidated}
+                onClick={checkUniqueId}
+                width="68px">
+                확인
+              </CustomButton>
+            </InputWrapper>
+            <InputWrapper>
+              <CustomInput
+                onChange={validateNickname}
+                warningText={
+                  isNicknameValidated ? '' : '4~15자로 설정해주세요.'
+                }
+                guideText={
+                  selectedNickname.isUnique
+                    ? `${selectedNickname.nickname} : 사용 가능한 닉네임입니다.`
+                    : ''
+                }
+                inputRef={nicknameInputRef}
+                name="nickname"
+                placeholder="닉네임"
+              />
+              <CustomButton
+                type="button"
+                disabled={checkUniqueNicknameLoading || !isNicknameValidated}
+                onClick={checkUniqueNickname}
+                width="68px">
+                확인
+              </CustomButton>
+            </InputWrapper>
             <CustomInput
-              onChange={validateId}
-              warningText={isIdValidated ? '' : '4~15자로 설정해주세요.'}
-              guideText={
-                selectedId.isUnique
-                  ? `${selectedId.id} : 사용 가능한 아이디입니다.`
-                  : ''
+              onChange={validatePw}
+              warningText={
+                isPwValidated
+                  ? ''
+                  : '숫자, 문자, 특수기호를 포함하여 8~20자로 설정해주세요.'
               }
-              inputRef={idInputRef}
-              name="id"
-              placeholder="아이디"
+              name="password"
+              placeholder="비밀번호"
+              type="password"
+            />
+            <CustomInput
+              name="passwordSame"
+              placeholder="비밀번호 확인"
+              warningText={
+                !isPasswordSame ? '비밀번호가 일치하지 않습니다.' : ''
+              }
+              type="password"
             />
             <CustomButton
-              type="button"
-              disabled={signupLoading || !isIdValidated}
-              onClick={checkUniqueId}
-              width="68px">
-              확인
-            </CustomButton>
-          </InputWrapper>
-          <InputWrapper>
-            <CustomInput
-              onChange={validateNickname}
-              warningText={isNicknameValidated ? '' : '4~15자로 설정해주세요.'}
-              guideText={
-                selectedNickname.isUnique
-                  ? `${selectedNickname.nickname} : 사용 가능한 닉네임입니다.`
-                  : ''
+              type="submit"
+              disabled={
+                signupLoading ||
+                checkUniqueIdLoading ||
+                checkUniqueNicknameLoading ||
+                !isIdValidated ||
+                !isNicknameValidated ||
+                !isPwValidated ||
+                !selectedNickname.isUnique ||
+                !selectedId.isUnique
               }
-              inputRef={nicknameInputRef}
-              name="nickname"
-              placeholder="닉네임"
-            />
-            <CustomButton
-              type="button"
-              disabled={signupLoading || !isNicknameValidated}
-              onClick={checkUniqueNickname}
-              width="68px">
-              확인
+              margin="20px 0 0 ">
+              회원가입
             </CustomButton>
-          </InputWrapper>
-          <CustomInput
-            onChange={validatePw}
-            warningText={
-              isPwValidated
-                ? ''
-                : '숫자, 문자, 특수기호를 포함하여 8~20자로 설정해주세요.'
-            }
-            name="password"
-            placeholder="비밀번호"
-            type="password"
-          />
-          <CustomInput
-            name="passwordSame"
-            placeholder="비밀번호 확인"
-            warningText={!isPasswordSame ? '비밀번호가 일치하지 않습니다.' : ''}
-            type="password"
-          />
-          <CustomButton
-            type="submit"
-            disabled={
-              signupLoading ||
-              !isPwValidated ||
-              !isIdValidated ||
-              !isNicknameValidated ||
-              !selectedNickname.isUnique ||
-              !selectedId.isUnique
-            }
-            margin="20px 0 0 ">
-            회원가입
-          </CustomButton>
-        </form>
-      </Wrapper>
-    </SignupPageLayout>
+          </form>
+        </Wrapper>
+      </SignupPageLayout>
+    </>
   );
 }
