@@ -115,6 +115,7 @@ export default function StudyRoomListPage() {
   };
 
   const openModal = () => {
+    setNewRoomInfo(newRoomInfoInitState);
     setModal(true);
   };
 
@@ -126,13 +127,14 @@ export default function StudyRoomListPage() {
       tags: tagList,
     });
 
-    setNewRoomInfo(newRoomInfoInitState);
     setTagList([]);
   };
 
   useEffect(() => {
     if (createdRoomId) {
-      navigate(`/study-room/${createdRoomId}`);
+      navigate(`/study-room/${createdRoomId}`, {
+        state: newRoomInfo,
+      });
     }
   }, [createdRoomId]);
 

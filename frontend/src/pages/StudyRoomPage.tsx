@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { ReactComponent as MicIcon } from '@assets/icons/mic.svg';
 import { ReactComponent as MicOffIcon } from '@assets/icons/mic-off.svg';
@@ -8,6 +8,10 @@ import { ReactComponent as CanvasIcon } from '@assets/icons/canvas.svg';
 import { ReactComponent as ChatIcon } from '@assets/icons/chat.svg';
 import { ReactComponent as ParticipantsIcon } from '@assets/icons/participants.svg';
 import ChatSideBar from '@components/studyRoom/ChatSideBar';
+import { useEffect, useState } from 'react';
+import useAxios from '@hooks/useAxios';
+import ParticipantsSideBar from '@components/studyRoom/ParticipantsSideBar';
+import getParticipantsListRequest from '../axios/requests/getParticipantsListRequest';
 
 const StudyRoomPageLayout = styled.div`
   height: 100vh;
@@ -124,15 +128,39 @@ const RoomExitButton = styled.button`
 
 export default function StudyRoomPage() {
   const { roomId } = useParams();
+  const { state: roomInfo } = useLocation();
 
-  console.log(roomId);
+  const [getParticipants, loading, error, participantsList] = useAxios<{
+    participantsList: any;
+  }>(getParticipantsListRequest);
+
+  useEffect(() => {
+    getParticipants(roomInfo.studyRoomId);
+  }, []);
+
+  useEffect(() => {
+    console.log(participantsList);
+  }, [participantsList]);
+
+  const [activeSideBar, setActiveSideBar] = useState('');
+
+  const onClickSideBarMenu = (clickedMenu: string) => {
+    if (clickedMenu === activeSideBar) setActiveSideBar('');
+    else setActiveSideBar(clickedMenu);
+  };
+
+  const onClickButtons = (e: any) => {
+    if (e.target.closest('button')) {
+      console.log(e.target.children);
+    }
+  };
 
   return (
     <StudyRoomPageLayout>
       <Content>
         <VideoListLayout>
           <RoomInfo>
-            <RoomTitle>공부방 이름</RoomTitle>
+            <RoomTitle>{roomInfo.name}</RoomTitle>
             <RoomStatus>4/5</RoomStatus>
           </RoomInfo>
           <VideoList>
@@ -140,10 +168,11 @@ export default function StudyRoomPage() {
             <VideoItem />
           </VideoList>
         </VideoListLayout>
-        <ChatSideBar />
+        {/* <ChatSideBar /> */}
+        <ParticipantsSideBar participants={participantsList} />
       </Content>
       <BottomBarLayout>
-        <MenuList>
+        <MenuList onClick={onClickButtons}>
           <MenuItem>
             <IconWrapper>
               <MicIcon />

@@ -15,6 +15,11 @@ export class StudyRoomService {
     private redisCacheService: RedisCacheService,
   ) {}
 
+  async getParticipants(studyRoomId: string) {
+    const studyRoomValue = await this.redisCacheService.getValue(studyRoomId);
+    return studyRoomValue;
+  }
+
   async createStudyRoom(roomInfo: createRoomDto) {
     const result = await this.studyRoomRepository.insert({
       studyRoomName: roomInfo.name,

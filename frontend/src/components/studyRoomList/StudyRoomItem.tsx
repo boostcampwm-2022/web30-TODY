@@ -99,7 +99,9 @@ export default function StudyRoomItem(props: Props) {
   return (
     <StudyRoomItemLayout
       onClick={() => {
-        navigate(`/study-room/${studyRoomId}`);
+        navigate(`/study-room/${studyRoomId}`, {
+          state: props,
+        });
       }}>
       <NameLayout>
         <Name>{name}</Name>

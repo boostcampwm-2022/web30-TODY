@@ -7,7 +7,7 @@ export class RedisCacheController {
 
   @Get('/cache')
   async getCache(@Query('key') key: string): Promise<string> {
-    const value = await this.redisCacheService.getKey(key);
+    const value = await this.redisCacheService.getValue(key);
     console.log(value);
     return value;
   }
