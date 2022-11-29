@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-alert */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import useAxios from '@hooks/useAxios';
 import CustomButton from '@components/common/CustomButton';
 import styled from 'styled-components';
@@ -111,15 +111,22 @@ export default function SignupPage() {
     if (checkUniqueNicknameError) alert(checkUniqueNicknameError);
   }, [checkUniqueNicknameError]);
 
+  const validateSignupForm = useCallback(
+    (formData: { [k: string]: FormDataEntryValue }) => {
+      setIsPasswordSame(formData.password === formData.passwordSame);
+      if (formData.password !== formData.passwordSame) {
+        alert('비밀번호가 일치하지 않습니다.');
+        return false;
+      }
+      return true;
+    },
+    [],
+  );
+
   const signup = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const formData = Object.fromEntries(new FormData(form));
-    setIsPasswordSame(formData.password === formData.passwordSame);
-    if (formData.password !== formData.passwordSame) {
-      alert('비밀번호가 일치하지 않습니다.');
-      return;
-    }
+    const formData = Object.fromEntries(new FormData(e.currentTarget));
+    if (!validateSignupForm(formData)) return;
     delete formData.passwordSame;
     requestSignup(formData);
   };
@@ -161,7 +168,7 @@ export default function SignupPage() {
                 guideText={
                   selectedId.isUnique
                     ? `${selectedId.id} : 사용 가능한 아이디입니다.`
-                    : ''
+                    : '중복 확인이 필요합니다.'
                 }
                 inputRef={idInputRef}
                 name="id"
@@ -184,7 +191,7 @@ export default function SignupPage() {
                 guideText={
                   selectedNickname.isUnique
                     ? `${selectedNickname.nickname} : 사용 가능한 닉네임입니다.`
-                    : ''
+                    : '중복 확인이 필요합니다.'
                 }
                 inputRef={nicknameInputRef}
                 name="nickname"
