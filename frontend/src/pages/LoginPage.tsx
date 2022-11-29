@@ -7,7 +7,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import useAxios from '@hooks/useAxios';
 import { useCallback, useEffect } from 'react';
 import Loader from '@components/common/Loader';
-import axios from 'axios';
+import useInputValidation from '@hooks/useInputValidation';
 import loginRequest from '../axios/requests/loginRequest';
 
 const LoginPageLayout = styled.div`
@@ -64,6 +64,15 @@ export default function LoginPage() {
     [requestLogin],
   );
 
+  const [validateId, isIdValidated] = useInputValidation(
+    (value) => !!value.length,
+    '',
+  );
+  const [validatePw, isPwValidated] = useInputValidation(
+    (value) => !!value.length,
+    '',
+  );
+
   return (
     <>
       {loginLoading && <Loader />}
@@ -71,13 +80,17 @@ export default function LoginPage() {
         <Wrapper>
           <StyledHeader1>로그인</StyledHeader1>
           <form onSubmit={login}>
-            <CustomInput name="id" placeholder="아이디" />
+            <CustomInput name="id" placeholder="아이디" onChange={validateId} />
             <CustomInput
+              onChange={validatePw}
               name="password"
               placeholder="비밀번호"
               type="password"
             />
-            <CustomButton type="submit" margin="20px 0 0">
+            <CustomButton
+              type="submit"
+              disabled={!isIdValidated || !isPwValidated}
+              margin="20px 0 0">
               로그인
             </CustomButton>
             <SignUpText>
