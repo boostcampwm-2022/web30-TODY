@@ -123,23 +123,26 @@ export default function SignupPage() {
     [],
   );
 
-  const signup = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = Object.fromEntries(new FormData(e.currentTarget));
-    if (!validateSignupForm(formData)) return;
-    delete formData.passwordSame;
-    requestSignup(formData);
-  };
+  const signup = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      const formData = Object.fromEntries(new FormData(e.currentTarget));
+      if (!validateSignupForm(formData)) return;
+      delete formData.passwordSame;
+      requestSignup(formData);
+    },
+    [requestSignup, validateSignupForm],
+  );
 
-  const checkUniqueId = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const checkUniqueId = useCallback(() => {
     const { value: id } = idInputRef.current!;
     requestCheckUniqueId(id);
-  };
+  }, [requestCheckUniqueId]);
 
-  const checkUniqueNickname = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const checkUniqueNickname = useCallback(() => {
     const { value: nickname } = nicknameInputRef.current!;
     requestCheckUniqueNickname(nickname);
-  };
+  }, [requestCheckUniqueNickname]);
 
   const [validateId, isIdValidated] = useInputValidation((value) => {
     return value.length >= 4 && value.length <= 15;
