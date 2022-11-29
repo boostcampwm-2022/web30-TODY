@@ -1,4 +1,5 @@
-/* eslint-disable jsx-a11y/media-has-caption */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+/* eslint-disable no-param-reassign */
 import { useLocation, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { ReactComponent as MicIcon } from '@assets/icons/mic.svg';
@@ -9,7 +10,7 @@ import { ReactComponent as CanvasIcon } from '@assets/icons/canvas.svg';
 import { ReactComponent as ChatIcon } from '@assets/icons/chat.svg';
 import { ReactComponent as ParticipantsIcon } from '@assets/icons/participants.svg';
 import ChatSideBar from '@components/studyRoom/ChatSideBar';
-import VideoItem from '@components/studyRoom/VideoItem';
+import RemoteVideo from '@components/studyRoom/RemoteVideo';
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import useAxios from '@hooks/useAxios';
@@ -67,6 +68,12 @@ const VideoList = styled.div`
   padding: 10px;
 `;
 
+const VideoItem = styled.video`
+  width: 405px;
+  height: 308px;
+  border-radius: 12px;
+`;
+
 const BottomBarLayout = styled.div`
   position: relative;
   display: flex;
@@ -99,6 +106,9 @@ const MenuItem = styled.button`
   &.active {
     background: rgba(255, 255, 255, 0.45);
   }
+  &.text-red {
+    color: var(--red);
+  }
 `;
 
 const IconWrapper = styled.span`
@@ -123,34 +133,31 @@ const RoomExitButton = styled.button`
   font-weight: 700;
 `;
 
-const EVENTS = {
-  CONNECT: 'connect',
-  NOTICE_ALL_PEERS: 'notice-all-peers',
-  OFFER: 'offer',
-  ANSWER: 'answer',
-  ICECANDIDATE: 'icecandidate',
-  SOMEONE_LEFT_YOUR_ROOM: 'someone-left-your-room',
-};
-
 const socket = io(process.env.REACT_APP_SOCKET_URL!, {
   autoConnect: false,
 });
 
-interface RemoteVideoProps {
-  remoteStream: MediaStream;
-}
+export default function StudyRoomPage() {
+  const { roomId } = useParams();
+  const { state: roomInfo } = useLocation();
 
-function RemoteVideo({ remoteStream }: RemoteVideoProps) {
-  const ref = useRef<HTMLVideoElement | null>(null);
+  const [getParticipants, loading, error, participantsList] = useAxios<{
+    participantsList: any;
+  }>(getParticipantsListRequest);
 
   useEffect(() => {
-    ref.current!.srcObject = remoteStream;
+    getParticipants(roomInfo.studyRoomId);
   }, []);
 
-  return <video autoPlay ref={ref} width="400px" height="400px" />;
-}
+  const [activeSideBar, setActiveSideBar] = useState('');
+  const [myMediaState, setMyMediaState] = useState({
+    video: true,
+    mic: true,
+  });
 
-export default function StudyRoomPage() {
+  const RTCConfiguration = {
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  };
   const [remoteStreams, setRemoteStreams] = useState<{
     [socketId: string]: MediaStream;
   }>({});
@@ -183,23 +190,18 @@ export default function StudyRoomPage() {
 
     socket.on('connect', async () => {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: false,
+        video: myMediaState.video,
+        audio: myMediaState.mic,
       });
       myStream.current = stream;
-
-      console.log(myVideoRef);
       myVideoRef.current!.srcObject = myStream.current;
-      console.log('test: ', myVideoRef);
 
-      socket.emit('join', 'room1');
+      socket.emit('join', roomInfo.studyRoomId);
     });
 
     socket.on('notice-all-peers', (peerIdsInRoom) => {
       peerIdsInRoom.forEach(async (peerId: string) => {
-        const pc = new RTCPeerConnection({
-          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-        });
+        const pc = new RTCPeerConnection(RTCConfiguration);
         pcs.current[peerId] = pc;
         addIcecandidateListener(pc, peerId);
         addTrackListener(pc, peerId);
@@ -216,9 +218,7 @@ export default function StudyRoomPage() {
     });
 
     socket.on('offer', async ({ offer, fromId, toId }) => {
-      const pc = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-      });
+      const pc = new RTCPeerConnection(RTCConfiguration);
       pcs.current[fromId] = pc;
       addIcecandidateListener(pc, fromId);
       addTrackListener(pc, fromId);
@@ -246,7 +246,7 @@ export default function StudyRoomPage() {
       await pc.addIceCandidate(icecandidate);
     });
 
-    socket.on('someone-left-your-room', (peerId) => {
+    socket.on('someone-left-room', (peerId) => {
       const pc = pcs.current[peerId];
       pc.close();
       delete pcs.current[peerId];
@@ -269,20 +269,30 @@ export default function StudyRoomPage() {
     };
   }, []);
 
-  const { roomId } = useParams();
-  const { state: roomInfo } = useLocation();
+  function toggleMediaState(type: string) {
+    if (type === 'video') {
+      myStream.current!.getVideoTracks().forEach((track: MediaStreamTrack) => {
+        track.enabled = !track.enabled;
+      });
 
-  const [getParticipants, loading, error, participantsList] = useAxios<{
-    participantsList: any;
-  }>(getParticipantsListRequest);
+      setMyMediaState({
+        ...myMediaState,
+        video: !myMediaState.video,
+      });
+      return;
+    }
 
-  useEffect(() => {
-    getParticipants(roomInfo.studyRoomId);
-  }, []);
+    if (type === 'mic') {
+      myStream.current!.getAudioTracks().forEach((track: MediaStreamTrack) => {
+        track.enabled = !track.enabled;
+      });
 
-  useEffect(() => {}, [participantsList]);
-
-  const [activeSideBar, setActiveSideBar] = useState('');
+      setMyMediaState({
+        ...myMediaState,
+        mic: !myMediaState.mic,
+      });
+    }
+  }
 
   const onClickSideBarMenu = (clickedMenu: string) => {
     if (clickedMenu === activeSideBar) setActiveSideBar('');
@@ -299,8 +309,15 @@ export default function StudyRoomPage() {
       case '멤버':
         onClickSideBarMenu(buttonEl);
         break;
+      case '마이크 끄기':
+      case '마이크 켜기':
+        toggleMediaState('mic');
+        break;
+      case '비디오 끄기':
+      case '비디오 켜기':
+        toggleMediaState('video');
+        break;
       default:
-        console.log(buttonEl);
         break;
     }
   };
@@ -314,11 +331,10 @@ export default function StudyRoomPage() {
             <RoomStatus>4/5</RoomStatus>
           </RoomInfo>
           <VideoList>
-            <video autoPlay ref={myVideoRef} width="400px" height="400px" />
+            <VideoItem autoPlay ref={myVideoRef} />
             {Object.entries(remoteStreams).map(([peerId, remoteStream]) => (
               <RemoteVideo key={peerId} remoteStream={remoteStream} />
             ))}
-            {/* <VideoItem ref={myVideoRef} /> */}
           </VideoList>
         </VideoListLayout>
         {activeSideBar !== '' &&
@@ -330,30 +346,36 @@ export default function StudyRoomPage() {
       </Content>
       <BottomBarLayout>
         <MenuList onClick={onClickButtons}>
-          <MenuItem>
-            <IconWrapper>
-              <MicIcon />
-            </IconWrapper>
-            마이크 끄기
-          </MenuItem>
-          {/* <MenuItem>
-            <IconWrapper>
-              <MicOffIcon />
-            </IconWrapper>
-            마이크 켜기
-          </MenuItem> */}
-          <MenuItem>
-            <IconWrapper>
-              <VideoIcon />
-            </IconWrapper>
-            비디오 끄기
-          </MenuItem>
-          {/* <MenuItem>
-            <IconWrapper>
-              <VideoOffIcon />
-            </IconWrapper>
-            비디오 켜기
-          </MenuItem> */}
+          {myMediaState.mic ? (
+            <MenuItem>
+              <IconWrapper>
+                <MicIcon />
+              </IconWrapper>
+              마이크 끄기
+            </MenuItem>
+          ) : (
+            <MenuItem className="text-red">
+              <IconWrapper>
+                <MicOffIcon />
+              </IconWrapper>
+              마이크 켜기
+            </MenuItem>
+          )}
+          {myMediaState.video ? (
+            <MenuItem>
+              <IconWrapper>
+                <VideoIcon />
+              </IconWrapper>
+              비디오 끄기
+            </MenuItem>
+          ) : (
+            <MenuItem className="text-red">
+              <IconWrapper>
+                <VideoOffIcon />
+              </IconWrapper>
+              비디오 켜기
+            </MenuItem>
+          )}
           <MenuItem>
             <IconWrapper>
               <CanvasIcon />
