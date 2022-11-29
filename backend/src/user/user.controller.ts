@@ -13,19 +13,23 @@ export class UserController {
   }
 
   @Get('checkID/:id')
-  async findOneById(@Param('id') id: string): Promise<{ isUnique: boolean }> {
+  async findOneById(
+    @Param('id') id: string,
+  ): Promise<{ isUnique: boolean; id: string }> {
     const checkId = await this.userService.findOneById({ id });
-    return checkId ? { isUnique: false } : { isUnique: true };
+    return checkId ? { isUnique: false, id } : { isUnique: true, id };
   }
 
   @Get('checkNickname/:nickname')
   async findOneByNickname(
     @Param('nickname') nickname: string,
-  ): Promise<{ isUnique: boolean }> {
+  ): Promise<{ isUnique: boolean; nickname: string }> {
     const checkNickname = await this.userService.findOneByNickname({
       nickname,
     });
-    return checkNickname ? { isUnique: false } : { isUnique: true };
+    return checkNickname
+      ? { isUnique: false, nickname }
+      : { isUnique: true, nickname };
   }
 
   @Post('login')
