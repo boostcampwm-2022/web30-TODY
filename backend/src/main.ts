@@ -19,7 +19,7 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new AllExceptionsFilter());
-  await app.listen(5001);
+  await app.listen(5000);
   const socketApp = await NestFactory.create(SocketModule, {
     cors: true,
   });

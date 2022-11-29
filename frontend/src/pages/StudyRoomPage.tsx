@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/media-has-caption */
 import { useLocation, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { ReactComponent as MicIcon } from '@assets/icons/mic.svg';
@@ -8,7 +9,9 @@ import { ReactComponent as CanvasIcon } from '@assets/icons/canvas.svg';
 import { ReactComponent as ChatIcon } from '@assets/icons/chat.svg';
 import { ReactComponent as ParticipantsIcon } from '@assets/icons/participants.svg';
 import ChatSideBar from '@components/studyRoom/ChatSideBar';
-import { useEffect, useState } from 'react';
+import VideoItem from '@components/studyRoom/VideoItem';
+import { useEffect, useRef, useState } from 'react';
+import { io } from 'socket.io-client';
 import useAxios from '@hooks/useAxios';
 import ParticipantsSideBar from '@components/studyRoom/ParticipantsSideBar';
 import getParticipantsListRequest from '../axios/requests/getParticipantsListRequest';
@@ -62,12 +65,6 @@ const VideoList = styled.div`
   flex-wrap: wrap;
   gap: 10px;
   padding: 10px;
-`;
-const VideoItem = styled.div`
-  width: 405px;
-  height: 308px;
-  border-radius: 12px;
-  background-color: var(--guideText);
 `;
 
 const BottomBarLayout = styled.div`
@@ -126,7 +123,152 @@ const RoomExitButton = styled.button`
   font-weight: 700;
 `;
 
+const EVENTS = {
+  CONNECT: 'connect',
+  NOTICE_ALL_PEERS: 'notice-all-peers',
+  OFFER: 'offer',
+  ANSWER: 'answer',
+  ICECANDIDATE: 'icecandidate',
+  SOMEONE_LEFT_YOUR_ROOM: 'someone-left-your-room',
+};
+
+const socket = io(process.env.REACT_APP_SOCKET_URL!, {
+  autoConnect: false,
+});
+
+interface RemoteVideoProps {
+  remoteStream: MediaStream;
+}
+
+function RemoteVideo({ remoteStream }: RemoteVideoProps) {
+  const ref = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    ref.current!.srcObject = remoteStream;
+  }, []);
+
+  return <video autoPlay ref={ref} width="400px" height="400px" />;
+}
+
 export default function StudyRoomPage() {
+  const [remoteStreams, setRemoteStreams] = useState<{
+    [socketId: string]: MediaStream;
+  }>({});
+  const myVideoRef = useRef<HTMLVideoElement | null>(null);
+  const myStream = useRef<MediaStream | null>(null);
+  const pcs = useRef<{ [socketId: string]: RTCPeerConnection }>({});
+
+  function addIcecandidateListener(pc: RTCPeerConnection, toId: string) {
+    pc.addEventListener('icecandidate', (ice: RTCPeerConnectionIceEvent) => {
+      socket.emit('icecandidate', {
+        icecandidate: ice.candidate,
+        fromId: socket.id,
+        toId,
+      });
+    });
+  }
+
+  function addTrackListener(pc: RTCPeerConnection, peerId: string) {
+    pc.addEventListener('track', (track: RTCTrackEvent) => {
+      const remoteStream = track.streams[0];
+      setRemoteStreams((prev) => {
+        const next = { ...prev, [peerId]: remoteStream };
+        return next;
+      });
+    });
+  }
+
+  useEffect(() => {
+    socket.connect();
+
+    socket.on('connect', async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: false,
+      });
+      myStream.current = stream;
+
+      console.log(myVideoRef);
+      myVideoRef.current!.srcObject = myStream.current;
+      console.log('test: ', myVideoRef);
+
+      socket.emit('join', 'room1');
+    });
+
+    socket.on('notice-all-peers', (peerIdsInRoom) => {
+      peerIdsInRoom.forEach(async (peerId: string) => {
+        const pc = new RTCPeerConnection({
+          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+        });
+        pcs.current[peerId] = pc;
+        addIcecandidateListener(pc, peerId);
+        addTrackListener(pc, peerId);
+
+        myStream.current!.getTracks().forEach((track: MediaStreamTrack) => {
+          pc.addTrack(track, myStream.current!);
+        });
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        socket.emit('offer', { offer, fromId: socket.id, toId: peerId });
+      });
+    });
+
+    socket.on('offer', async ({ offer, fromId, toId }) => {
+      const pc = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+      });
+      pcs.current[fromId] = pc;
+      addIcecandidateListener(pc, fromId);
+      addTrackListener(pc, fromId);
+
+      myStream.current!.getTracks().forEach((track: MediaStreamTrack) => {
+        pc.addTrack(track, myStream.current!);
+      });
+
+      await pc.setRemoteDescription(offer);
+
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+
+      socket.emit('answer', { answer, fromId: socket.id, toId: fromId });
+    });
+
+    socket.on('answer', async ({ answer, fromId, toId }) => {
+      const pc = pcs.current[fromId];
+      await pc.setRemoteDescription(answer);
+    });
+
+    socket.on('icecandidate', async ({ icecandidate, fromId, toId }) => {
+      const pc = pcs.current[fromId];
+      if (!icecandidate) return;
+      await pc.addIceCandidate(icecandidate);
+    });
+
+    socket.on('someone-left-your-room', (peerId) => {
+      const pc = pcs.current[peerId];
+      pc.close();
+      delete pcs.current[peerId];
+
+      setRemoteStreams((prev) => {
+        const next = { ...prev };
+        delete next[peerId];
+        return next;
+      });
+    });
+
+    return () => {
+      socket.off('connect');
+      socket.off('notice-all-peers');
+      socket.off('offer');
+      socket.off('answer');
+      socket.off('icecandidate');
+      socket.off('someone-left-your-room');
+      socket.disconnect();
+    };
+  }, []);
+
   const { roomId } = useParams();
   const { state: roomInfo } = useLocation();
 
@@ -172,8 +314,11 @@ export default function StudyRoomPage() {
             <RoomStatus>4/5</RoomStatus>
           </RoomInfo>
           <VideoList>
-            <VideoItem />
-            <VideoItem />
+            <video autoPlay ref={myVideoRef} width="400px" height="400px" />
+            {Object.entries(remoteStreams).map(([peerId, remoteStream]) => (
+              <RemoteVideo key={peerId} remoteStream={remoteStream} />
+            ))}
+            {/* <VideoItem ref={myVideoRef} /> */}
           </VideoList>
         </VideoListLayout>
         {activeSideBar !== '' &&
