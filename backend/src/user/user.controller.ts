@@ -66,4 +66,11 @@ export class UserController {
     });
     return { userId, nickname };
   }
+
+  @Get('logout')
+  @HttpCode(204)
+  async logout(@Res({ passthrough: true }) response: Response): Promise<void> {
+    response.clearCookie('accessToken');
+    return;
+  }
 }

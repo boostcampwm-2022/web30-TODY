@@ -1,4 +1,4 @@
-import { RecoilRoot, useSetRecoilState } from 'recoil';
+import { useSetRecoilState } from 'recoil';
 import { useEffect } from 'react';
 import useAxios from '@hooks/useAxios';
 import { userState } from 'recoil/atoms';
