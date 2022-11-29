@@ -1,16 +1,16 @@
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './filter/all-exceptions.filter';
+import { SocketModule } from './socket/socket.module';
 
 async function bootstrap() {
-  // const httpsOptions = {
-  //   key: fs.readFileSync(path.join(__dirname, process.env.KEY_PATH)),
-  //   cert: fs.readFileSync(path.join(__dirname, process.env.CERT_PATH)),
-  // };
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const app = await NestFactory.create(AppModule, {
+    cors: true,
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -19,6 +19,11 @@ async function bootstrap() {
     }),
   );
   app.useGlobalFilters(new AllExceptionsFilter());
-  await app.listen(5000);
+  await app.listen(5001);
+  const socketApp = await NestFactory.create(SocketModule, {
+    cors: true,
+  });
+  await socketApp.listen(8000);
+  console.log('Server is running.');
 }
 bootstrap();
