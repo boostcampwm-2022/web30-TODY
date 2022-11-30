@@ -1,5 +1,5 @@
 import axiosBackend from '../instances/axiosBackend';
 
 export default () => {
-  return axiosBackend.get('/user/logout', { withCredentials: true });
+  return axiosBackend.get('/user/logout');
 };
