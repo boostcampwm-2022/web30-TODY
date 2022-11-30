@@ -204,7 +204,8 @@ export default function SignupPage() {
                 type="button"
                 disabled={checkUniqueIdLoading || !isIdValidated}
                 onClick={checkUniqueId}
-                width="68px">
+                width="68px"
+                height="67px">
                 확인
               </CustomButton>
             </InputWrapper>
@@ -231,7 +232,8 @@ export default function SignupPage() {
                 type="button"
                 disabled={checkUniqueNicknameLoading || !isNicknameValidated}
                 onClick={checkUniqueNickname}
-                width="68px">
+                width="68px"
+                height="67px">
                 확인
               </CustomButton>
             </InputWrapper>

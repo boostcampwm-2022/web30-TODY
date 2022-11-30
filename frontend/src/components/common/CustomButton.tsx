@@ -5,6 +5,7 @@ const Button = styled.button<Props>`
   padding: 21px 0;
   margin: ${({ margin }) => `${margin}`};
   width: ${({ width }) => `${width}`};
+  height: ${({ height }) => `${height}`};
   background-color: ${({ color }) => color};
   border-radius: 15px;
   color: white;
@@ -20,6 +21,7 @@ interface Props {
   children: string;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
   width?: string;
+  height?: string;
   color?: string;
   margin?: string;
   disabled?: boolean;
@@ -35,6 +37,7 @@ CustomButton.defaultProps = {
   type: 'button',
   onClick: () => {},
   width: '100%',
+  height: '',
   color: 'var(--orange)',
   margin: '0',
   disabled: false,
