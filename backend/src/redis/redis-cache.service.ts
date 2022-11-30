@@ -45,4 +45,18 @@ export class RedisCacheService {
       return;
     }
   }
+
+  async leaveRoom(body: {
+    studyRoomId: number;
+    userId: string;
+  }): Promise<void> {
+    const studyRoomId = body.studyRoomId;
+    const userId = body.userId;
+    const key = `studyRoom${studyRoomId}`;
+
+    const roomValue = await this.cacheManager.get(key);
+    delete roomValue[userId];
+    await this.cacheManager.set(key, roomValue);
+    return;
+  }
 }
