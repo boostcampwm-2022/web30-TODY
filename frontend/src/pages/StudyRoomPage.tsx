@@ -25,8 +25,9 @@ const StudyRoomPageLayout = styled.div`
 `;
 
 const RoomInfo = styled.div`
-  margin-top: 24px;
-  margin-left: 24px;
+  position: absolute;
+  top: 24px;
+  left: 24px;
   display: flex;
   gap: 7px;
 `;
@@ -55,7 +56,7 @@ const Content = styled.div`
 const VideoListLayout = styled.div`
   flex: 1;
   display: flex;
-  flex-direction: column;
+  padding: 58px 10px 10px;
 `;
 
 const VideoList = styled.div`
@@ -65,7 +66,6 @@ const VideoList = styled.div`
   align-content: center;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 10px;
 `;
 
 const VideoItem = styled.video`
@@ -325,11 +325,11 @@ export default function StudyRoomPage() {
   return (
     <StudyRoomPageLayout>
       <Content>
+        <RoomInfo>
+          <RoomTitle>{roomInfo.name}</RoomTitle>
+          <RoomStatus>4/5</RoomStatus>
+        </RoomInfo>
         <VideoListLayout>
-          <RoomInfo>
-            <RoomTitle>{roomInfo.name}</RoomTitle>
-            <RoomStatus>4/5</RoomStatus>
-          </RoomInfo>
           <VideoList>
             <VideoItem autoPlay ref={myVideoRef} />
             {Object.entries(remoteStreams).map(([peerId, remoteStream]) => (

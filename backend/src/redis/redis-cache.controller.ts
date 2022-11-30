@@ -30,4 +30,11 @@ export class RedisCacheController {
   ): Promise<void> {
     return await this.redisCacheService.enterRoom(body);
   }
+
+  @Post('/leaveRoom')
+  async leave(
+    @Body() body: { studyRoomId: number; userId: string },
+  ): Promise<void> {
+    return await this.redisCacheService.leaveRoom(body);
+  }
 }
