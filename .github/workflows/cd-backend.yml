@@ -26,4 +26,4 @@ jobs:
             npm i
             npm run build
             pm2 kill
-            npm start:prod
+            npm run start:prod
