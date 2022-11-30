@@ -20,6 +20,7 @@ module.exports = {
         '^\\@assets/(.*)$': '<rootDir>/src/assets/$1',
         '^\\@hooks/(.*)$': '<rootDir>/src/hooks/$1',
         '^\\@pages/(.*)$': '<rootDir>/src/pages/$1',
+        '^axios$': 'axios/dist/node/axios.cjs',
       },
     },
   },
