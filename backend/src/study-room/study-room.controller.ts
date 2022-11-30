@@ -33,19 +33,9 @@ export class StudyRoomController {
   async getParticiantsOfRoom(
     @Query('study-room-id') studyRoomId: string,
   ): Promise<any> {
-    try {
-      const participantsList = await this.studyRoomService.getParticipants(
-        studyRoomId,
-      );
-      return participantsList;
-    } catch (error) {
-      throw new HttpException(
-        {
-          status: HttpStatus.FORBIDDEN,
-          error: 'Unexpected error',
-        },
-        HttpStatus.FORBIDDEN,
-      );
-    }
+    const participantsList = await this.studyRoomService.getParticipants(
+      studyRoomId,
+    );
+    return participantsList;
   }
 }
