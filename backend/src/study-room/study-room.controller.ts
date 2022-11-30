@@ -8,8 +8,9 @@ export class StudyRoomController {
 
   @Post()
   @HttpCode(200)
-  async createRoom(@Body() roomInfo: createRoomDto): Promise<void> {
-    await this.studyRoomService.createStudyRoom(roomInfo);
+  async createRoom(@Body() roomInfo: createRoomDto): Promise<any> {
+    const createdRoomID = await this.studyRoomService.createStudyRoom(roomInfo);
+    return createdRoomID;
   }
 
   @Get()
@@ -25,5 +26,26 @@ export class StudyRoomController {
       page,
     );
     return searchResult;
+  }
+
+  @Get('/participants')
+  @HttpCode(200)
+  async getParticiantsOfRoom(
+    @Query('study-room-id') studyRoomId: string,
+  ): Promise<any> {
+    try {
+      const participantsList = await this.studyRoomService.getParticipants(
+        studyRoomId,
+      );
+      return participantsList;
+    } catch (error) {
+      throw new HttpException(
+        {
+          status: HttpStatus.FORBIDDEN,
+          error: 'Unexpected error',
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
   }
 }

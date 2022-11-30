@@ -4,6 +4,7 @@ import SignupPage from '@pages/SignupPage';
 import StudyRoomListPage from '@pages/StudyRoomListPage';
 import MainPage from '@pages/MainPage';
 import InitPage from '@pages/InitPage';
+import StudyRoomPage from '@pages/StudyRoomPage';
 
 export default function Router() {
   return (
@@ -13,6 +14,7 @@ export default function Router() {
         <Route path="/home" element={<MainPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/study-room/:roomId" element={<StudyRoomPage />} />
         <Route path="/study-rooms" element={<StudyRoomListPage />} />
       </Routes>
     </BrowserRouter>

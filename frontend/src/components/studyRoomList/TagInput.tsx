@@ -83,7 +83,7 @@ export default function TagInput({ tagList, setTagList }: Props) {
       <GuideText>※ 태그는 최대 5개까지 입력 가능합니다.</GuideText>
       <TagList>
         {tagList.map((tag, index) => (
-          <TagItem>
+          <TagItem key={tag}>
             <span className="tagName">{tag}</span>
             <RemoveButton type="button" onClick={() => removeTag(index)}>
               x

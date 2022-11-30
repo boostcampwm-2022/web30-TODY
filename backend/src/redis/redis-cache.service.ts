@@ -10,7 +10,7 @@ export class RedisCacheService {
     return true;
   }
 
-  async getKey(key: string): Promise<string> {
+  async getValue(key: string): Promise<string> {
     const valueFromKey = (await this.cacheManager.get(key)) as string;
     return valueFromKey;
   }
