@@ -63,6 +63,7 @@ export class UserController {
     );
     response.cookie('accessToken', accessToken, {
       httpOnly: true,
+      maxAge: 43200,
     });
     return { userId, nickname };
   }
