@@ -20,6 +20,7 @@ jobs:
           port: ${{secrets.BE_PORT}}
           script: |
             cd tody
+            git checkout main
             git pull origin main
             cd backend
             npm i
