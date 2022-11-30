@@ -8,8 +8,8 @@ const RoomListLayout = styled.div`
 `;
 
 const RoomList = styled.ul`
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 10px;
 `;
 

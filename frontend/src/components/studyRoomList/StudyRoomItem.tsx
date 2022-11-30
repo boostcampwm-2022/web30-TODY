@@ -6,7 +6,6 @@ import ParticipantsIcon from '@assets/icons/participants.svg';
 import HashTagIcon from '@assets/icons/hashtag.svg';
 
 const StudyRoomItemLayout = styled.div`
-  width: 355px;
   padding: 15px 13px;
   display: flex;
   gap: 10px;
