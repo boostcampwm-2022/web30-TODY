@@ -83,7 +83,7 @@ export class UserService {
       const accessToken = this.jwtService.sign(
         {},
         {
-          expiresIn: '5m',
+          expiresIn: '12h',
           issuer: 'tody',
           subject: userData.id,
         },
