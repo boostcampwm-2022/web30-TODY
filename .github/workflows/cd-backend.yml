@@ -25,5 +25,4 @@ jobs:
             cd backend
             npm i
             npm run build
-            pm2 kill
-            npm run start:prod
+            npm run start:reload
