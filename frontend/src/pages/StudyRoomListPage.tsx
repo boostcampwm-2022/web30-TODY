@@ -165,7 +165,7 @@ export default function StudyRoomListPage() {
           </SearchResultText>
           <div className="flex-row">
             <ViewConditionCheckBox>참여 가능한 방만 보기</ViewConditionCheckBox>
-            <ViewConditionCheckBox>비밀 방만 보기</ViewConditionCheckBox>
+            {/* <ViewConditionCheckBox>비밀 방만 보기</ViewConditionCheckBox> */}
           </div>
         </SearchInfoLayout>
         <StudyRoomList searchResult={searchResult} />

@@ -14,6 +14,5 @@ root.render(
     <RecoilRoot>
       <App />
     </RecoilRoot>
-    ,
   </React.StrictMode>,
 );

@@ -10,6 +10,7 @@ const Content = styled.div`
   flex: 1;
   position: relative;
   padding: 45px 30px;
+  overflow: hidden;
 `;
 
 const StyledLogo = styled(LogoWithName)`
