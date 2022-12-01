@@ -6,13 +6,18 @@ export default function useAxios<T>(
 ): [
   (arg?: any) => Promise<void>,
   boolean,
-  { status: number | undefined; data: any } | null,
+  {
+    statusCode: number | undefined;
+    message: any;
+    error: string;
+  } | null,
   T | null,
 ] {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<{
-    status: number | undefined;
-    data: any;
+    statusCode: number | undefined;
+    message: any;
+    error: string;
   } | null>(null);
   const [data, setData] = useState<T | null>(null);
 
@@ -27,12 +32,14 @@ export default function useAxios<T>(
       } catch (err) {
         if (axios.isAxiosError(err)) {
           if (err.response) {
-            setError(err.response);
+            setError(err.response.data);
           } else {
-            setError({ status: undefined, data: 'network error' });
+            setError({
+              statusCode: undefined,
+              message: err.message,
+              error: err.message,
+            });
           }
-        } else {
-          setError({ status: undefined, data: 'unexpected error' });
         }
       }
       setLoading(false);
