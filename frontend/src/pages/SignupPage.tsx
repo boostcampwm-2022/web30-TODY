@@ -263,7 +263,7 @@ export default function SignupPage() {
                 !isIdValidated ||
                 !isNicknameValidated ||
                 !isPwValidated ||
-                !checkUniqueNicknameData?.isUnique ||
+                !checkUniqueIdData?.isUnique ||
                 !checkUniqueNicknameData?.isUnique
               }
               margin="20px 0 0 ">
