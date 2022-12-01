@@ -331,7 +331,7 @@ export default function StudyRoomPage() {
         </RoomInfo>
         <VideoListLayout>
           <VideoList>
-            <VideoItem autoPlay ref={myVideoRef} />
+            <VideoItem autoPlay ref={myVideoRef} muted />
             {Object.entries(remoteStreams).map(([peerId, remoteStream]) => (
               <RemoteVideo key={peerId} remoteStream={remoteStream} />
             ))}
