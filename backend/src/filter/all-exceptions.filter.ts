@@ -16,7 +16,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
       return;
     }
     res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-      message: 'internal server error',
+      statusCode: 500,
+      message: '예상치 못한 오류가 발생하였습니다.',
+      error: 'Internal Server Error',
     });
   }
 }
