@@ -15,8 +15,9 @@ export default function RemoteVideo({ remoteStream }: RemoteVideoProps) {
   const ref = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    ref.current!.srcObject = remoteStream;
-  }, []);
+    console.log(remoteStream.getVideoTracks());
+    if (ref.current) ref.current.srcObject = remoteStream;
+  }, [remoteStream]);
 
   // eslint-disable-next-line jsx-a11y/media-has-caption
   return <Video autoPlay ref={ref} />;
