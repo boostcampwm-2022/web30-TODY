@@ -7,6 +7,7 @@ import { AllExceptionsFilter } from './filter/all-exceptions.filter';
 import { SocketModule } from './socket/socket.module';
 import * as cookieParser from 'cookie-parser';
 import corsConfig from './config/cors.config';
+import { MediaServerModule } from './mediaServer/mediaServer.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -22,10 +23,14 @@ async function bootstrap() {
   );
   app.useGlobalFilters(new AllExceptionsFilter());
   await app.listen(5000);
-  const socketApp = await NestFactory.create(SocketModule, {
+  // const socketApp = await NestFactory.create(SocketModule, {
+  //   cors: true,
+  // });
+  // await socketApp.listen(8000);
+  // console.log('Server is running.');
+  const mediaServer = await NestFactory.create(MediaServerModule, {
     cors: true,
   });
-  await socketApp.listen(8000);
-  console.log('Server is running.');
+  await mediaServer.listen(8000);
 }
 bootstrap();
