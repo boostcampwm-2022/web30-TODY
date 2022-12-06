@@ -157,7 +157,7 @@ export default function SfuPage() {
   });
 
   const RTCConfiguration = {
-    iceServers: [{ urls: 'stun.l.google.com:19302' }],
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
   };
 
   const [remoteStreams, setRemoteStreams] = useState<{
