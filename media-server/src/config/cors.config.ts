@@ -3,4 +3,4 @@ const origin =
     ? 'http://localhost:3000'
     : 'https://j221.tk';
 
-export default { credentials: true, origin };
+export default { origin };

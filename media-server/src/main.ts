@@ -1,12 +1,10 @@
 import { NestFactory } from '@nestjs/core';
-import corsConfig from './config/cors.config';
 import { MediaServerModule } from './mediaServer/mediaServer.module';
 
 async function bootstrap() {
-  console.log('Server is running.');
-  const mediaServerApp = await NestFactory.create(MediaServerModule, {
-    cors: true,
-  });
-  await mediaServerApp.listen(9000);
+  const port = 9000;
+  console.log(`Server is running on port ${port}`);
+  const mediaServerApp = await NestFactory.create(MediaServerModule);
+  await mediaServerApp.listen(port);
 }
 bootstrap();

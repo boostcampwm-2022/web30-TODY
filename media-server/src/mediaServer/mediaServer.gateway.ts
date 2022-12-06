@@ -9,6 +9,7 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import corsConfig from 'src/config/cors.config';
 import * as wrtc from 'wrtc';
 
 const receivePcs: { [id: string]: RTCPeerConnection } = {};
@@ -18,7 +19,7 @@ const RTCConfiguration = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
 };
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({ cors: corsConfig })
 export class MediaServerGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
