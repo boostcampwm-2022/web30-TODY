@@ -9,7 +9,14 @@ import { Server, Socket } from 'socket.io';
 import * as wrtc from 'wrtc';
 
 const PCConfig = {
-  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  iceServers: [
+    { urls: 'stun:101.101.219.107:3478' },
+    {
+      urls: 'turn:101.101.219.107:3478',
+      username: 'test',
+      credential: 'test123',
+    },
+  ],
 };
 
 let receiverPeerConnectionInfo = {};
