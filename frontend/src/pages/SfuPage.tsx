@@ -172,37 +172,32 @@ export default function SfuPage() {
     socket.connect();
 
     socket.on('connect', async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: myMediaState.video,
-          audio: myMediaState.mic,
-        });
-        console.log(stream);
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: myMediaState.video,
+        audio: myMediaState.mic,
+      });
 
-        myStream.current = stream;
-        myVideoRef.current!.srcObject = myStream.current;
+      myStream.current = stream;
+      myVideoRef.current!.srcObject = myStream.current;
 
-        socket.emit('join', '1');
+      socket.emit('join', '1');
 
-        const sendPc = new RTCPeerConnection(RTCConfiguration);
-        sendPcRef.current = sendPc;
-        sendPc.onicecandidate = (ice: RTCPeerConnectionIceEvent) => {
-          socket.emit('senderIcecandidate', { icecandidate: ice.candidate });
-        };
+      const sendPc = new RTCPeerConnection(RTCConfiguration);
+      sendPcRef.current = sendPc;
+      sendPc.onicecandidate = (ice: RTCPeerConnectionIceEvent) => {
+        socket.emit('senderIcecandidate', { icecandidate: ice.candidate });
+      };
 
-        myStream.current!.getTracks().forEach((track: MediaStreamTrack) => {
-          sendPc.addTrack(track, myStream.current!);
-        });
+      myStream.current!.getTracks().forEach((track: MediaStreamTrack) => {
+        sendPc.addTrack(track, myStream.current!);
+      });
 
-        const offer = await sendPc.createOffer({
-          // offerToReceiveAudio: true,
-          offerToReceiveVideo: true,
-        });
-        await sendPc.setLocalDescription(offer);
-        socket.emit('senderOffer', { offer });
-      } catch (err) {
-        console.log(err);
-      }
+      const offer = await sendPc.createOffer({
+        offerToReceiveAudio: true,
+        offerToReceiveVideo: true,
+      });
+      await sendPc.setLocalDescription(offer);
+      socket.emit('senderOffer', { offer });
     });
 
     socket.on('notice-all-peers', (peerIdsInRoom) => {
@@ -224,7 +219,7 @@ export default function SfuPage() {
         };
 
         const offer = await receivePc.createOffer({
-          // offerToReceiveAudio: true,
+          offerToReceiveAudio: true,
           offerToReceiveVideo: true,
         });
         await receivePc.setLocalDescription(offer);
@@ -262,7 +257,7 @@ export default function SfuPage() {
       };
 
       const offer = await receivePc.createOffer({
-        // offerToReceiveAudio: true,
+        offerToReceiveAudio: true,
         offerToReceiveVideo: true,
       });
       await receivePc.setLocalDescription(offer);

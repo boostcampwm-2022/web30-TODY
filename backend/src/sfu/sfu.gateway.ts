@@ -87,7 +87,7 @@ export class SfuGateway
 
     await receivePc.setRemoteDescription(offer);
     const answer = await receivePc.createAnswer({
-      // offerToReceiveAudio: true,
+      offerToReceiveAudio: true,
       offerToReceiveVideo: true,
     });
     await receivePc.setLocalDescription(answer);
@@ -118,7 +118,7 @@ export class SfuGateway
     });
 
     const answer = await sendPc.createAnswer({
-      // offerToReceiveAudio: true,
+      offerToReceiveAudio: true,
       offerToReceiveVideo: true,
     });
     await sendPc.setLocalDescription(answer);
