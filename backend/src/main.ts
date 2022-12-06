@@ -8,6 +8,7 @@ import { SocketModule } from './socket/socket.module';
 import * as cookieParser from 'cookie-parser';
 import corsConfig from './config/cors.config';
 import { MediaServerModule } from './mediaServer/mediaServer.module';
+import { SfuModule } from './sfu/sfu.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -28,9 +29,13 @@ async function bootstrap() {
   // });
   // await socketApp.listen(8000);
   // console.log('Server is running.');
-  const mediaServer = await NestFactory.create(MediaServerModule, {
+  // const mediaServer = await NestFactory.create(MediaServerModule, {
+  //   cors: true,
+  // });
+  // await mediaServer.listen(8000);
+  const sfuApp = await NestFactory.create(SfuModule, {
     cors: true,
   });
-  await mediaServer.listen(8000);
+  await sfuApp.listen(8000);
 }
 bootstrap();
