@@ -7,6 +7,6 @@ async function bootstrap() {
   const mediaServerApp = await NestFactory.create(MediaServerModule, {
     cors: true,
   });
-  await mediaServerApp.listen(8000);
+  await mediaServerApp.listen(9000);
 }
 bootstrap();
