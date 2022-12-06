@@ -157,15 +157,9 @@ export default function SfuPage() {
   });
 
   const RTCConfiguration = {
-    iceServers: [
-      { urls: 'stun:101.101.219.107:3478' },
-      {
-        urls: 'turn:101.101.219.107:3478',
-        credential: 'test123',
-        username: 'test',
-      },
-    ],
+    iceServers: [{ urls: 'stun.l.google.com:19302' }],
   };
+
   const [remoteStreams, setRemoteStreams] = useState<{
     [socketId: string]: MediaStream;
   }>({});
