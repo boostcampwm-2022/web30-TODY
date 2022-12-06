@@ -145,9 +145,9 @@ export default function MeshPage() {
     participantsList: any;
   }>(getParticipantsListRequest);
 
-  useEffect(() => {
-    getParticipants(roomInfo.studyRoomId);
-  }, []);
+  // useEffect(() => {
+  //   getParticipants(roomInfo.studyRoomId);
+  // }, []);
 
   const [activeSideBar, setActiveSideBar] = useState('');
   const [myMediaState, setMyMediaState] = useState({
@@ -326,7 +326,7 @@ export default function MeshPage() {
     <StudyRoomPageLayout>
       <Content>
         <RoomInfo>
-          <RoomTitle>{roomInfo.name}</RoomTitle>
+          <RoomTitle>2</RoomTitle>
           <RoomStatus>4/5</RoomStatus>
         </RoomInfo>
         <VideoListLayout>
