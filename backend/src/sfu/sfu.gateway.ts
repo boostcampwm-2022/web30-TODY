@@ -15,7 +15,7 @@ const receivePcs: { [id: string]: RTCPeerConnection } = {};
 const sendPcs: { [id: string]: { [targetId: string]: RTCPeerConnection } } = {};
 const streams: { [id: string]: MediaStream[] } = {};
 const RTCConfiguration = {
-  iceServers: [{ urls: 'stun.l.google.com:19302' }],
+  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
 };
 
 @WebSocketGateway({ cors: true })
