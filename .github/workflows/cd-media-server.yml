@@ -14,10 +14,10 @@ jobs:
       - name: deploy to prod
         uses: appleboy/ssh-action@master
         with:
-          host: ${{secrets.BE_HOST}}
-          username: ${{secrets.BE_USERNAME}}
-          password: ${{secrets.BE_PASSWORD}}
-          port: ${{secrets.BE_PORT}}
+          host: ${{secrets.MS_HOST}}
+          username: ${{secrets.MS_USERNAME}}
+          password: ${{secrets.MS_PASSWORD}}
+          port: ${{secrets.MS_PORT}}
           script: |
             cd sfu
             git checkout main
