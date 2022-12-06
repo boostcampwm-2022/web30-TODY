@@ -138,7 +138,14 @@ const socket = io(process.env.REACT_APP_SOCKET_URL!, {
 });
 
 const PCConfig = {
-  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
+  iceServers: [
+    { urls: 'stun:101.101.219.107:3478' },
+    {
+      urls: 'turn:101.101.219.107:3478',
+      username: 'test',
+      credential: 'test123',
+    },
+  ],
 };
 
 export default function StudyRoomPage() {
