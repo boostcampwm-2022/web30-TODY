@@ -193,8 +193,8 @@ export default function SfuPage() {
       });
 
       const offer = await sendPc.createOffer({
-        offerToReceiveAudio: true,
-        offerToReceiveVideo: true,
+        offerToReceiveAudio: false,
+        offerToReceiveVideo: false,
       });
       await sendPc.setLocalDescription(offer);
       socket.emit('senderOffer', { offer });

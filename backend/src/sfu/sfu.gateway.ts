@@ -118,8 +118,8 @@ export class SfuGateway
     });
 
     const answer = await sendPc.createAnswer({
-      offerToReceiveAudio: true,
-      offerToReceiveVideo: true,
+      offerToReceiveAudio: false,
+      offerToReceiveVideo: false,
     });
     await sendPc.setLocalDescription(answer);
     client.emit('receiverAnswer', { answer, targetId });
