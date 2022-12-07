@@ -137,7 +137,7 @@ const RoomExitButton = styled.button`
 
 const socket = io(process.env.REACT_APP_SFU_URL!, {
   autoConnect: false,
-  path: '/sfu/socket.io',
+  // path: '/sfu/socket.io',
 });
 
 export default function SfuPage() {
@@ -183,6 +183,7 @@ export default function SfuPage() {
       sendPc.addTrack(track, myStream.current!);
     });
 
+    // sendPc.createDataChannel('chat');
     const offer = await sendPc.createOffer({
       offerToReceiveAudio: false,
       offerToReceiveVideo: false,
@@ -237,7 +238,7 @@ export default function SfuPage() {
     socket.on(SFU_EVENTS.NOTICE_ALL_PEERS, (peerIdsInRoom) => {
       peerIdsInRoom.forEach(async (peerId: string) => {
         const offer = await createReceiver(peerId);
-        socket.emit(SFU_EVENTS.RECEIVER_ANSWER, {
+        socket.emit(SFU_EVENTS.RECEIVER_OFFER, {
           offer,
           targetId: peerId,
         });
