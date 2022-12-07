@@ -4,11 +4,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './filter/all-exceptions.filter';
-import { SocketModule } from './socket/socket.module';
 import * as cookieParser from 'cookie-parser';
 import corsConfig from './config/cors.config';
-import { MediaServerModule } from './mediaServer/mediaServer.module';
 import { SfuModule } from './sfu/sfu.module';
+import { globalChatModule } from './global-chat/globalChat.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -25,10 +24,10 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
   await app.listen(5000);
   console.log('Server is running.');
-  // const socketApp = await NestFactory.create(SocketModule, {
-  //   cors: true,
-  // });
-  // await socketApp.listen(8000);
+  const globalChatApp = await NestFactory.create(globalChatModule, {
+    cors: true,
+  });
+  await globalChatApp.listen(8000);
   const sfuApp = await NestFactory.create(SfuModule, {
     cors: true,
   });
