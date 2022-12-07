@@ -1,0 +1,28 @@
+name: cd-media-server
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "media-server/**"
+
+jobs:
+  deploy-media-server:
+    name: deploy-media-server
+    runs-on: ubuntu-latest
+    steps:
+      - name: deploy to prod
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{secrets.MS_HOST}}
+          username: ${{secrets.MS_USERNAME}}
+          password: ${{secrets.MS_PASSWORD}}
+          port: ${{secrets.MS_PORT}}
+          script: |
+            cd sfu
+            git checkout main
+            git pull origin main
+            cd media-server
+            npm i
+            npm run build
+            npm run start:reload

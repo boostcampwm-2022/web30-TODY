@@ -15,7 +15,6 @@ export default function RemoteVideo({ remoteStream }: RemoteVideoProps) {
   const ref = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    console.log(remoteStream.getVideoTracks());
     if (ref.current) ref.current.srcObject = remoteStream;
   }, [remoteStream]);
 
