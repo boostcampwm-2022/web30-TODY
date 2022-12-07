@@ -10,14 +10,13 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({ cors: true, path: '/globalChat', namespace: 'globalChat' })
 export class globalChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer() server: Server;
 
   afterInit(server: Server) {
-    server.path('globalChat');
     console.log('globalChat socket server is running');
   }
 

@@ -18,14 +18,13 @@ const RTCConfiguration = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
 };
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({ cors: true, path: '/sfu', namespace: 'sfu' })
 export class SfuGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer() server: Server;
 
   afterInit(server: Server) {
-    server.path('sfu');
     console.log('sfu Socket server is running');
   }
 
