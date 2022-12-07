@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { globalChatGateway } from '../sfu/globalChat.gateway';
+import { globalChatGateway } from './globalChat.gateway';
 
 @Module({
   providers: [globalChatGateway],
