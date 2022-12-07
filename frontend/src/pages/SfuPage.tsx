@@ -136,6 +136,7 @@ const RoomExitButton = styled.button`
 
 const socket = io(process.env.REACT_APP_SFU_URL!, {
   autoConnect: false,
+  path: '/sfu/socket.io',
 });
 
 export default function SfuPage() {
@@ -371,12 +372,12 @@ export default function SfuPage() {
             ))}
           </VideoList>
         </VideoListLayout>
-        {/* {activeSideBar !== '' &&
+        {activeSideBar !== '' &&
           (activeSideBar === '채팅' ? (
             <ChatSideBar />
           ) : (
             <ParticipantsSideBar participants={participantsList} />
-          ))} */}
+          ))}
       </Content>
       <BottomBarLayout>
         <MenuList onClick={onClickButtons}>
