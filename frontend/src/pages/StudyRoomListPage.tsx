@@ -18,6 +18,7 @@ import StudyRoomList from '@components/studyRoomList/StudyRoomList';
 import { useLocation, useNavigate } from 'react-router-dom';
 import qs from 'qs';
 import Pagination from '@components/common/Pagination';
+import { io } from 'socket.io-client';
 import getStudyRoomListRequest from '../axios/requests/getStudyRoomListRequest';
 import createStudyRoomRequest from '../axios/requests/createStudyRoomRequest';
 
@@ -49,6 +50,11 @@ const SearchResultText = styled.h3`
   font-weight: 700;
   font-size: 20px;
 `;
+
+const socket = io(process.env.REACT_APP_SFU_URL!, {
+  autoConnect: false,
+  path: '/globalChat/socket.io',
+});
 
 export default function StudyRoomListPage() {
   const navigate = useNavigate();
