@@ -10,7 +10,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import SFU_EVENTS from 'src/constants/sfuEvents';
-import { dataCollectionPhase } from 'typeorm-model-generator/dist/src/Engine';
+import { getCanvasBody, getChatBody } from 'src/utils/sendDcBodyFormatter';
 import * as wrtc from 'wrtc';
 
 const receivePcs: { [id: string]: RTCPeerConnection } = {};
@@ -97,15 +97,15 @@ export class SfuGateway
     receivePc.ondatachannel = (e: RTCDataChannelEvent) => {
       const datachannel = e.channel;
       datachannel.onmessage = (e: MessageEvent) => {
-        console.log('receivePC', e.data);
-        console.log('receivePC', sendDcs);
-        if (!sendDcs[client.id]) return;
-        Object.values(sendDcs[client.id]).forEach((dc) => {
-          console.log(dc.readyState);
-          if (dc.readyState !== 'open') {
-            return;
-          }
-          dc.send(`11: ${e.data}`);
+        const body = JSON.parse(e.data);
+        const formattedBody =
+          body.type === 'chat'
+            ? getChatBody(body, client.id)
+            : getCanvasBody(body, client.id);
+        Object.entries(sendDcs).forEach(([toId, object]) => {
+          const sendDc = object[client.id];
+          if (!sendDc) return;
+          sendDc.send(JSON.stringify(formattedBody));
         });
       };
     };
@@ -128,27 +128,6 @@ export class SfuGateway
       RTCConfiguration,
     );
 
-    sendPc.ondatachannel = (e: RTCDataChannelEvent) => {
-      const dc = e.channel;
-      dc.onmessage = (e) => {
-        console.log('22', e.data);
-      };
-      // sendDcs[client.id]
-      //   ? (sendDcs[client.id][targetId] = dc)
-      //   : (sendDcs[client.id] = { [targetId]: dc });
-      // dc.onopen = (e) => {
-      //   console.log(e);
-      // };
-    };
-
-    // const sendDc = sendPc.createDataChannel('chat');
-    // sendDcs[client.id]
-    //   ? (sendDcs[client.id][targetId] = sendDc)
-    //   : (sendDcs[client.id] = { [targetId]: sendDc });
-    // sendDc.onopen = (e) => {
-    //   console.log(e);
-    // };
-
     await sendPc.setRemoteDescription(offer);
     sendPcs[client.id]
       ? (sendPcs[client.id][targetId] = sendPc)
@@ -159,6 +138,13 @@ export class SfuGateway
         icecandidate: ice.candidate,
         targetId,
       });
+    };
+
+    sendPc.ondatachannel = (e: any) => {
+      const datachannel = e.channel;
+      sendDcs[client.id]
+        ? (sendDcs[client.id][targetId] = datachannel)
+        : (sendDcs[client.id] = { [targetId]: datachannel });
     };
 
     const streamToSend = streams[targetId][0];

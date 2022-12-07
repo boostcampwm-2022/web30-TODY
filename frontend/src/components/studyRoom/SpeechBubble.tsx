@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Chat } from 'types/chat.types';
 
 const SpeechBubbleLayout = styled.div<{ isMine: boolean }>`
   display: flex;
@@ -6,6 +7,10 @@ const SpeechBubbleLayout = styled.div<{ isMine: boolean }>`
   justify-content: flex-start;
   align-items: flex-end;
   gap: 6px;
+
+  & + & {
+    margin-top: 10px;
+  }
 `;
 
 const Bubble = styled.div<{ isMine: boolean }>`
@@ -25,23 +30,19 @@ const Time = styled.span`
   color: #959595;
 `;
 
-interface ChatInfoData {
-  sender: string;
-  message: string;
-  time: string;
-}
-
 interface Props {
-  chat: ChatInfoData;
+  chat: Chat;
 }
 
 export default function SpeechBubble({ chat }: Props) {
-  const { sender, message, time } = chat;
+  const { sender, message, timestamp } = chat;
 
   return (
     <SpeechBubbleLayout isMine={sender === '멍냥'}>
       <Bubble isMine={sender === '멍냥'}>{message}</Bubble>
-      <Time>{time}</Time>
+      <Time>
+        {timestamp && new Date(timestamp)?.toTimeString().split(' ')[0]}
+      </Time>
     </SpeechBubbleLayout>
   );
 }

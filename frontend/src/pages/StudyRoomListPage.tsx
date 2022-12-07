@@ -10,10 +10,7 @@ import CustomButton from '@components/common/CustomButton';
 import TagInput from '@components/studyRoomList/TagInput';
 import useAxios from '@hooks/useAxios';
 import Loader from '@components/common/Loader';
-import {
-  NewRoomInfoData,
-  RoomListData,
-} from '@components/studyRoomList/studyRoomList.types';
+import { NewRoomInfoData, RoomListData } from 'types/studyRoomList.types';
 import StudyRoomList from '@components/studyRoomList/StudyRoomList';
 import { useLocation, useNavigate } from 'react-router-dom';
 import qs from 'qs';

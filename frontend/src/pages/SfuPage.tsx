@@ -16,6 +16,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import useAxios from '@hooks/useAxios';
 import SFU_EVENTS from 'constants/sfuEvents';
+import { Chat } from 'types/chat.types';
 import ParticipantsSideBar from '@components/studyRoom/ParticipantsSideBar';
 import getParticipantsListRequest from '../axios/requests/getParticipantsListRequest';
 
@@ -152,10 +153,10 @@ export default function SfuPage() {
     getParticipants(roomInfo.studyRoomId);
   }, []);
 
-  const [activeSideBar, setActiveSideBar] = useState('');
+  const [activeSideBar, setActiveSideBar] = useState('채팅');
   const [myMediaState, setMyMediaState] = useState({
     video: true,
-    mic: true,
+    mic: false,
   });
 
   const RTCConfiguration = {
@@ -165,14 +166,12 @@ export default function SfuPage() {
   const [remoteStreams, setRemoteStreams] = useState<{
     [socketId: string]: MediaStream;
   }>({});
+  const [chats, setChats] = useState<Chat[]>([]);
   const myVideoRef = useRef<HTMLVideoElement | null>(null);
   const myStream = useRef<MediaStream | null>(null);
   const receivePcs = useRef<{ [socketId: string]: RTCPeerConnection }>({});
   const sendPcRef = useRef<RTCPeerConnection | null>(null);
-  const receiveDataChannels = useRef<{ [socketId: string]: RTCDataChannel }>(
-    {},
-  );
-  const sendDataChannel = useRef<RTCDataChannel | null>(null);
+  const sendDataChannelRef = useRef<RTCDataChannel | null>(null);
 
   const createSender = useCallback(async () => {
     const sendPc = new RTCPeerConnection(RTCConfiguration);
@@ -188,14 +187,8 @@ export default function SfuPage() {
     });
 
     const senderDc = sendPc.createDataChannel('chat');
-    senderDc.onopen = (e) => {
-      console.log('open', e);
-    };
-    sendDataChannel.current = senderDc;
+    sendDataChannelRef.current = senderDc;
 
-    // sendDataChannel.current.onmessage = (e: MessageEvent) => {
-    //   console.log(e.data);
-    // };
     const offer = await sendPc.createOffer({
       offerToReceiveAudio: false,
       offerToReceiveVideo: false,
@@ -222,20 +215,13 @@ export default function SfuPage() {
     };
 
     const receiveDc = receivePc.createDataChannel('chat');
-    receiveDc.onopen = (e: any) => {
-      console.log(e);
-      receiveDc.send('^^');
-    };
     receiveDc.onmessage = (e: any) => {
-      console.log('??????');
       console.log(e.data);
+      const body = JSON.parse(e.data);
+      if (body.type === 'chat') {
+        setChats((prev) => [...prev, body]);
+      }
     };
-    // receivePc.ondatachannel = (e: RTCDataChannelEvent) => {
-    //   const datachannel = e.channel;
-    //   datachannel.onmessage = (ee: any) => {
-    //     console.log(ee.data);
-    //   };
-    // };
 
     const offer = await receivePc.createOffer({
       offerToReceiveAudio: true,
@@ -398,7 +384,10 @@ export default function SfuPage() {
         </VideoListLayout>
         {activeSideBar !== '' &&
           (activeSideBar === '채팅' ? (
-            <ChatSideBar sendDataChannel={sendDataChannel} />
+            <ChatSideBar
+              sendDataChannelRef={sendDataChannelRef}
+              chatList={chats}
+            />
           ) : (
             <ParticipantsSideBar participants={participantsList} />
           ))}
