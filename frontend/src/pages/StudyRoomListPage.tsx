@@ -9,16 +9,18 @@ import Modal from '@components/common/Modal';
 import CustomInput from '@components/common/CustomInput';
 import CustomButton from '@components/common/CustomButton';
 import TagInput from '@components/studyRoomList/TagInput';
-import useAxios from '@hooks/useAxios';
 import Loader from '@components/common/Loader';
 import {
   NewRoomInfoData,
   RoomListData,
 } from '@components/studyRoomList/studyRoomList.types';
 import StudyRoomList from '@components/studyRoomList/StudyRoomList';
+import Pagination from '@components/common/Pagination';
+import ChatItem from '@components/studyRoomList/StudyRoomListChatItem';
+import ChatBar from '@components/studyRoomList/StudyRoomListChatBar';
 import { useLocation, useNavigate } from 'react-router-dom';
 import qs from 'qs';
-import Pagination from '@components/common/Pagination';
+import useAxios from '@hooks/useAxios';
 import { io } from 'socket.io-client';
 import getStudyRoomListRequest from '../axios/requests/getStudyRoomListRequest';
 import createStudyRoomRequest from '../axios/requests/createStudyRoomRequest';
@@ -50,6 +52,35 @@ const SearchInfoLayout = styled.div`
 const SearchResultText = styled.h3`
   font-weight: 700;
   font-size: 20px;
+`;
+
+const ChatContainer = styled.div`
+  width: 100%;
+  height: 296px;
+  padding: 25px 28px 25px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 2px -2px 4px rgba(0, 0, 0, 0.2);
+  border-radius: 30px 30px 0px 0px;
+  background-color: var(--orange2);
+`;
+
+const ChatList = styled.div`
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow-y: scroll;
+  &::-webkit-scrollbar {
+    width: 6px;
+    border-raduis: 2px;
+    background: var(--orange3);
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 2px;
+    background: var(--orange);
+  }
 `;
 
 const socket = io(process.env.REACT_APP_SOCKET_URL!, {
@@ -106,6 +137,18 @@ export default function StudyRoomListPage() {
     useState<NewRoomInfoData>(newRoomInfoInitState);
   const [tagList, setTagList] = useState<string[]>([]);
   const [modal, setModal] = useState(false);
+  const [chatContentsList, setChatContentsList] = useState<
+    Array<{ name: string; content: string }>
+  >([
+    {
+      name: 'user1',
+      content: '반갑습니다.',
+    },
+    {
+      name: 'user2',
+      content: '반갑습니다.',
+    },
+  ]);
 
   const validateInput = (name: string, value: string) => {
     switch (name) {
@@ -184,6 +227,14 @@ export default function StudyRoomListPage() {
           </div>
         </SearchInfoLayout>
         <StudyRoomList searchResult={searchResult} />
+        <ChatContainer>
+          <ChatList>
+            {chatContentsList.map(({ name, content }) => {
+              return <ChatItem name={name} content={content} />;
+            })}
+          </ChatList>
+          <ChatBar />
+        </ChatContainer>
         {searchResult && (
           <Pagination
             pageCount={searchResult.pageCount}
