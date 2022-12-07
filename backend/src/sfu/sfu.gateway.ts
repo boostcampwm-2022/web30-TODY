@@ -10,10 +10,12 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import SFU_EVENTS from 'src/constants/sfuEvents';
+import { dataCollectionPhase } from 'typeorm-model-generator/dist/src/Engine';
 import * as wrtc from 'wrtc';
 
 const receivePcs: { [id: string]: RTCPeerConnection } = {};
 const sendPcs: { [id: string]: { [targetId: string]: RTCPeerConnection } } = {};
+const sendDcs: { [id: string]: { [targetId: string]: RTCDataChannel } } = {};
 const streams: { [id: string]: MediaStream[] } = {};
 const RTCConfiguration = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
@@ -70,7 +72,9 @@ export class SfuGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() { offer }: any,
   ) {
-    const receivePc = new wrtc.RTCPeerConnection(RTCConfiguration);
+    const receivePc: RTCPeerConnection = new wrtc.RTCPeerConnection(
+      RTCConfiguration,
+    );
     receivePcs[client.id] = receivePc;
     receivePc.onicecandidate = (ice: RTCPeerConnectionIceEvent) => {
       client.emit(SFU_EVENTS.RECEIVER_ICECANDIDATE, {
@@ -90,6 +94,22 @@ export class SfuGateway
         .emit(SFU_EVENTS.NEW_PEER, { peerId: client.id });
     };
 
+    receivePc.ondatachannel = (e: RTCDataChannelEvent) => {
+      const datachannel = e.channel;
+      datachannel.onmessage = (e: MessageEvent) => {
+        console.log('receivePC', e.data);
+        console.log('receivePC', sendDcs);
+        if (!sendDcs[client.id]) return;
+        Object.values(sendDcs[client.id]).forEach((dc) => {
+          console.log(dc.readyState);
+          if (dc.readyState !== 'open') {
+            return;
+          }
+          dc.send(`11: ${e.data}`);
+        });
+      };
+    };
+
     await receivePc.setRemoteDescription(offer);
     const answer = await receivePc.createAnswer({
       offerToReceiveAudio: true,
@@ -104,7 +124,31 @@ export class SfuGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() { offer, targetId }: any,
   ) {
-    const sendPc = new wrtc.RTCPeerConnection(RTCConfiguration);
+    const sendPc: RTCPeerConnection = new wrtc.RTCPeerConnection(
+      RTCConfiguration,
+    );
+
+    sendPc.ondatachannel = (e: RTCDataChannelEvent) => {
+      const dc = e.channel;
+      dc.onmessage = (e) => {
+        console.log('22', e.data);
+      };
+      // sendDcs[client.id]
+      //   ? (sendDcs[client.id][targetId] = dc)
+      //   : (sendDcs[client.id] = { [targetId]: dc });
+      // dc.onopen = (e) => {
+      //   console.log(e);
+      // };
+    };
+
+    // const sendDc = sendPc.createDataChannel('chat');
+    // sendDcs[client.id]
+    //   ? (sendDcs[client.id][targetId] = sendDc)
+    //   : (sendDcs[client.id] = { [targetId]: sendDc });
+    // sendDc.onopen = (e) => {
+    //   console.log(e);
+    // };
+
     await sendPc.setRemoteDescription(offer);
     sendPcs[client.id]
       ? (sendPcs[client.id][targetId] = sendPc)

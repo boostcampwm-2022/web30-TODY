@@ -169,6 +169,10 @@ export default function SfuPage() {
   const myStream = useRef<MediaStream | null>(null);
   const receivePcs = useRef<{ [socketId: string]: RTCPeerConnection }>({});
   const sendPcRef = useRef<RTCPeerConnection | null>(null);
+  const receiveDataChannels = useRef<{ [socketId: string]: RTCDataChannel }>(
+    {},
+  );
+  const sendDataChannel = useRef<RTCDataChannel | null>(null);
 
   const createSender = useCallback(async () => {
     const sendPc = new RTCPeerConnection(RTCConfiguration);
@@ -183,7 +187,15 @@ export default function SfuPage() {
       sendPc.addTrack(track, myStream.current!);
     });
 
-    // sendPc.createDataChannel('chat');
+    const senderDc = sendPc.createDataChannel('chat');
+    senderDc.onopen = (e) => {
+      console.log('open', e);
+    };
+    sendDataChannel.current = senderDc;
+
+    // sendDataChannel.current.onmessage = (e: MessageEvent) => {
+    //   console.log(e.data);
+    // };
     const offer = await sendPc.createOffer({
       offerToReceiveAudio: false,
       offerToReceiveVideo: false,
@@ -208,6 +220,22 @@ export default function SfuPage() {
         return next;
       });
     };
+
+    const receiveDc = receivePc.createDataChannel('chat');
+    receiveDc.onopen = (e: any) => {
+      console.log(e);
+      receiveDc.send('^^');
+    };
+    receiveDc.onmessage = (e: any) => {
+      console.log('??????');
+      console.log(e.data);
+    };
+    // receivePc.ondatachannel = (e: RTCDataChannelEvent) => {
+    //   const datachannel = e.channel;
+    //   datachannel.onmessage = (ee: any) => {
+    //     console.log(ee.data);
+    //   };
+    // };
 
     const offer = await receivePc.createOffer({
       offerToReceiveAudio: true,
@@ -370,7 +398,7 @@ export default function SfuPage() {
         </VideoListLayout>
         {activeSideBar !== '' &&
           (activeSideBar === '채팅' ? (
-            <ChatSideBar />
+            <ChatSideBar sendDataChannel={sendDataChannel} />
           ) : (
             <ParticipantsSideBar participants={participantsList} />
           ))}

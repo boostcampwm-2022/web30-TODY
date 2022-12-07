@@ -1,3 +1,4 @@
+import React from 'react';
 import styled from 'styled-components';
 import DownArrowIcon from '@assets/icons/down-triangle.svg';
 import SpeechBubble from './SpeechBubble';
@@ -67,7 +68,18 @@ const SelectReceiver = styled.select`
   outline: none;
 `;
 
-export default function ChatSideBar() {
+interface Props {
+  sendDataChannel: React.RefObject<RTCDataChannel | null>;
+}
+
+export default function ChatSideBar({ sendDataChannel }: Props) {
+  const sendChat = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return;
+    if (!sendDataChannel.current) return;
+    const { value } = e.currentTarget;
+    sendDataChannel.current.send(value);
+  };
+
   return (
     <StudyRoomSideBarLayout>
       <ChatTitle>채팅</ChatTitle>
@@ -92,7 +104,11 @@ export default function ChatSideBar() {
           </SelectReceiver>
         </SelectReceiverLayout>
 
-        <ChatInput type="text" placeholder="메세지를 입력하세요." />
+        <ChatInput
+          type="text"
+          onKeyUp={sendChat}
+          placeholder="메세지를 입력하세요."
+        />
       </ChatInputLayout>
     </StudyRoomSideBarLayout>
   );
