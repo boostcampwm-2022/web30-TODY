@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import MainSideBar from '@components/common/MainSideBar';
@@ -51,7 +52,7 @@ const SearchResultText = styled.h3`
   font-size: 20px;
 `;
 
-const socket = io(process.env.REACT_APP_SFU_URL!, {
+const socket = io(process.env.REACT_APP_SOCKET_URL!, {
   autoConnect: false,
   path: '/globalChat/socket.io',
 });
@@ -73,6 +74,14 @@ export default function StudyRoomListPage() {
   const [page, setPage] = useState(queryString.page || 1);
   const [keyword, setKeyword] = useState(queryString.keyword || '');
   const [attendable, setAttendable] = useState(queryString.attendable || false);
+
+  useEffect(() => {
+    socket.connect();
+    console.log(socket.id);
+    return () => {
+      socket.off('connect');
+    };
+  }, []);
 
   useEffect(() => {
     getRoomListRequest({
