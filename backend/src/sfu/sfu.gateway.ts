@@ -25,7 +25,8 @@ export class SfuGateway
   @WebSocketServer() server: Server;
 
   afterInit(server: Server) {
-    console.log('Socket server is running');
+    server.path('sfu');
+    console.log('sfu Socket server is running');
   }
 
   async handleConnection(@ConnectedSocket() client: Socket) {
