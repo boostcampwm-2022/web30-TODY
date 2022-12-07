@@ -16,10 +16,10 @@ export default function Router() {
         <Route path="/home" element={<MainPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/study-room/:roomId" element={<StudyRoomPage />} />
+        <Route path="/study-room/:roomId" element={<MeshPage />} />
         <Route path="/study-rooms" element={<StudyRoomListPage />} />
         <Route path="/study-room-sfu" element={<SfuPage />} />
-        <Route path="/study-room-mesh" element={<MeshPage />} />
+        {/* <Route path="/study-room-mesh" element={<MeshPage />} /> */}
       </Routes>
     </BrowserRouter>
   );
