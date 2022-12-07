@@ -11,8 +11,8 @@ import { ReactComponent as ChatIcon } from '@assets/icons/chat.svg';
 import { ReactComponent as ParticipantsIcon } from '@assets/icons/participants.svg';
 import ChatSideBar from '@components/studyRoom/ChatSideBar';
 import RemoteVideo from '@components/studyRoom/RemoteVideo';
-import { useEffect, useRef, useState, useCallback } from 'react';
-import io from 'socket.io-client';
+import { useEffect, useRef, useState } from 'react';
+import { io } from 'socket.io-client';
 import useAxios from '@hooks/useAxios';
 import ParticipantsSideBar from '@components/studyRoom/ParticipantsSideBar';
 import getParticipantsListRequest from '../axios/requests/getParticipantsListRequest';
@@ -137,18 +137,7 @@ const socket = io(process.env.REACT_APP_SOCKET_URL!, {
   autoConnect: false,
 });
 
-const PCConfig = {
-  iceServers: [
-    { urls: 'stun:101.101.219.107:3478' },
-    {
-      urls: 'turn:101.101.219.107:3478',
-      username: 'test',
-      credential: 'test123',
-    },
-  ],
-};
-
-export default function StudyRoomPage() {
+export default function MeshPage() {
   const { roomId } = useParams();
   const { state: roomInfo } = useLocation();
 
@@ -156,9 +145,9 @@ export default function StudyRoomPage() {
     participantsList: any;
   }>(getParticipantsListRequest);
 
-  useEffect(() => {
-    getParticipants(roomInfo.studyRoomId);
-  }, []);
+  // useEffect(() => {
+  //   getParticipants(roomInfo.studyRoomId);
+  // }, []);
 
   const [activeSideBar, setActiveSideBar] = useState('');
   const [myMediaState, setMyMediaState] = useState({
@@ -166,192 +155,125 @@ export default function StudyRoomPage() {
     mic: true,
   });
 
-  let sendPC: RTCPeerConnection | null = null;
-  const receivePCListRef = useRef<{ [socketId: string]: RTCPeerConnection }>(
-    {},
-  );
-  const [userList, setUserList] = useState<
-    {
-      socketId: string;
-      stream: MediaStream;
-    }[]
-  >([]);
-
-  const myVideoRef = useRef<HTMLVideoElement | null>(null);
-  const myStreamRef = useRef<MediaStream | null>(null);
-
-  const getLocalStream = useCallback(async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: true,
-    });
-
-    myStreamRef.current = stream;
-    if (myVideoRef.current) myVideoRef.current.srcObject = stream;
-  }, []);
-
-  const createSenderOffer = useCallback(async () => {
-    if (!sendPC) return;
-    const sdp = await sendPC.createOffer();
-    await sendPC.setLocalDescription(sdp);
-
-    socket.emit('senderOffer', {
-      senderSdp: sdp,
-      roomId: roomInfo.studyRoomId,
-    });
-  }, []);
-
-  const createSendPeerConnection = useCallback(async () => {
-    const pc = new RTCPeerConnection(PCConfig);
-
-    pc.onicecandidate = (e) => {
-      if (!(e.candidate && socket)) return;
-      socket.emit('senderCandidate', {
-        candidate: e.candidate,
-      });
-    };
-
-    if (myStreamRef.current) {
-      myStreamRef.current.getTracks().forEach((track) => {
-        if (!myStreamRef.current) return;
-        pc.addTrack(track, myStreamRef.current);
-      });
-    }
-
-    sendPC = pc;
-
-    await createSenderOffer();
-  }, []);
-
-  const createReceiverOffer = useCallback(
-    async (pc: any, senderSocketId: any) => {
-      const sdp = await pc.createOffer({
-        offerToReceiveAudio: true,
-        offerToReceiveVideo: true,
-      });
-      await pc.setLocalDescription(sdp);
-
-      if (!socket) return;
-      socket.emit('receiverOffer', {
-        receiverSdp: sdp,
-        senderSocketId,
-        roomId: roomInfo.studyRoomId,
-      });
-    },
-    [],
-  );
-
-  const createReceivePeerConnection = useCallback((senderSocketId: string) => {
-    const pc = new RTCPeerConnection(PCConfig);
-
-    receivePCListRef.current = {
-      ...receivePCListRef.current,
-      [senderSocketId]: pc,
-    };
-
-    pc.onicecandidate = (e) => {
-      if (!(e.candidate && socket)) return;
-      socket.emit('receiverCandidate', {
-        candidate: e.candidate,
-        senderSocketId,
-      });
-    };
-
-    pc.ontrack = (e) => {
-      setUserList((prevUserList) =>
-        prevUserList
-          .filter((user) => user.socketId !== senderSocketId)
-          .concat({
-            socketId: senderSocketId,
-            stream: e.streams[0],
-          }),
-      );
-    };
-
-    createReceiverOffer(pc, senderSocketId);
-  }, []);
-
-  const closeReceiverPeerConnection = (toCloseSocketId: string) => {
-    if (!receivePCListRef.current[toCloseSocketId]) return;
-    receivePCListRef.current[toCloseSocketId].close();
-    delete receivePCListRef.current[toCloseSocketId];
+  const RTCConfiguration = {
+    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
   };
+  const [remoteStreams, setRemoteStreams] = useState<{
+    [socketId: string]: MediaStream;
+  }>({});
+  const myVideoRef = useRef<HTMLVideoElement | null>(null);
+  const myStream = useRef<MediaStream | null>(null);
+  const pcs = useRef<{ [socketId: string]: RTCPeerConnection }>({});
+
+  function addIcecandidateListener(pc: RTCPeerConnection, toId: string) {
+    pc.addEventListener('icecandidate', (ice: RTCPeerConnectionIceEvent) => {
+      socket.emit('icecandidate', {
+        icecandidate: ice.candidate,
+        fromId: socket.id,
+        toId,
+      });
+    });
+  }
+
+  function addTrackListener(pc: RTCPeerConnection, peerId: string) {
+    pc.addEventListener('track', (track: RTCTrackEvent) => {
+      const remoteStream = track.streams[0];
+      setRemoteStreams((prev) => {
+        const next = { ...prev, [peerId]: remoteStream };
+        return next;
+      });
+    });
+  }
 
   useEffect(() => {
     socket.connect();
 
     socket.on('connect', async () => {
-      await getLocalStream();
-      createSendPeerConnection();
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: myMediaState.video,
+        audio: myMediaState.mic,
+      });
+      myStream.current = stream;
+      myVideoRef.current!.srcObject = myStream.current;
+
+      socket.emit('join', '2');
     });
 
-    socket.on('enterNewUser', ({ socketId }) => {
-      createReceivePeerConnection(socketId);
-    });
+    socket.on('notice-all-peers', (peerIdsInRoom) => {
+      peerIdsInRoom.forEach(async (peerId: string) => {
+        const pc = new RTCPeerConnection(RTCConfiguration);
+        pcs.current[peerId] = pc;
+        addIcecandidateListener(pc, peerId);
+        addTrackListener(pc, peerId);
 
-    socket.on('userLeftRoom', ({ socketId }) => {
-      closeReceiverPeerConnection(socketId);
-      setUserList((prevUserList) =>
-        prevUserList.filter((user) => user.socketId !== socketId),
-      );
-    });
+        myStream.current!.getTracks().forEach((track: MediaStreamTrack) => {
+          pc.addTrack(track, myStream.current!);
+        });
 
-    socket.on('getSenderAnswer', async ({ receiverSdp }) => {
-      if (!sendPC) return;
-      await sendPC.setRemoteDescription(receiverSdp);
-      socket.emit('getUserList', {
-        roomId: roomInfo.studyRoomId,
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        socket.emit('offer', { offer, fromId: socket.id, toId: peerId });
       });
     });
 
-    socket.on('getSenderCandidate', async ({ candidate }) => {
-      if (!(candidate && sendPC)) return;
-      await sendPC.addIceCandidate(new RTCIceCandidate(candidate));
+    socket.on('offer', async ({ offer, fromId, toId }) => {
+      const pc = new RTCPeerConnection(RTCConfiguration);
+      pcs.current[fromId] = pc;
+      addIcecandidateListener(pc, fromId);
+      addTrackListener(pc, fromId);
+
+      myStream.current!.getTracks().forEach((track: MediaStreamTrack) => {
+        pc.addTrack(track, myStream.current!);
+      });
+
+      await pc.setRemoteDescription(offer);
+
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+
+      socket.emit('answer', { answer, fromId: socket.id, toId: fromId });
     });
 
-    socket.on('getReceiverAnswer', async ({ senderSocketId, senderSdp }) => {
-      const pc = receivePCListRef.current[senderSocketId];
-      if (!pc) return;
-      await pc.setRemoteDescription(senderSdp);
+    socket.on('answer', async ({ answer, fromId, toId }) => {
+      const pc = pcs.current[fromId];
+      await pc.setRemoteDescription(answer);
     });
 
-    socket.on('getReceiverCandidate', async ({ candidate, senderSocketId }) => {
-      const pc = receivePCListRef.current[senderSocketId];
-      if (!(pc && candidate)) return;
-      await pc.addIceCandidate(new RTCIceCandidate(candidate));
+    socket.on('icecandidate', async ({ icecandidate, fromId, toId }) => {
+      const pc = pcs.current[fromId];
+      if (!icecandidate) return;
+      await pc.addIceCandidate(icecandidate);
     });
 
-    socket.on('allUserList', ({ allUserList }) => {
-      allUserList?.forEach((user: any) =>
-        createReceivePeerConnection(user.socketId),
-      );
+    socket.on('someone-left-room', (peerId) => {
+      const pc = pcs.current[peerId];
+      pc.close();
+      delete pcs.current[peerId];
+
+      setRemoteStreams((prev) => {
+        const next = { ...prev };
+        delete next[peerId];
+        return next;
+      });
     });
 
     return () => {
       socket.off('connect');
-      socket.off('enterNewUser');
-      socket.off('userLeftRoom');
-      socket.off('getSenderAnswer');
-      socket.off('getSenderCandidate');
-      socket.off('getReceiverAnswer');
-      socket.off('getReceiverCandidate');
-      socket.off('allUserList');
+      socket.off('notice-all-peers');
+      socket.off('offer');
+      socket.off('answer');
+      socket.off('icecandidate');
+      socket.off('someone-left-your-room');
       socket.disconnect();
-
-      if (sendPC) {
-        sendPC.close();
-      }
-      userList.forEach((user) => closeReceiverPeerConnection(user.socketId));
     };
   }, []);
 
   function toggleMediaState(type: string) {
     if (type === 'video') {
-      myStreamRef
-        .current!.getVideoTracks()
-        .forEach((track: MediaStreamTrack) => {
-          track.enabled = !track.enabled;
-        });
+      myStream.current!.getVideoTracks().forEach((track: MediaStreamTrack) => {
+        track.enabled = !track.enabled;
+      });
 
       setMyMediaState({
         ...myMediaState,
@@ -361,11 +283,9 @@ export default function StudyRoomPage() {
     }
 
     if (type === 'mic') {
-      myStreamRef
-        .current!.getAudioTracks()
-        .forEach((track: MediaStreamTrack) => {
-          track.enabled = !track.enabled;
-        });
+      myStream.current!.getAudioTracks().forEach((track: MediaStreamTrack) => {
+        track.enabled = !track.enabled;
+      });
 
       setMyMediaState({
         ...myMediaState,
@@ -406,14 +326,14 @@ export default function StudyRoomPage() {
     <StudyRoomPageLayout>
       <Content>
         <RoomInfo>
-          <RoomTitle>{roomInfo.name}</RoomTitle>
+          <RoomTitle>2</RoomTitle>
           <RoomStatus>4/5</RoomStatus>
         </RoomInfo>
         <VideoListLayout>
           <VideoList>
-            <VideoItem muted autoPlay ref={myVideoRef} />
-            {userList.map((user) => (
-              <RemoteVideo key={user.socketId} remoteStream={user.stream} />
+            <VideoItem autoPlay ref={myVideoRef} />
+            {Object.entries(remoteStreams).map(([peerId, remoteStream]) => (
+              <RemoteVideo key={peerId} remoteStream={remoteStream} />
             ))}
           </VideoList>
         </VideoListLayout>
