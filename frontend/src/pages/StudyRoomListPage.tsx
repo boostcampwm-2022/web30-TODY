@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import MainSideBar from '@components/common/MainSideBar';
 import SearchBar from '@components/common/SearchBar';
@@ -22,6 +22,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import qs from 'qs';
 import useAxios from '@hooks/useAxios';
 import { io } from 'socket.io-client';
+import { useRecoilValue } from 'recoil';
+import { userState } from 'recoil/atoms';
+import { v4 } from 'uuid';
 import getStudyRoomListRequest from '../axios/requests/getStudyRoomListRequest';
 import createStudyRoomRequest from '../axios/requests/createStudyRoomRequest';
 
@@ -107,14 +110,6 @@ export default function StudyRoomListPage() {
   const [attendable, setAttendable] = useState(queryString.attendable || false);
 
   useEffect(() => {
-    socket.connect();
-    console.log(socket.id);
-    return () => {
-      socket.off('connect');
-    };
-  }, []);
-
-  useEffect(() => {
     getRoomListRequest({
       page,
       keyword,
@@ -139,16 +134,46 @@ export default function StudyRoomListPage() {
   const [modal, setModal] = useState(false);
   const [chatContentsList, setChatContentsList] = useState<
     Array<{ name: string; content: string }>
-  >([
-    {
-      name: 'user1',
-      content: '반갑습니다.',
-    },
-    {
-      name: 'user2',
-      content: '반갑습니다.',
-    },
-  ]);
+  >([]);
+
+  const chatListRef = useRef<HTMLDivElement>(null);
+
+  const user = useRecoilValue(userState);
+  const [chat, setChat] = useState<string>('');
+
+  useEffect(() => {
+    if (user && chat) {
+      socket.emit('globalChat', { nickname: user.nickname, chat });
+      setChatContentsList((prev) => [
+        ...prev,
+        { name: user.nickname, content: chat },
+      ]);
+      setChat('');
+    }
+  }, [chat]);
+
+  useEffect(() => {
+    if (chatListRef.current) {
+      chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
+    }
+  }, [chatContentsList]);
+
+  useEffect(() => {
+    socket.connect();
+
+    socket.on(
+      'globalChat',
+      async (body: { nickname: string; chat: string }) => {
+        setChatContentsList((prev) => [
+          ...prev,
+          { name: body.nickname, content: body.chat },
+        ]);
+      },
+    );
+    return () => {
+      socket.off('connect');
+    };
+  }, []);
 
   const validateInput = (name: string, value: string) => {
     switch (name) {
@@ -228,12 +253,12 @@ export default function StudyRoomListPage() {
         </SearchInfoLayout>
         <StudyRoomList searchResult={searchResult} />
         <ChatContainer>
-          <ChatList>
+          <ChatList ref={chatListRef}>
             {chatContentsList.map(({ name, content }) => {
-              return <ChatItem name={name} content={content} />;
+              return <ChatItem key={v4()} name={name} content={content} />;
             })}
           </ChatList>
-          <ChatBar />
+          <ChatBar nickname={user?.nickname} setChat={setChat} />
         </ChatContainer>
         {searchResult && (
           <Pagination

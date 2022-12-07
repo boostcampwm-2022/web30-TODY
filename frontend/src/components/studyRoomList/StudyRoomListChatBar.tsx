@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { KeyboardEvent, SetStateAction, Dispatch } from 'react';
 
 const ChatBar = styled.div`
   display: flex;
@@ -29,11 +30,25 @@ const ChatInputBar = styled.input`
   line-height: 21px;
 `;
 
-export default function StudyRoomListChatBar() {
+interface Props {
+  nickname: string | undefined;
+  setChat: Dispatch<SetStateAction<string>>;
+}
+
+export default function StudyRoomListChatBar(props: Props) {
+  const { setChat, nickname } = props;
   return (
     <ChatBar>
       <ChatModeBar>모두에게</ChatModeBar>
-      <ChatInputBar placeholder="채팅을 입력하세요." />
+      <ChatInputBar
+        onKeyPress={(e: any) => {
+          if (e.key === 'Enter' && nickname && e.target.value !== '') {
+            setChat(e.target.value);
+            e.target.value = '';
+          }
+        }}
+        placeholder="채팅을 입력하세요."
+      />
     </ChatBar>
   );
 }
