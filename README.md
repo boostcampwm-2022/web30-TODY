@@ -1,2 +1,4 @@
-# web30-TODY
-<img src="https://user-images.githubusercontent.com/88129850/200801461-16365faa-a09b-42a5-80a6-f0ffa658c3f0.jpg" width="400"/>
+# TODY, Together study
+✏ 화상 공유 비대면 공부방 서비스
+
+## 기술 스택
