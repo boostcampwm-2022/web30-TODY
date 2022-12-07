@@ -9,6 +9,7 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import SFU_EVENTS from 'src/constants/sfuEvents';
 import * as wrtc from 'wrtc';
 
 const receivePcs: { [id: string]: RTCPeerConnection } = {};
@@ -30,7 +31,7 @@ export class SfuGateway
 
   async handleConnection(@ConnectedSocket() client: Socket) {
     console.log(`connected: ${client.id}`);
-    client.on('disconnecting', () => {
+    client.on(SFU_EVENTS.DISCONNECTING, () => {
       const roomName = [...client.rooms].filter(
         (roomName) => roomName !== client.id,
       )[0];
@@ -42,7 +43,7 @@ export class SfuGateway
         Object.values(sendPcs[client.id]).forEach((sendPc) => sendPc.close());
         delete sendPcs[client.id];
       }
-      client.to(roomName).emit('someone-left-room', client.id);
+      client.to(roomName).emit(SFU_EVENTS.SOMEONE_LEFT_ROOM, client.id);
     });
   }
 
@@ -50,7 +51,7 @@ export class SfuGateway
     console.log(`disconnect: ${client.id}`);
   }
 
-  @SubscribeMessage('join')
+  @SubscribeMessage(SFU_EVENTS.JOIN)
   async handleJoin(
     @ConnectedSocket()
     client: Socket,
@@ -61,10 +62,10 @@ export class SfuGateway
     const peerIdsInRoom = socketsInRoom
       .filter((socket) => socket.id !== client.id)
       .map((socket) => socket.id);
-    client.emit('notice-all-peers', peerIdsInRoom);
+    client.emit(SFU_EVENTS.NOTICE_ALL_PEERS, peerIdsInRoom);
   }
 
-  @SubscribeMessage('senderOffer')
+  @SubscribeMessage(SFU_EVENTS.SENDER_OFFER)
   async handleSenderOffer(
     @ConnectedSocket() client: Socket,
     @MessageBody() { offer }: any,
@@ -72,7 +73,9 @@ export class SfuGateway
     const receivePc = new wrtc.RTCPeerConnection(RTCConfiguration);
     receivePcs[client.id] = receivePc;
     receivePc.onicecandidate = (ice: RTCPeerConnectionIceEvent) => {
-      client.emit('receiverIcecandidate', { icecandidate: ice.candidate });
+      client.emit(SFU_EVENTS.RECEIVER_ICECANDIDATE, {
+        icecandidate: ice.candidate,
+      });
     };
     receivePc.ontrack = async (track: RTCTrackEvent) => {
       const roomName = [...client.rooms].filter(
@@ -82,7 +85,9 @@ export class SfuGateway
         ? streams[client.id].push(track.streams[0])
         : (streams[client.id] = [track.streams[0]]);
       if (streams[client.id].length > 1) return;
-      client.broadcast.to(roomName).emit('new-peer', { peerId: client.id });
+      client.broadcast
+        .to(roomName)
+        .emit(SFU_EVENTS.NEW_PEER, { peerId: client.id });
     };
 
     await receivePc.setRemoteDescription(offer);
@@ -91,10 +96,10 @@ export class SfuGateway
       offerToReceiveVideo: true,
     });
     await receivePc.setLocalDescription(answer);
-    client.emit('senderAnswer', { answer });
+    client.emit(SFU_EVENTS.SENDER_ANSWER, { answer });
   }
 
-  @SubscribeMessage('receiverOffer')
+  @SubscribeMessage(SFU_EVENTS.RECEIVER_OFFER)
   async handleReceiverOffer(
     @ConnectedSocket() client: Socket,
     @MessageBody() { offer, targetId }: any,
@@ -106,7 +111,7 @@ export class SfuGateway
       : (sendPcs[client.id] = { [targetId]: sendPc });
 
     sendPc.onicecandidate = (ice: RTCPeerConnectionIceEvent) => {
-      client.emit('senderIcecandidate', {
+      client.emit(SFU_EVENTS.SENDER_ICECANDIDATE, {
         icecandidate: ice.candidate,
         targetId,
       });
@@ -122,10 +127,10 @@ export class SfuGateway
       offerToReceiveVideo: false,
     });
     await sendPc.setLocalDescription(answer);
-    client.emit('receiverAnswer', { answer, targetId });
+    client.emit(SFU_EVENTS.RECEIVER_ANSWER, { answer, targetId });
   }
 
-  @SubscribeMessage('senderIcecandidate')
+  @SubscribeMessage(SFU_EVENTS.SENDER_ICECANDIDATE)
   async handleSenderIcecandidate(
     @ConnectedSocket() client: Socket,
     @MessageBody() { icecandidate }: any,
@@ -135,7 +140,7 @@ export class SfuGateway
     await receivePc.addIceCandidate(icecandidate);
   }
 
-  @SubscribeMessage('receiverIcecandidate')
+  @SubscribeMessage(SFU_EVENTS.RECEIVER_ICECANDIDATE)
   async handleReceiverIcecandidate(
     @ConnectedSocket() client: Socket,
     @MessageBody() { icecandidate, targetId }: any,

@@ -12,9 +12,10 @@ import { ReactComponent as ChatIcon } from '@assets/icons/chat.svg';
 import { ReactComponent as ParticipantsIcon } from '@assets/icons/participants.svg';
 import ChatSideBar from '@components/studyRoom/ChatSideBar';
 import RemoteVideo from '@components/studyRoom/RemoteVideo';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import useAxios from '@hooks/useAxios';
+import SFU_EVENTS from 'constants/sfuEvents';
 import ParticipantsSideBar from '@components/studyRoom/ParticipantsSideBar';
 import getParticipantsListRequest from '../axios/requests/getParticipantsListRequest';
 
@@ -169,10 +170,56 @@ export default function SfuPage() {
   const receivePcs = useRef<{ [socketId: string]: RTCPeerConnection }>({});
   const sendPcRef = useRef<RTCPeerConnection | null>(null);
 
+  const createSender = useCallback(async () => {
+    const sendPc = new RTCPeerConnection(RTCConfiguration);
+    sendPcRef.current = sendPc;
+    sendPc.onicecandidate = (ice: RTCPeerConnectionIceEvent) => {
+      socket.emit(SFU_EVENTS.SENDER_ICECANDIDATE, {
+        icecandidate: ice.candidate,
+      });
+    };
+
+    myStream.current!.getTracks().forEach((track: MediaStreamTrack) => {
+      sendPc.addTrack(track, myStream.current!);
+    });
+
+    const offer = await sendPc.createOffer({
+      offerToReceiveAudio: false,
+      offerToReceiveVideo: false,
+    });
+    await sendPc.setLocalDescription(offer);
+    return offer;
+  }, []);
+
+  const createReceiver = useCallback(async (peerId: string) => {
+    const receivePc = new RTCPeerConnection(RTCConfiguration);
+    receivePcs.current[peerId] = receivePc;
+    receivePc.onicecandidate = (ice: RTCPeerConnectionIceEvent) => {
+      socket.emit(SFU_EVENTS.RECEIVER_ICECANDIDATE, {
+        icecandidate: ice.candidate,
+        peerId,
+      });
+    };
+    receivePc.ontrack = (track: RTCTrackEvent) => {
+      const remoteStream = track.streams[0];
+      setRemoteStreams((prev) => {
+        const next = { ...prev, [peerId]: remoteStream };
+        return next;
+      });
+    };
+
+    const offer = await receivePc.createOffer({
+      offerToReceiveAudio: true,
+      offerToReceiveVideo: true,
+    });
+    await receivePc.setLocalDescription(offer);
+    return offer;
+  }, []);
+
   useEffect(() => {
     socket.connect();
 
-    socket.on('connect', async () => {
+    socket.on(SFU_EVENTS.CONNECT, async () => {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: myMediaState.video,
         audio: myMediaState.mic,
@@ -181,105 +228,53 @@ export default function SfuPage() {
       myStream.current = stream;
       myVideoRef.current!.srcObject = myStream.current;
 
-      socket.emit('join', roomInfo.studyRoomId);
+      socket.emit(SFU_EVENTS.JOIN, roomInfo.studyRoomId);
 
-      const sendPc = new RTCPeerConnection(RTCConfiguration);
-      sendPcRef.current = sendPc;
-      sendPc.onicecandidate = (ice: RTCPeerConnectionIceEvent) => {
-        socket.emit('senderIcecandidate', { icecandidate: ice.candidate });
-      };
-
-      myStream.current!.getTracks().forEach((track: MediaStreamTrack) => {
-        sendPc.addTrack(track, myStream.current!);
-      });
-
-      const offer = await sendPc.createOffer({
-        offerToReceiveAudio: false,
-        offerToReceiveVideo: false,
-      });
-      await sendPc.setLocalDescription(offer);
-      socket.emit('senderOffer', { offer });
+      const offer = await createSender();
+      socket.emit(SFU_EVENTS.SENDER_OFFER, { offer });
     });
 
-    socket.on('notice-all-peers', (peerIdsInRoom) => {
+    socket.on(SFU_EVENTS.NOTICE_ALL_PEERS, (peerIdsInRoom) => {
       peerIdsInRoom.forEach(async (peerId: string) => {
-        const receivePc = new RTCPeerConnection(RTCConfiguration);
-        receivePcs.current[peerId] = receivePc;
-        receivePc.onicecandidate = (ice: RTCPeerConnectionIceEvent) => {
-          socket.emit('receiverIcecandidate', {
-            icecandidate: ice.candidate,
-            peerId,
-          });
-        };
-        receivePc.ontrack = (track: RTCTrackEvent) => {
-          const remoteStream = track.streams[0];
-          setRemoteStreams((prev) => {
-            const next = { ...prev, [peerId]: remoteStream };
-            return next;
-          });
-        };
-
-        const offer = await receivePc.createOffer({
-          offerToReceiveAudio: true,
-          offerToReceiveVideo: true,
-        });
-        await receivePc.setLocalDescription(offer);
-
-        socket.emit('receiverOffer', {
+        const offer = await createReceiver(peerId);
+        socket.emit(SFU_EVENTS.RECEIVER_ANSWER, {
           offer,
           targetId: peerId,
         });
       });
     });
 
-    socket.on('senderAnswer', ({ answer }) => {
+    socket.on(SFU_EVENTS.SENDER_ANSWER, ({ answer }) => {
       sendPcRef.current?.setRemoteDescription(answer);
     });
 
-    socket.on('receiverAnswer', ({ answer, targetId }) => {
+    socket.on(SFU_EVENTS.RECEIVER_ANSWER, ({ answer, targetId }) => {
       receivePcs.current![targetId].setRemoteDescription(answer);
     });
 
-    socket.on('new-peer', async ({ peerId }) => {
-      const receivePc = new RTCPeerConnection(RTCConfiguration);
-      receivePcs.current[peerId] = receivePc;
-      receivePc.onicecandidate = (ice: RTCPeerConnectionIceEvent) => {
-        socket.emit('receiverIcecandidate', {
-          icecandidate: ice.candidate,
-          peerId,
-        });
-      };
-      receivePc.ontrack = (track: RTCTrackEvent) => {
-        const remoteStream = track.streams[0];
-        setRemoteStreams((prev) => {
-          const next = { ...prev, [peerId]: remoteStream };
-          return next;
-        });
-      };
-
-      const offer = await receivePc.createOffer({
-        offerToReceiveAudio: true,
-        offerToReceiveVideo: true,
-      });
-      await receivePc.setLocalDescription(offer);
-      socket.emit('receiverOffer', {
+    socket.on(SFU_EVENTS.NEW_PEER, async ({ peerId }) => {
+      const offer = await createReceiver(peerId);
+      socket.emit(SFU_EVENTS.RECEIVER_OFFER, {
         offer,
         targetId: peerId,
       });
     });
 
-    socket.on('senderIcecandidate', async ({ icecandidate, targetId }) => {
-      const receivePc = receivePcs.current[targetId];
-      if (!icecandidate) return;
-      await receivePc.addIceCandidate(icecandidate);
-    });
+    socket.on(
+      SFU_EVENTS.SENDER_ICECANDIDATE,
+      async ({ icecandidate, targetId }) => {
+        const receivePc = receivePcs.current[targetId];
+        if (!icecandidate) return;
+        await receivePc.addIceCandidate(icecandidate);
+      },
+    );
 
-    socket.on('receiverIcecandidate', async ({ icecandidate }) => {
+    socket.on(SFU_EVENTS.RECEIVER_ICECANDIDATE, async ({ icecandidate }) => {
       if (!icecandidate) return;
       await sendPcRef.current!.addIceCandidate(icecandidate);
     });
 
-    socket.on('someone-left-room', (peerId) => {
+    socket.on(SFU_EVENTS.SOMEONE_LEFT_ROOM, (peerId) => {
       const receivePc = receivePcs.current[peerId];
       receivePc.close();
       delete receivePcs.current[peerId];
@@ -292,14 +287,14 @@ export default function SfuPage() {
     });
 
     return () => {
-      socket.off('connect');
-      socket.off('notice-all-peers');
-      socket.off('receiverAnswer');
-      socket.off('senderAnswer');
-      socket.off('receiverIcecandidate');
-      socket.off('senderIcecandidate');
-      socket.off('new-peer');
-      socket.off('someone-left-your-room');
+      socket.off(SFU_EVENTS.CONNECT);
+      socket.off(SFU_EVENTS.NOTICE_ALL_PEERS);
+      socket.off(SFU_EVENTS.RECEIVER_ANSWER);
+      socket.off(SFU_EVENTS.SENDER_ANSWER);
+      socket.off(SFU_EVENTS.RECEIVER_ICECANDIDATE);
+      socket.off(SFU_EVENTS.SENDER_ICECANDIDATE);
+      socket.off(SFU_EVENTS.NEW_PEER);
+      socket.off(SFU_EVENTS.SOMEONE_LEFT_ROOM);
       socket.disconnect();
     };
   }, []);
