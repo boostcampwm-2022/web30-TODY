@@ -146,10 +146,6 @@ export default function MeshPage() {
   }>(getParticipantsListRequest);
 
   useEffect(() => {
-    if (!roomInfo) {
-      getParticipants(roomId);
-      return;
-    }
     getParticipants(roomInfo.studyRoomId);
   }, []);
 
@@ -200,7 +196,7 @@ export default function MeshPage() {
       myStream.current = stream;
       myVideoRef.current!.srcObject = myStream.current;
 
-      socket.emit('join', roomId);
+      socket.emit('join', roomInfo.studyRoomId);
     });
 
     socket.on('notice-all-peers', (peerIdsInRoom) => {
@@ -330,12 +326,12 @@ export default function MeshPage() {
     <StudyRoomPageLayout>
       <Content>
         <RoomInfo>
-          <RoomTitle>{roomInfo.name || 'Mesh페이지'}</RoomTitle>
+          <RoomTitle>{roomInfo.name}</RoomTitle>
           <RoomStatus>4/5</RoomStatus>
         </RoomInfo>
         <VideoListLayout>
           <VideoList>
-            <VideoItem muted autoPlay ref={myVideoRef} />
+            <VideoItem autoPlay ref={myVideoRef} muted />
             {Object.entries(remoteStreams).map(([peerId, remoteStream]) => (
               <RemoteVideo key={peerId} remoteStream={remoteStream} />
             ))}
