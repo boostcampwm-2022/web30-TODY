@@ -136,6 +136,7 @@ const RoomExitButton = styled.button`
 
 const socket = io(process.env.REACT_APP_SFU_URL!, {
   autoConnect: false,
+  path: '/sfu/socket.io',
 });
 
 export default function SfuPage() {
