@@ -24,10 +24,6 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
   await app.listen(5000);
   console.log('Server is running.');
-  const globalChatApp = await NestFactory.create(globalChatModule, {
-    cors: true,
-  });
-  await globalChatApp.listen(8000);
   const sfuApp = await NestFactory.create(SfuModule, {
     cors: true,
   });
