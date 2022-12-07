@@ -371,12 +371,12 @@ export default function SfuPage() {
             ))}
           </VideoList>
         </VideoListLayout>
-        {/* {activeSideBar !== '' &&
+        {activeSideBar !== '' &&
           (activeSideBar === '채팅' ? (
             <ChatSideBar />
           ) : (
             <ParticipantsSideBar participants={participantsList} />
-          ))} */}
+          ))}
       </Content>
       <BottomBarLayout>
         <MenuList onClick={onClickButtons}>
