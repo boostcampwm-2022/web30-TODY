@@ -147,7 +147,7 @@ export default function SfuPage() {
   }>(getParticipantsListRequest);
 
   useEffect(() => {
-    getParticipants(roomId);
+    getParticipants(roomInfo.studyRoomId);
   }, []);
 
   const [activeSideBar, setActiveSideBar] = useState('');
@@ -180,7 +180,7 @@ export default function SfuPage() {
       myStream.current = stream;
       myVideoRef.current!.srcObject = myStream.current;
 
-      socket.emit('join', '1');
+      socket.emit('join', roomInfo.studyRoomId);
 
       const sendPc = new RTCPeerConnection(RTCConfiguration);
       sendPcRef.current = sendPc;
@@ -360,7 +360,7 @@ export default function SfuPage() {
     <StudyRoomPageLayout>
       <Content>
         <RoomInfo>
-          <RoomTitle>1</RoomTitle>
+          <RoomTitle>{roomInfo.name}</RoomTitle>
           <RoomStatus>4/5</RoomStatus>
         </RoomInfo>
         <VideoListLayout>
