@@ -1,6 +1,7 @@
 import axiosBackend from '../instances/axiosBackend';
 
 interface NewRoomInfoProps {
+  managerId: string;
   name: string;
   content: string;
   maxPersonnel: number;

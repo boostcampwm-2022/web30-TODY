@@ -187,7 +187,6 @@ export default function StudyRoomListPage() {
 
   const onChangeNewRoomInfo = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
     setNewRoomInfo({
       ...newRoomInfo,
       [name]: validateInput(name, value),
@@ -202,11 +201,13 @@ export default function StudyRoomListPage() {
   const createNewStudyRoom = () => {
     if (newRoomInfo.name === '' || newRoomInfo.maxPersonnel < 1) return;
 
-    createRoomRequest({
-      ...newRoomInfo,
-      tags: tagList,
-    });
-
+    if (user) {
+      createRoomRequest({
+        ...newRoomInfo,
+        managerId: user.userId,
+        tags: tagList,
+      });
+    }
     setTagList([]);
   };
 

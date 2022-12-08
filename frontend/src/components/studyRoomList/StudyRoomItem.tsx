@@ -94,7 +94,6 @@ export default function StudyRoomItem(props: Props) {
   } = props;
 
   const navigate = useNavigate();
-
   return (
     <StudyRoomItemLayout
       onClick={() => {

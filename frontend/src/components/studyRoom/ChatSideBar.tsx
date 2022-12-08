@@ -79,7 +79,7 @@ interface Props {
 export default function ChatSideBar({ sendDataChannelRef, chatList }: Props) {
   const user = useRecoilValue(userState);
   const sendChat = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key !== 'Enter') return;
+    if (e.key !== 'Enter' || !e.currentTarget.value) return;
     if (!sendDataChannelRef || !sendDataChannelRef.current || !user) return;
     const { value } = e.currentTarget;
     const body = JSON.stringify({

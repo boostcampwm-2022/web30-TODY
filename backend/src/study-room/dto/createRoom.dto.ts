@@ -8,6 +8,9 @@ import {
 
 export class createRoomDto {
   @IsString()
+  readonly managerId: string;
+
+  @IsString()
   @MaxLength(10, { message: 'title is too long' })
   readonly name: string;
 

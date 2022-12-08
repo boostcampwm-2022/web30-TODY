@@ -34,7 +34,7 @@ export class StudyRoom {
   //@Column('varchar', { name: 'MANAGER_ID', length: 50 })
   @ManyToOne(() => User, (user) => user.userId)
   @JoinColumn({ name: 'MANAGER_ID' })
-  managerId: string;
+  managerId: User;
 
   @Column('timestamp', { name: 'CREATE_TIME', nullable: true })
   createTime: Date | null;
