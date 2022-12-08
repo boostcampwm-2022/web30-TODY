@@ -24,6 +24,7 @@ import getParticipantsListRequest from '../axios/requests/getParticipantsListReq
 import checkMasterRequest from '../axios/requests/checkMasterRequest';
 import enterRoomRequest from '../axios/requests/enterRoomRequest';
 import leaveRoomRequest from '../axios/requests/leaveRoomRequest';
+import deleteRoomRequest from '../axios/requests/deleteRoomRequest';
 
 const StudyRoomPageLayout = styled.div`
   height: 100vh;
@@ -172,6 +173,7 @@ export default function SfuPage() {
   const [enterRoom, , ,] = useAxios<void>(enterRoomRequest);
   const [checkMaster, , , isMaster] = useAxios<boolean>(checkMasterRequest);
   const [leaveRoom, , ,] = useAxios<void>(leaveRoomRequest);
+  const [deleteRoom, , ,] = useAxios<void>(deleteRoomRequest);
 
   useEffect(() => {
     if (user) {
@@ -198,6 +200,7 @@ export default function SfuPage() {
   }, []);
 
   const navigate = useNavigate();
+
   const leaveRoomEvent = () => {
     if (user) {
       leaveRoom({
@@ -219,11 +222,10 @@ export default function SfuPage() {
     };
   }, []);
 
-  const deleteRoomEvent = async () => {
+  const deleteRoomEvent = () => {
     if (user) {
-      await checkMaster({
+      deleteRoom({
         studyRoomId: roomInfo.studyRoomId,
-        userId: user.userId,
       });
     }
     navigate(`/study-rooms`);

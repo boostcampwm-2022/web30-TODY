@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
 import { StudyRoomService } from './study-room.service';
 import { createRoomDto } from './dto/createRoom.dto';
+import { DeleteResult } from 'typeorm';
 
 @Controller('study-room')
 export class StudyRoomController {
@@ -49,5 +50,10 @@ export class StudyRoomController {
       info.userId,
     );
     return isMaster;
+  }
+
+  @Post('/deleteRoom')
+  async leave(@Body() body: { studyRoomId: number }): Promise<DeleteResult> {
+    return await this.studyRoomService.deleteRoom(body.studyRoomId);
   }
 }

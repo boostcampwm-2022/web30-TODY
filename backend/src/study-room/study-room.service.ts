@@ -213,4 +213,12 @@ export class StudyRoomService {
     const isMaster = res[0].managerId.userId === userId ? true : false;
     return isMaster;
   }
+
+  async deleteRoom(studyRoomId: number) {
+    const res = await this.studyRoomRepository.delete({
+      studyRoomId: studyRoomId,
+    });
+    await this.redisCacheService.deleteRoomValue(studyRoomId);
+    return res;
+  }
 }
