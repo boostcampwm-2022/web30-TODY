@@ -38,4 +38,16 @@ export class StudyRoomController {
     );
     return participantsList;
   }
+
+  @Post('/check-master')
+  @HttpCode(200)
+  async checkMasterOfRoom(
+    @Body() info: { studyRoomId: number; userId: string },
+  ): Promise<boolean> {
+    const isMaster = await this.studyRoomService.checkMasterOfRoom(
+      info.studyRoomId,
+      info.userId,
+    );
+    return isMaster;
+  }
 }

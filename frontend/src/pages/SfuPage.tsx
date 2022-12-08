@@ -21,6 +21,7 @@ import ParticipantsSideBar from '@components/studyRoom/ParticipantsSideBar';
 import { useRecoilValue } from 'recoil';
 import { userState } from 'recoil/atoms';
 import getParticipantsListRequest from '../axios/requests/getParticipantsListRequest';
+import checkMasterRequest from '../axios/requests/checkMasterRequest';
 import enterRoomRequest from '../axios/requests/enterRoomRequest';
 import leaveRoomRequest from '../axios/requests/leaveRoomRequest';
 
@@ -139,6 +140,20 @@ const RoomExitButton = styled.button`
   font-size: 20px;
   font-weight: 700;
 `;
+const RoomDeleteButton = styled.button`
+  position: absolute;
+  top: 0;
+  right: 170px;
+  transform: translate(0, 50%);
+  width: 108px;
+  height: 46px;
+  background-color: var(--red);
+  border-radius: 8px;
+  color: var(--white);
+  font-family: 'yg-jalnan';
+  font-size: 20px;
+  font-weight: 700;
+`;
 
 const socket = io(process.env.REACT_APP_SFU_URL!, {
   autoConnect: false,
@@ -154,6 +169,7 @@ export default function SfuPage() {
   }>(getParticipantsListRequest);
 
   const user = useRecoilValue(userState);
+  const [checkMaster, , , isMaster] = useAxios<boolean>(checkMasterRequest);
   const [enterRoom, , ,] = useAxios<void>(enterRoomRequest);
   const [leaveRoom, , ,] = useAxios<void>(leaveRoomRequest);
 
@@ -192,6 +208,25 @@ export default function SfuPage() {
         });
       }
     };
+  }, []);
+
+  const deleteRoomEvent = async () => {
+    if (user) {
+      await checkMaster({
+        studyRoomId: roomInfo.studyRoomId,
+        userId: user.userId,
+      });
+    }
+    navigate(`/study-rooms`);
+  };
+
+  useEffect(() => {
+    if (user) {
+      checkMaster({
+        studyRoomId: roomInfo.studyRoomId,
+        userId: user.userId,
+      });
+    }
   }, []);
 
   const [activeSideBar, setActiveSideBar] = useState('채팅');
@@ -490,6 +525,9 @@ export default function SfuPage() {
           </MenuItem>
         </MenuList>
         <RoomExitButton onClick={leaveRoomEvent}>나가기</RoomExitButton>
+        {isMaster ? (
+          <RoomDeleteButton onClick={deleteRoomEvent}>삭제</RoomDeleteButton>
+        ) : null}
       </BottomBarLayout>
     </StudyRoomPageLayout>
   );

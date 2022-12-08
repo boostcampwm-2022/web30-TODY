@@ -25,7 +25,9 @@ export class StudyRoomService {
       studyRoomName: roomInfo.name,
       studyRoomContent: roomInfo.content,
       maxPersonnel: roomInfo.maxPersonnel,
-      managerId: '1',
+      managerId: {
+        userId: '1',
+      },
       tag1: roomInfo.tags[0],
       tag2: roomInfo.tags[1],
       createTime: new Date(),
@@ -199,5 +201,16 @@ export class StudyRoomService {
       studyRoomList,
     };
     return searchResult;
+  }
+
+  async checkMasterOfRoom(studyRoomId: number, userId: string) {
+    const res = await this.studyRoomRepository.find({
+      relations: { managerId: true },
+      where: {
+        studyRoomId: studyRoomId,
+      },
+    });
+    const isMaster = res[0].managerId.userId === userId ? true : false;
+    return isMaster;
   }
 }
