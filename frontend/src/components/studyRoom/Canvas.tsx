@@ -15,12 +15,9 @@ const CanvasArea = styled.canvas`
 
 interface Props {
   sendDataChannelRef: React.RefObject<RTCDataChannel | null>;
-  receiveDataChannelRef: React.RefObject<RTCDataChannel | null>;
+  receiveDcs: React.RefObject<{ [socketId: string]: RTCDataChannel } | null>;
 }
-export default function Canvas({
-  sendDataChannelRef,
-  receiveDataChannelRef,
-}: Props) {
+export default function Canvas({ sendDataChannelRef, receiveDcs }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const isPaintingRef = useRef<boolean>(false);
@@ -51,15 +48,16 @@ export default function Canvas({
   };
 
   useEffect(() => {
-    if (!receiveDataChannelRef.current || !sendDataChannelRef.current) return;
-    receiveDataChannelRef.current.addEventListener(
+    if (receiveDcs.current) {
+      Object.values(receiveDcs.current).forEach((receiveDc) => {
+        receiveDc.addEventListener('message', canvasMessageHandler);
+      });
+    }
+    sendDataChannelRef.current?.addEventListener(
       'message',
       canvasMessageHandler,
     );
-    sendDataChannelRef.current.addEventListener(
-      'message',
-      canvasMessageHandler,
-    );
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -75,14 +73,13 @@ export default function Canvas({
     if (mouseEvent === 'mousemove' && !isPaintingRef.current) return;
     const mouseX = e.nativeEvent.offsetX;
     const mouseY = e.nativeEvent.offsetY;
-    if (!sendDataChannelRef.current) return;
     const body = {
       type: 'canvas',
       mouseEvent,
       mouseX,
       mouseY,
     };
-    sendDataChannelRef.current.send(JSON.stringify(body));
+    sendDataChannelRef.current?.send(JSON.stringify(body));
   };
 
   return (

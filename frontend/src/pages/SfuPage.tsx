@@ -173,9 +173,9 @@ export default function SfuPage() {
   const myVideoRef = useRef<HTMLVideoElement | null>(null);
   const myStream = useRef<MediaStream | null>(null);
   const receivePcs = useRef<{ [socketId: string]: RTCPeerConnection }>({});
+  const receiveDcs = useRef<{ [socketId: string]: RTCDataChannel }>({});
   const sendPcRef = useRef<RTCPeerConnection | null>(null);
   const sendDataChannelRef = useRef<RTCDataChannel | null>(null);
-  const receiveDataChannelRef = useRef<RTCDataChannel | null>(null);
 
   const createSender = useCallback(async () => {
     const sendPc = new RTCPeerConnection(RTCConfiguration);
@@ -225,7 +225,7 @@ export default function SfuPage() {
     };
 
     const receiveDc = receivePc.createDataChannel('chat');
-    receiveDataChannelRef.current = receiveDc;
+    receiveDcs.current[peerId] = receiveDc;
     receiveDc.onmessage = (e: any) => {
       const body = JSON.parse(e.data);
       if (body.type === 'chat') {
@@ -386,7 +386,7 @@ export default function SfuPage() {
         {isActiveCanvas && (
           <Canvas
             sendDataChannelRef={sendDataChannelRef}
-            receiveDataChannelRef={receiveDataChannelRef}
+            receiveDcs={receiveDcs}
           />
         )}
         <RoomInfo>
