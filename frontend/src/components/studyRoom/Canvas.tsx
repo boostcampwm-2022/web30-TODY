@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
 const CanvasLayout = styled.div`
@@ -25,21 +25,40 @@ export default function Canvas({
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const isPaintingRef = useRef<boolean>(false);
 
-  useEffect(() => {
-    if (!receiveDataChannelRef.current) return;
-    receiveDataChannelRef.current.addEventListener('message', (e) => {
-      const body = JSON.parse(e.data);
-      if (body.type !== 'canvas' || !ctxRef.current) return;
-      console.log('receiveDC:', body);
-      //   if (!isPaintingRef.current) {
-      //     isPaintingRef.current = true;
+  const canvasMessageHandler = (e: any) => {
+    const body = JSON.parse(e.data);
+    if (body.type !== 'canvas' || !ctxRef.current) return;
+    console.log(body);
+    const { mouseX, mouseY, mouseEvent } = body;
+    switch (mouseEvent) {
+      case 'mousedown':
+        isPaintingRef.current = true;
+        ctxRef.current.beginPath();
+        ctxRef.current.moveTo(mouseX, mouseY);
+        break;
+      case 'mouseup':
+        isPaintingRef.current = false;
+        break;
+      case 'mousemove':
+        if (!isPaintingRef.current) return;
+        ctxRef.current.lineTo(body.mouseX, body.mouseY);
+        ctxRef.current.stroke();
+        break;
+      default:
+        break;
+    }
+  };
 
-      ctxRef.current?.beginPath();
-      ctxRef.current?.moveTo(body.mouseX, body.mouseY);
-      //   }
-      ctxRef.current.lineTo(body.mouseX, body.mouseY);
-      ctxRef.current.stroke();
-    });
+  useEffect(() => {
+    if (!receiveDataChannelRef.current || !sendDataChannelRef.current) return;
+    receiveDataChannelRef.current.addEventListener(
+      'message',
+      canvasMessageHandler,
+    );
+    sendDataChannelRef.current.addEventListener(
+      'message',
+      canvasMessageHandler,
+    );
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -50,29 +69,18 @@ export default function Canvas({
     ctxRef.current = ctx;
   }, []);
 
-  const sendMouseMove = (e: any) => {
+  const sendCanvasEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const mouseEvent = e.type;
     const mouseX = e.nativeEvent.offsetX;
     const mouseY = e.nativeEvent.offsetY;
-    if (
-      !(isPaintingRef.current && ctxRef.current && sendDataChannelRef.current)
-    )
-      return;
+    if (!sendDataChannelRef.current) return;
     const body = {
       type: 'canvas',
+      mouseEvent,
       mouseX,
       mouseY,
     };
     sendDataChannelRef.current.send(JSON.stringify(body));
-  };
-
-  const sendMouseDown = (e: any) => {
-    isPaintingRef.current = true;
-    const mouseX = e.nativeEvent.offsetX;
-    const mouseY = e.nativeEvent.offsetY;
-  };
-
-  const sendMouseUp = (e: any) => {
-    isPaintingRef.current = false;
   };
 
   return (
@@ -81,10 +89,10 @@ export default function Canvas({
         height={800}
         width={1000}
         ref={canvasRef}
-        onMouseDown={sendMouseDown}
-        onMouseMove={sendMouseMove}
-        onMouseUp={sendMouseUp}
-        onMouseLeave={sendMouseUp}
+        onMouseDown={sendCanvasEvent}
+        onMouseMove={sendCanvasEvent}
+        onMouseUp={sendCanvasEvent}
+        onMouseLeave={sendCanvasEvent}
       />
     </CanvasLayout>
   );

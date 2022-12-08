@@ -156,7 +156,7 @@ export default function SfuPage() {
   }, []);
 
   const [activeSideBar, setActiveSideBar] = useState('');
-  const [isActiveCanvas, setIsActiveCanvas] = useState(true);
+  const [isActiveCanvas, setIsActiveCanvas] = useState(false);
   const [myMediaState, setMyMediaState] = useState({
     video: true,
     mic: false,
@@ -197,9 +197,6 @@ export default function SfuPage() {
       if (body.type === 'chat') {
         setChatList((prev) => [...prev, body]);
       }
-      if (body.type === 'canvas') {
-        console.log('senderDC:', body);
-      }
     };
 
     const offer = await sendPc.createOffer({
@@ -234,9 +231,6 @@ export default function SfuPage() {
       if (body.type === 'chat') {
         setChatList((prev) => [...prev, body]);
       }
-      // if (body.type === 'canvas') {
-      //   console.log('receiveDC:', body);
-      // }
     };
 
     const offer = await receivePc.createOffer({
