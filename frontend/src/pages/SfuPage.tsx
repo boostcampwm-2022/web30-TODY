@@ -18,7 +18,10 @@ import useAxios from '@hooks/useAxios';
 import SFU_EVENTS from 'constants/sfuEvents';
 import { Chat } from 'types/chat.types';
 import ParticipantsSideBar from '@components/studyRoom/ParticipantsSideBar';
+import { useRecoilValue } from 'recoil';
+import { userState } from 'recoil/atoms';
 import getParticipantsListRequest from '../axios/requests/getParticipantsListRequest';
+import enterRoomRequest from '../axios/requests/enterRoomRequest';
 
 const StudyRoomPageLayout = styled.div`
   height: 100vh;
@@ -138,19 +141,33 @@ const RoomExitButton = styled.button`
 
 const socket = io(process.env.REACT_APP_SFU_URL!, {
   autoConnect: false,
-  // path: '/sfu/socket.io',
+  path: '/sfu/socket.io',
 });
 
 export default function SfuPage() {
   const { roomId } = useParams();
   const { state: roomInfo } = useLocation();
 
-  const [getParticipants, loading, error, participantsList] = useAxios<{
+  const [getParticipants, , , participantsList] = useAxios<{
     participantsList: any;
   }>(getParticipantsListRequest);
 
+  const user = useRecoilValue(userState);
+  const [enterRoom, , , ,] = useAxios<void>(enterRoomRequest);
+
   useEffect(() => {
     getParticipants(roomInfo.studyRoomId);
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      enterRoom({
+        studyRoomId: roomInfo.studyRoomId,
+        userId: user.userId,
+        nickname: user.nickname,
+        isMaster: true,
+      });
+    }
   }, []);
 
   const [activeSideBar, setActiveSideBar] = useState('채팅');
@@ -392,7 +409,6 @@ export default function SfuPage() {
             <ChatSideBar
               sendDataChannelRef={sendDataChannelRef}
               chatList={chatList}
-              // setChatList={setChatList}
             />
           ) : (
             <ParticipantsSideBar participants={participantsList} />
