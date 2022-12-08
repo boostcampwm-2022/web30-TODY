@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-param-reassign */
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { ReactComponent as MicIcon } from '@assets/icons/mic.svg';
 import { ReactComponent as MicOffIcon } from '@assets/icons/mic-off.svg';
@@ -22,6 +22,7 @@ import { useRecoilValue } from 'recoil';
 import { userState } from 'recoil/atoms';
 import getParticipantsListRequest from '../axios/requests/getParticipantsListRequest';
 import enterRoomRequest from '../axios/requests/enterRoomRequest';
+import leaveRoomRequest from '../axios/requests/leaveRoomRequest';
 
 const StudyRoomPageLayout = styled.div`
   height: 100vh;
@@ -153,7 +154,8 @@ export default function SfuPage() {
   }>(getParticipantsListRequest);
 
   const user = useRecoilValue(userState);
-  const [enterRoom, , , ,] = useAxios<void>(enterRoomRequest);
+  const [enterRoom, , ,] = useAxios<void>(enterRoomRequest);
+  const [leaveRoom, , ,] = useAxios<void>(leaveRoomRequest);
 
   useEffect(() => {
     getParticipants(roomInfo.studyRoomId);
@@ -168,6 +170,28 @@ export default function SfuPage() {
         isMaster: true,
       });
     }
+  }, []);
+
+  const navigate = useNavigate();
+  const leaveRoomEvent = () => {
+    if (user) {
+      leaveRoom({
+        studyRoomId: roomInfo.studyRoomId,
+        userId: user.userId,
+      });
+    }
+    navigate(`/study-rooms`);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (user) {
+        leaveRoom({
+          studyRoomId: roomInfo.studyRoomId,
+          userId: user.userId,
+        });
+      }
+    };
   }, []);
 
   const [activeSideBar, setActiveSideBar] = useState('채팅');
@@ -465,7 +489,7 @@ export default function SfuPage() {
             멤버
           </MenuItem>
         </MenuList>
-        <RoomExitButton>나가기</RoomExitButton>
+        <RoomExitButton onClick={leaveRoomEvent}>나가기</RoomExitButton>
       </BottomBarLayout>
     </StudyRoomPageLayout>
   );
