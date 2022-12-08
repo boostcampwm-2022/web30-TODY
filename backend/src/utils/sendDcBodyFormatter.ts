@@ -28,5 +28,5 @@ export function getChatBody(body: Chat, fromId: string) {
   return sendBody;
 }
 export function getCanvasBody(body, fromId) {
-  return;
+  return body;
 }

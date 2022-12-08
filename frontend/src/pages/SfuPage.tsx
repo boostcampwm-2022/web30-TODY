@@ -18,6 +18,7 @@ import useAxios from '@hooks/useAxios';
 import SFU_EVENTS from 'constants/sfuEvents';
 import { Chat } from 'types/chat.types';
 import ParticipantsSideBar from '@components/studyRoom/ParticipantsSideBar';
+import Canvas from '@components/studyRoom/Canvas';
 import getParticipantsListRequest from '../axios/requests/getParticipantsListRequest';
 
 const StudyRoomPageLayout = styled.div`
@@ -52,6 +53,7 @@ const RoomStatus = styled.div`
 `;
 
 const Content = styled.div`
+  position: relative;
   flex: 1;
   display: flex;
 `;
@@ -153,7 +155,8 @@ export default function SfuPage() {
     getParticipants(roomInfo.studyRoomId);
   }, []);
 
-  const [activeSideBar, setActiveSideBar] = useState('채팅');
+  const [activeSideBar, setActiveSideBar] = useState('');
+  const [isActiveCanvas, setIsActiveCanvas] = useState(true);
   const [myMediaState, setMyMediaState] = useState({
     video: true,
     mic: false,
@@ -172,6 +175,7 @@ export default function SfuPage() {
   const receivePcs = useRef<{ [socketId: string]: RTCPeerConnection }>({});
   const sendPcRef = useRef<RTCPeerConnection | null>(null);
   const sendDataChannelRef = useRef<RTCDataChannel | null>(null);
+  const receiveDataChannelRef = useRef<RTCDataChannel | null>(null);
 
   const createSender = useCallback(async () => {
     const sendPc = new RTCPeerConnection(RTCConfiguration);
@@ -192,6 +196,9 @@ export default function SfuPage() {
       const body = JSON.parse(e.data);
       if (body.type === 'chat') {
         setChatList((prev) => [...prev, body]);
+      }
+      if (body.type === 'canvas') {
+        console.log('senderDC:', body);
       }
     };
 
@@ -221,11 +228,15 @@ export default function SfuPage() {
     };
 
     const receiveDc = receivePc.createDataChannel('chat');
+    receiveDataChannelRef.current = receiveDc;
     receiveDc.onmessage = (e: any) => {
       const body = JSON.parse(e.data);
       if (body.type === 'chat') {
         setChatList((prev) => [...prev, body]);
       }
+      // if (body.type === 'canvas') {
+      //   console.log('receiveDC:', body);
+      // }
     };
 
     const offer = await receivePc.createOffer({
@@ -367,6 +378,9 @@ export default function SfuPage() {
       case '비디오 켜기':
         toggleMediaState('video');
         break;
+      case '캔버스 공유':
+        setIsActiveCanvas(!isActiveCanvas);
+        break;
       default:
         break;
     }
@@ -375,6 +389,12 @@ export default function SfuPage() {
   return (
     <StudyRoomPageLayout>
       <Content>
+        {isActiveCanvas && (
+          <Canvas
+            sendDataChannelRef={sendDataChannelRef}
+            receiveDataChannelRef={receiveDataChannelRef}
+          />
+        )}
         <RoomInfo>
           <RoomTitle>{roomInfo.name}</RoomTitle>
           <RoomStatus>4/5</RoomStatus>
@@ -430,7 +450,7 @@ export default function SfuPage() {
               비디오 켜기
             </MenuItem>
           )}
-          <MenuItem>
+          <MenuItem className={isActiveCanvas ? 'active' : ''}>
             <IconWrapper>
               <CanvasIcon />
             </IconWrapper>
