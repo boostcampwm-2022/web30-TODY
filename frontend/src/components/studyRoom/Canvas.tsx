@@ -36,6 +36,7 @@ export default function Canvas({
         ctxRef.current.beginPath();
         ctxRef.current.moveTo(mouseX, mouseY);
         break;
+      case 'mouseleave':
       case 'mouseup':
         isPaintingRef.current = false;
         break;
@@ -71,6 +72,7 @@ export default function Canvas({
 
   const sendCanvasEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const mouseEvent = e.type;
+    if (mouseEvent === 'mousemove' && !isPaintingRef.current) return;
     const mouseX = e.nativeEvent.offsetX;
     const mouseY = e.nativeEvent.offsetY;
     if (!sendDataChannelRef.current) return;
