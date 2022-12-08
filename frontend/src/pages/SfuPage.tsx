@@ -304,6 +304,10 @@ export default function SfuPage() {
       receivePc.close();
       delete receivePcs.current[peerId];
 
+      const receiveDc = receiveDcs.current[peerId];
+      receiveDc.close();
+      delete receiveDcs.current[peerId];
+
       setRemoteStreams((prev) => {
         const next = { ...prev };
         delete next[peerId];
