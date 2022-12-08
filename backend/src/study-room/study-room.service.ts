@@ -26,7 +26,7 @@ export class StudyRoomService {
       studyRoomContent: roomInfo.content,
       maxPersonnel: roomInfo.maxPersonnel,
       managerId: {
-        userId: '1',
+        userId: roomInfo.managerId,
       },
       tag1: roomInfo.tags[0],
       tag2: roomInfo.tags[1],

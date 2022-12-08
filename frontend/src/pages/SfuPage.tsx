@@ -169,12 +169,17 @@ export default function SfuPage() {
   }>(getParticipantsListRequest);
 
   const user = useRecoilValue(userState);
-  const [checkMaster, , , isMaster] = useAxios<boolean>(checkMasterRequest);
   const [enterRoom, , ,] = useAxios<void>(enterRoomRequest);
+  const [checkMaster, , , isMaster] = useAxios<boolean>(checkMasterRequest);
   const [leaveRoom, , ,] = useAxios<void>(leaveRoomRequest);
 
   useEffect(() => {
-    getParticipants(roomInfo.studyRoomId);
+    if (user) {
+      checkMaster({
+        studyRoomId: roomId,
+        userId: user.userId,
+      });
+    }
   }, []);
 
   useEffect(() => {
@@ -186,6 +191,10 @@ export default function SfuPage() {
         isMaster: true,
       });
     }
+  }, []);
+
+  useEffect(() => {
+    getParticipants(roomInfo.studyRoomId);
   }, []);
 
   const navigate = useNavigate();
@@ -219,15 +228,6 @@ export default function SfuPage() {
     }
     navigate(`/study-rooms`);
   };
-
-  useEffect(() => {
-    if (user) {
-      checkMaster({
-        studyRoomId: roomInfo.studyRoomId,
-        userId: user.userId,
-      });
-    }
-  }, []);
 
   const [activeSideBar, setActiveSideBar] = useState('채팅');
   const [myMediaState, setMyMediaState] = useState({

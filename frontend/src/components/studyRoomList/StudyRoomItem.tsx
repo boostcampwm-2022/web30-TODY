@@ -94,7 +94,6 @@ export default function StudyRoomItem(props: Props) {
   } = props;
 
   const navigate = useNavigate();
-  console.log(`${name} : ${currentPersonnel}`);
   return (
     <StudyRoomItemLayout
       onClick={() => {
