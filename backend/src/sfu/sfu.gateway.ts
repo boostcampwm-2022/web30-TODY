@@ -18,7 +18,7 @@ const RTCConfiguration = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
 };
 
-@WebSocketGateway({ cors: true, path: '/sfu', namespace: 'sfu' })
+@WebSocketGateway({ cors: true, path: '/sfu' })
 export class SfuGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
