@@ -161,6 +161,8 @@ const socket = io(process.env.REACT_APP_SFU_URL!, {
   path: '/sfu/socket.io',
 });
 
+let isPage = true;
+
 export default function SfuPage() {
   const { roomId } = useParams();
   const { state: roomInfo } = useLocation();
@@ -213,7 +215,7 @@ export default function SfuPage() {
 
   useEffect(() => {
     return () => {
-      if (user) {
+      if (user && isPage) {
         leaveRoom({
           studyRoomId: roomInfo.studyRoomId,
           userId: user.userId,
@@ -227,6 +229,7 @@ export default function SfuPage() {
       deleteRoom({
         studyRoomId: roomInfo.studyRoomId,
       });
+      isPage = false;
     }
     navigate(`/study-rooms`);
   };
