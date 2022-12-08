@@ -173,7 +173,9 @@ export default function SfuPage() {
   const myVideoRef = useRef<HTMLVideoElement | null>(null);
   const myStream = useRef<MediaStream | null>(null);
   const receivePcs = useRef<{ [socketId: string]: RTCPeerConnection }>({});
-  const receiveDcs = useRef<{ [socketId: string]: RTCDataChannel }>({});
+  const [receiveDcs, setReceiveDcs] = useState<{
+    [socketId: string]: RTCDataChannel;
+  }>({});
   const sendPcRef = useRef<RTCPeerConnection | null>(null);
   const sendDcRef = useRef<RTCDataChannel | null>(null);
 
@@ -225,7 +227,7 @@ export default function SfuPage() {
     };
 
     const receiveDc = receivePc.createDataChannel('chat');
-    receiveDcs.current[peerId] = receiveDc;
+    setReceiveDcs((prev) => ({ ...prev, [peerId]: receiveDc }));
     receiveDc.onmessage = (e: any) => {
       const body = JSON.parse(e.data);
       if (body.type === 'chat') {
@@ -304,9 +306,13 @@ export default function SfuPage() {
       receivePc.close();
       delete receivePcs.current[peerId];
 
-      const receiveDc = receiveDcs.current[peerId];
+      const receiveDc = receiveDcs[peerId];
       receiveDc.close();
-      delete receiveDcs.current[peerId];
+      setReceiveDcs((cur) => {
+        const newReceiveDcs = { ...cur };
+        delete newReceiveDcs[peerId];
+        return newReceiveDcs;
+      });
 
       setRemoteStreams((prev) => {
         const next = { ...prev };

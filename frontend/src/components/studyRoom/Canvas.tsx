@@ -15,7 +15,7 @@ const CanvasArea = styled.canvas`
 
 interface Props {
   sendDcRef: React.RefObject<RTCDataChannel | null>;
-  receiveDcs: React.RefObject<{ [socketId: string]: RTCDataChannel } | null>;
+  receiveDcs: { [socketId: string]: RTCDataChannel };
 }
 export default function Canvas({ sendDcRef, receiveDcs }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -26,7 +26,7 @@ export default function Canvas({ sendDcRef, receiveDcs }: Props) {
     const body = JSON.parse(e.data);
     if (body.type !== 'canvas' || !ctxRef.current) return;
     console.log(body);
-    const { mouseX, mouseY, mouseEvent } = body;
+    const { mouseX, mouseY, mouseEvent, isPainting } = body;
     switch (mouseEvent) {
       case 'mousedown':
         isPaintingRef.current = true;
@@ -48,11 +48,12 @@ export default function Canvas({ sendDcRef, receiveDcs }: Props) {
   };
 
   useEffect(() => {
-    if (receiveDcs.current) {
-      Object.values(receiveDcs.current).forEach((receiveDc) => {
-        receiveDc.addEventListener('message', canvasMessageHandler);
-      });
-    }
+    Object.values(receiveDcs).forEach((receiveDc) => {
+      receiveDc.addEventListener('message', canvasMessageHandler);
+    });
+  }, [receiveDcs]);
+
+  useEffect(() => {
     sendDcRef.current?.addEventListener('message', canvasMessageHandler);
 
     const canvas = canvasRef.current;
@@ -65,13 +66,21 @@ export default function Canvas({ sendDcRef, receiveDcs }: Props) {
     ctxRef.current = ctx;
   }, []);
 
+  const localIsDrawing = useRef<boolean>(false);
+
   const sendCanvasEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const mouseEvent = e.type;
-    if (mouseEvent === 'mousemove' && !isPaintingRef.current) return;
+    if (mouseEvent === 'mousedown') {
+      localIsDrawing.current = true;
+    } else if (mouseEvent === 'mouseup') {
+      localIsDrawing.current = false;
+    }
+    if (mouseEvent === 'mousemove' && !localIsDrawing.current) return;
     const mouseX = e.nativeEvent.offsetX;
     const mouseY = e.nativeEvent.offsetY;
     const body = {
       type: 'canvas',
+      isPainting: isPaintingRef.current,
       mouseEvent,
       mouseX,
       mouseY,
