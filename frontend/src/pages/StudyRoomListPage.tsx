@@ -10,10 +10,7 @@ import CustomInput from '@components/common/CustomInput';
 import CustomButton from '@components/common/CustomButton';
 import TagInput from '@components/studyRoomList/TagInput';
 import Loader from '@components/common/Loader';
-import {
-  NewRoomInfoData,
-  RoomListData,
-} from '@components/studyRoomList/studyRoomList.types';
+import { NewRoomInfoData, RoomListData } from 'types/studyRoomList.types';
 import StudyRoomList from '@components/studyRoomList/StudyRoomList';
 import Pagination from '@components/common/Pagination';
 import ChatItem from '@components/studyRoomList/StudyRoomListChatItem';

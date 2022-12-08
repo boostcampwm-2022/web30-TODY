@@ -1,6 +1,10 @@
+import React from 'react';
 import styled from 'styled-components';
 import DownArrowIcon from '@assets/icons/down-triangle.svg';
-import SpeechBubble from './SpeechBubble';
+import { Chat } from 'types/chat.types';
+import { useRecoilValue } from 'recoil';
+import { userState } from 'recoil/atoms';
+import ChatItem from './ChatItem';
 
 const StudyRoomSideBarLayout = styled.div`
   width: 420px;
@@ -67,22 +71,33 @@ const SelectReceiver = styled.select`
   outline: none;
 `;
 
-export default function ChatSideBar() {
+interface Props {
+  sendDataChannelRef?: React.RefObject<RTCDataChannel | null>;
+  chatList?: Chat[];
+}
+
+export default function ChatSideBar({ sendDataChannelRef, chatList }: Props) {
+  const user = useRecoilValue(userState);
+  const sendChat = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return;
+    if (!sendDataChannelRef || !sendDataChannelRef.current || !user) return;
+    const { value } = e.currentTarget;
+    const body = JSON.stringify({
+      type: 'chat',
+      message: value,
+      sender: user.nickname,
+    });
+    sendDataChannelRef.current.send(body);
+    e.currentTarget.value = '';
+  };
+
   return (
     <StudyRoomSideBarLayout>
       <ChatTitle>채팅</ChatTitle>
       <ChatContent>
-        {' '}
-        <SpeechBubble
-          chat={{ sender: '콩순이', message: '안녕안녕^-^', time: '오후 3:12' }}
-        />
-        <SpeechBubble
-          chat={{
-            sender: '멍냥',
-            message: '옹 들어왔구낭 안뇽',
-            time: '오후 3:12',
-          }}
-        />
+        {chatList?.map((chat: Chat) => (
+          <ChatItem key={chat.id} chat={chat} />
+        ))}
       </ChatContent>
       <ChatInputLayout>
         <SelectReceiverLayout>
@@ -92,8 +107,17 @@ export default function ChatSideBar() {
           </SelectReceiver>
         </SelectReceiverLayout>
 
-        <ChatInput type="text" placeholder="메세지를 입력하세요." />
+        <ChatInput
+          type="text"
+          onKeyUp={sendChat}
+          placeholder="메세지를 입력하세요."
+        />
       </ChatInputLayout>
     </StudyRoomSideBarLayout>
   );
 }
+
+ChatSideBar.defaultProps = {
+  sendDataChannelRef: null,
+  chatList: [],
+};

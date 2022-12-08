@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import StudyRoomItem from '@components/studyRoomList/StudyRoomItem';
-import { RoomListData } from './studyRoomList.types';
+import { RoomListData } from 'types/studyRoomList.types';
 
 const RoomListLayout = styled.div`
   min-height: 485px;
