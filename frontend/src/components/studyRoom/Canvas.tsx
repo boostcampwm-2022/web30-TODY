@@ -14,10 +14,10 @@ const CanvasArea = styled.canvas`
 `;
 
 interface Props {
-  sendDataChannelRef: React.RefObject<RTCDataChannel | null>;
+  sendDcRef: React.RefObject<RTCDataChannel | null>;
   receiveDcs: React.RefObject<{ [socketId: string]: RTCDataChannel } | null>;
 }
-export default function Canvas({ sendDataChannelRef, receiveDcs }: Props) {
+export default function Canvas({ sendDcRef, receiveDcs }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const isPaintingRef = useRef<boolean>(false);
@@ -53,10 +53,7 @@ export default function Canvas({ sendDataChannelRef, receiveDcs }: Props) {
         receiveDc.addEventListener('message', canvasMessageHandler);
       });
     }
-    sendDataChannelRef.current?.addEventListener(
-      'message',
-      canvasMessageHandler,
-    );
+    sendDcRef.current?.addEventListener('message', canvasMessageHandler);
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -79,7 +76,7 @@ export default function Canvas({ sendDataChannelRef, receiveDcs }: Props) {
       mouseX,
       mouseY,
     };
-    sendDataChannelRef.current?.send(JSON.stringify(body));
+    sendDcRef.current?.send(JSON.stringify(body));
   };
 
   return (

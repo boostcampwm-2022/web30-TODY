@@ -175,7 +175,7 @@ export default function SfuPage() {
   const receivePcs = useRef<{ [socketId: string]: RTCPeerConnection }>({});
   const receiveDcs = useRef<{ [socketId: string]: RTCDataChannel }>({});
   const sendPcRef = useRef<RTCPeerConnection | null>(null);
-  const sendDataChannelRef = useRef<RTCDataChannel | null>(null);
+  const sendDcRef = useRef<RTCDataChannel | null>(null);
 
   const createSender = useCallback(async () => {
     const sendPc = new RTCPeerConnection(RTCConfiguration);
@@ -191,7 +191,7 @@ export default function SfuPage() {
     });
 
     const senderDc = sendPc.createDataChannel('chat');
-    sendDataChannelRef.current = senderDc;
+    sendDcRef.current = senderDc;
     senderDc.onmessage = (e) => {
       const body = JSON.parse(e.data);
       if (body.type === 'chat') {
@@ -384,10 +384,7 @@ export default function SfuPage() {
     <StudyRoomPageLayout>
       <Content>
         {isActiveCanvas && (
-          <Canvas
-            sendDataChannelRef={sendDataChannelRef}
-            receiveDcs={receiveDcs}
-          />
+          <Canvas sendDcRef={sendDcRef} receiveDcs={receiveDcs} />
         )}
         <RoomInfo>
           <RoomTitle>{roomInfo.name}</RoomTitle>
@@ -404,7 +401,7 @@ export default function SfuPage() {
         {activeSideBar !== '' &&
           (activeSideBar === '채팅' ? (
             <ChatSideBar
-              sendDataChannelRef={sendDataChannelRef}
+              sendDcRef={sendDcRef}
               chatList={chatList}
               // setChatList={setChatList}
             />
