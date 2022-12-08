@@ -166,7 +166,7 @@ export default function SfuPage() {
   const [remoteStreams, setRemoteStreams] = useState<{
     [socketId: string]: MediaStream;
   }>({});
-  const [chats, setChats] = useState<Chat[]>([]);
+  const [chatList, setChatList] = useState<Chat[]>([]);
   const myVideoRef = useRef<HTMLVideoElement | null>(null);
   const myStream = useRef<MediaStream | null>(null);
   const receivePcs = useRef<{ [socketId: string]: RTCPeerConnection }>({});
@@ -188,6 +188,12 @@ export default function SfuPage() {
 
     const senderDc = sendPc.createDataChannel('chat');
     sendDataChannelRef.current = senderDc;
+    senderDc.onmessage = (e) => {
+      const body = JSON.parse(e.data);
+      if (body.type === 'chat') {
+        setChatList((prev) => [...prev, body]);
+      }
+    };
 
     const offer = await sendPc.createOffer({
       offerToReceiveAudio: false,
@@ -216,10 +222,9 @@ export default function SfuPage() {
 
     const receiveDc = receivePc.createDataChannel('chat');
     receiveDc.onmessage = (e: any) => {
-      console.log(e.data);
       const body = JSON.parse(e.data);
       if (body.type === 'chat') {
-        setChats((prev) => [...prev, body]);
+        setChatList((prev) => [...prev, body]);
       }
     };
 
@@ -386,7 +391,8 @@ export default function SfuPage() {
           (activeSideBar === '채팅' ? (
             <ChatSideBar
               sendDataChannelRef={sendDataChannelRef}
-              chatList={chats}
+              chatList={chatList}
+              // setChatList={setChatList}
             />
           ) : (
             <ParticipantsSideBar participants={participantsList} />

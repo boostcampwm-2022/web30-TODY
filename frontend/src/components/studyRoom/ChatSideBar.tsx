@@ -4,7 +4,7 @@ import DownArrowIcon from '@assets/icons/down-triangle.svg';
 import { Chat } from 'types/chat.types';
 import { useRecoilValue } from 'recoil';
 import { userState } from 'recoil/atoms';
-import SpeechBubble from './SpeechBubble';
+import ChatItem from './ChatItem';
 
 const StudyRoomSideBarLayout = styled.div`
   width: 420px;
@@ -88,6 +88,7 @@ export default function ChatSideBar({ sendDataChannelRef, chatList }: Props) {
       sender: user.nickname,
     });
     sendDataChannelRef.current.send(body);
+    e.currentTarget.value = '';
   };
 
   return (
@@ -95,7 +96,7 @@ export default function ChatSideBar({ sendDataChannelRef, chatList }: Props) {
       <ChatTitle>채팅</ChatTitle>
       <ChatContent>
         {chatList?.map((chat: Chat) => (
-          <SpeechBubble key={chat.id} chat={chat} />
+          <ChatItem key={chat.id} chat={chat} />
         ))}
       </ChatContent>
       <ChatInputLayout>

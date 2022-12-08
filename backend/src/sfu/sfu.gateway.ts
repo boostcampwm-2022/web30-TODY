@@ -102,6 +102,7 @@ export class SfuGateway
           body.type === 'chat'
             ? getChatBody(body, client.id)
             : getCanvasBody(body, client.id);
+        datachannel.send(JSON.stringify(formattedBody));
         Object.entries(sendDcs).forEach(([toId, object]) => {
           const sendDc = object[client.id];
           if (!sendDc) return;
