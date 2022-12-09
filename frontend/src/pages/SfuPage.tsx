@@ -18,6 +18,7 @@ import useAxios from '@hooks/useAxios';
 import SFU_EVENTS from 'constants/sfuEvents';
 import { Chat } from 'types/chat.types';
 import ParticipantsSideBar from '@components/studyRoom/ParticipantsSideBar';
+import Canvas from '@components/studyRoom/Canvas';
 import { useRecoilValue } from 'recoil';
 import { userState } from 'recoil/atoms';
 import getParticipantsListRequest from '../axios/requests/getParticipantsListRequest';
@@ -58,6 +59,7 @@ const RoomStatus = styled.div`
 `;
 
 const Content = styled.div`
+  position: relative;
   flex: 1;
   display: flex;
 `;
@@ -201,6 +203,10 @@ export default function SfuPage() {
     getParticipants(roomInfo.studyRoomId);
   }, []);
 
+
+  const [activeSideBar, setActiveSideBar] = useState('');
+  const [isActiveCanvas, setIsActiveCanvas] = useState(false);
+        
   const navigate = useNavigate();
 
   const leaveRoomEvent = () => {
@@ -233,8 +239,7 @@ export default function SfuPage() {
     }
     navigate(`/study-rooms`);
   };
-
-  const [activeSideBar, setActiveSideBar] = useState('채팅');
+      
   const [myMediaState, setMyMediaState] = useState({
     video: true,
     mic: false,
@@ -251,8 +256,11 @@ export default function SfuPage() {
   const myVideoRef = useRef<HTMLVideoElement | null>(null);
   const myStream = useRef<MediaStream | null>(null);
   const receivePcs = useRef<{ [socketId: string]: RTCPeerConnection }>({});
+  const [receiveDcs, setReceiveDcs] = useState<{
+    [socketId: string]: RTCDataChannel;
+  }>({});
   const sendPcRef = useRef<RTCPeerConnection | null>(null);
-  const sendDataChannelRef = useRef<RTCDataChannel | null>(null);
+  const sendDcRef = useRef<RTCDataChannel | null>(null);
 
   const createSender = useCallback(async () => {
     const sendPc = new RTCPeerConnection(RTCConfiguration);
@@ -268,7 +276,7 @@ export default function SfuPage() {
     });
 
     const senderDc = sendPc.createDataChannel('chat');
-    sendDataChannelRef.current = senderDc;
+    sendDcRef.current = senderDc;
     senderDc.onmessage = (e) => {
       const body = JSON.parse(e.data);
       if (body.type === 'chat') {
@@ -302,6 +310,7 @@ export default function SfuPage() {
     };
 
     const receiveDc = receivePc.createDataChannel('chat');
+    setReceiveDcs((prev) => ({ ...prev, [peerId]: receiveDc }));
     receiveDc.onmessage = (e: any) => {
       const body = JSON.parse(e.data);
       if (body.type === 'chat') {
@@ -380,6 +389,12 @@ export default function SfuPage() {
       receivePc.close();
       delete receivePcs.current[peerId];
 
+      setReceiveDcs((cur) => {
+        const newReceiveDcs = { ...cur };
+        delete newReceiveDcs[peerId];
+        return newReceiveDcs;
+      });
+
       setRemoteStreams((prev) => {
         const next = { ...prev };
         delete next[peerId];
@@ -448,6 +463,9 @@ export default function SfuPage() {
       case '비디오 켜기':
         toggleMediaState('video');
         break;
+      case '캔버스 공유':
+        setIsActiveCanvas(!isActiveCanvas);
+        break;
       default:
         break;
     }
@@ -456,6 +474,9 @@ export default function SfuPage() {
   return (
     <StudyRoomPageLayout>
       <Content>
+        {isActiveCanvas && (
+          <Canvas sendDcRef={sendDcRef} receiveDcs={receiveDcs} />
+        )}
         <RoomInfo>
           <RoomTitle>{roomInfo.name}</RoomTitle>
           <RoomStatus>4/5</RoomStatus>
@@ -471,7 +492,7 @@ export default function SfuPage() {
         {activeSideBar !== '' &&
           (activeSideBar === '채팅' ? (
             <ChatSideBar
-              sendDataChannelRef={sendDataChannelRef}
+              sendDcRef={sendDcRef}
               chatList={chatList}
             />
           ) : (
@@ -510,7 +531,7 @@ export default function SfuPage() {
               비디오 켜기
             </MenuItem>
           )}
-          <MenuItem>
+          <MenuItem className={isActiveCanvas ? 'active' : ''}>
             <IconWrapper>
               <CanvasIcon />
             </IconWrapper>

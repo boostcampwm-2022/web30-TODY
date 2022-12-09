@@ -72,22 +72,23 @@ const SelectReceiver = styled.select`
 `;
 
 interface Props {
-  sendDataChannelRef?: React.RefObject<RTCDataChannel | null>;
+  sendDcRef?: React.RefObject<RTCDataChannel | null>;
   chatList?: Chat[];
 }
 
-export default function ChatSideBar({ sendDataChannelRef, chatList }: Props) {
+export default function ChatSideBar({ sendDcRef, chatList }: Props) {
   const user = useRecoilValue(userState);
   const sendChat = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter' || !e.currentTarget.value) return;
-    if (!sendDataChannelRef || !sendDataChannelRef.current || !user) return;
+    if (!sendDcRef || !sendDcRef.current || !user) return;
     const { value } = e.currentTarget;
+
     const body = JSON.stringify({
       type: 'chat',
       message: value,
       sender: user.nickname,
     });
-    sendDataChannelRef.current.send(body);
+    sendDcRef.current.send(body);
     e.currentTarget.value = '';
   };
 
@@ -118,6 +119,6 @@ export default function ChatSideBar({ sendDataChannelRef, chatList }: Props) {
 }
 
 ChatSideBar.defaultProps = {
-  sendDataChannelRef: null,
+  sendDcRef: null,
   chatList: [],
 };

@@ -45,6 +45,10 @@ export class SfuGateway
         Object.values(sendPcs[client.id]).forEach((sendPc) => sendPc.close());
         delete sendPcs[client.id];
       }
+      if (sendDcs[client.id]) {
+        Object.values(sendDcs[client.id]).forEach((sendDc) => sendDc.close());
+        delete sendDcs[client.id];
+      }
       client.to(roomName).emit(SFU_EVENTS.SOMEONE_LEFT_ROOM, client.id);
     });
   }
