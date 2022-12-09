@@ -21,30 +21,30 @@ export default function Canvas({ sendDcRef, receiveDcs }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const isPaintingRef = useRef<boolean>(false);
+  const currentCoor = useRef({ x: 0, y: 0 });
 
-  const canvasMessageHandler = (e: any) => {
+  const draw = ({
+    x1,
+    y1,
+    x2,
+    y2,
+  }: {
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  }) => {
+    if (!ctxRef.current) return;
+    ctxRef.current.beginPath();
+    ctxRef.current.moveTo(x1, y1);
+    ctxRef.current.lineTo(x2, y2);
+    ctxRef.current.stroke();
+  };
+
+  const canvasMessageHandler = (e: MessageEvent) => {
     const body = JSON.parse(e.data);
-    if (body.type !== 'canvas' || !ctxRef.current) return;
-    console.log(body);
-    const { mouseX, mouseY, mouseEvent, isPainting } = body;
-    switch (mouseEvent) {
-      case 'mousedown':
-        isPaintingRef.current = true;
-        ctxRef.current.beginPath();
-        ctxRef.current.moveTo(mouseX, mouseY);
-        break;
-      case 'mouseleave':
-      case 'mouseup':
-        isPaintingRef.current = false;
-        break;
-      case 'mousemove':
-        if (!isPaintingRef.current) return;
-        ctxRef.current.lineTo(body.mouseX, body.mouseY);
-        ctxRef.current.stroke();
-        break;
-      default:
-        break;
-    }
+    if (body.type !== 'canvas') return;
+    draw(body);
   };
 
   useEffect(() => {
@@ -66,26 +66,39 @@ export default function Canvas({ sendDcRef, receiveDcs }: Props) {
     ctxRef.current = ctx;
   }, []);
 
-  const localIsDrawing = useRef<boolean>(false);
-
   const sendCanvasEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!sendDcRef.current) return;
     const mouseEvent = e.type;
-    if (mouseEvent === 'mousedown') {
-      localIsDrawing.current = true;
-    } else if (mouseEvent === 'mouseup') {
-      localIsDrawing.current = false;
-    }
-    if (mouseEvent === 'mousemove' && !localIsDrawing.current) return;
-    const mouseX = e.nativeEvent.offsetX;
-    const mouseY = e.nativeEvent.offsetY;
-    const body = {
-      type: 'canvas',
-      isPainting: isPaintingRef.current,
-      mouseEvent,
-      mouseX,
-      mouseY,
+    const coor = {
+      x1: currentCoor.current.x,
+      y1: currentCoor.current.y,
+      x2: e.nativeEvent.offsetX,
+      y2: e.nativeEvent.offsetY,
     };
-    sendDcRef.current?.send(JSON.stringify(body));
+    switch (mouseEvent) {
+      case 'mousedown':
+        isPaintingRef.current = true;
+        currentCoor.current.x = e.nativeEvent.offsetX;
+        currentCoor.current.y = e.nativeEvent.offsetY;
+        break;
+      case 'mouseleave':
+        isPaintingRef.current = false;
+        break;
+      case 'mouseup':
+        isPaintingRef.current = false;
+        draw(coor);
+        sendDcRef.current.send(JSON.stringify({ type: 'canvas', ...coor }));
+        break;
+      case 'mousemove':
+        if (!isPaintingRef.current) return;
+        draw(coor);
+        sendDcRef.current.send(JSON.stringify({ type: 'canvas', ...coor }));
+        currentCoor.current.x = e.nativeEvent.offsetX;
+        currentCoor.current.y = e.nativeEvent.offsetY;
+        break;
+      default:
+        break;
+    }
   };
 
   return (

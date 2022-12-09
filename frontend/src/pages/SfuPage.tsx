@@ -306,8 +306,6 @@ export default function SfuPage() {
       receivePc.close();
       delete receivePcs.current[peerId];
 
-      const receiveDc = receiveDcs[peerId];
-      receiveDc.close();
       setReceiveDcs((cur) => {
         const newReceiveDcs = { ...cur };
         delete newReceiveDcs[peerId];
