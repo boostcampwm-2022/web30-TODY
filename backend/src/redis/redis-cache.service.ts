@@ -19,6 +19,10 @@ export class RedisCacheService {
     return await this.cacheManager.get(`studyRoom${studyRoomId}`);
   }
 
+  async deleteRoomValue(studyRoomId: number): Promise<any> {
+    return await this.cacheManager.del(`studyRoom${studyRoomId}`);
+  }
+
   async enterRoom(body: {
     studyRoomId: number;
     userId: string;

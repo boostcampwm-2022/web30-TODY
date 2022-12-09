@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import MainSideBar from '@components/common/MainSideBar';
 import SearchBar from '@components/common/SearchBar';
@@ -8,13 +9,19 @@ import Modal from '@components/common/Modal';
 import CustomInput from '@components/common/CustomInput';
 import CustomButton from '@components/common/CustomButton';
 import TagInput from '@components/studyRoomList/TagInput';
-import useAxios from '@hooks/useAxios';
 import Loader from '@components/common/Loader';
 import { NewRoomInfoData, RoomListData } from 'types/studyRoomList.types';
 import StudyRoomList from '@components/studyRoomList/StudyRoomList';
+import Pagination from '@components/common/Pagination';
+import ChatItem from '@components/studyRoomList/StudyRoomListChatItem';
+import ChatBar from '@components/studyRoomList/StudyRoomListChatBar';
 import { useLocation, useNavigate } from 'react-router-dom';
 import qs from 'qs';
-import Pagination from '@components/common/Pagination';
+import useAxios from '@hooks/useAxios';
+import { io } from 'socket.io-client';
+import { useRecoilValue } from 'recoil';
+import { userState } from 'recoil/atoms';
+import { v4 } from 'uuid';
 import getStudyRoomListRequest from '../axios/requests/getStudyRoomListRequest';
 import createStudyRoomRequest from '../axios/requests/createStudyRoomRequest';
 
@@ -46,6 +53,40 @@ const SearchResultText = styled.h3`
   font-weight: 700;
   font-size: 20px;
 `;
+
+const ChatContainer = styled.div`
+  width: 100%;
+  height: 296px;
+  padding: 25px 28px 25px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 2px -2px 4px rgba(0, 0, 0, 0.2);
+  border-radius: 30px 30px 0px 0px;
+  background-color: var(--orange2);
+`;
+
+const ChatList = styled.div`
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow-y: scroll;
+  &::-webkit-scrollbar {
+    width: 6px;
+    border-raduis: 2px;
+    background: var(--orange3);
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 2px;
+    background: var(--orange);
+  }
+`;
+
+const socket = io(process.env.REACT_APP_SOCKET_URL!, {
+  autoConnect: false,
+  path: '/globalChat/socket.io',
+});
 
 export default function StudyRoomListPage() {
   const navigate = useNavigate();
@@ -88,6 +129,48 @@ export default function StudyRoomListPage() {
     useState<NewRoomInfoData>(newRoomInfoInitState);
   const [tagList, setTagList] = useState<string[]>([]);
   const [modal, setModal] = useState(false);
+  const [chatContentsList, setChatContentsList] = useState<
+    Array<{ name: string; content: string }>
+  >([]);
+
+  const chatListRef = useRef<HTMLDivElement>(null);
+
+  const user = useRecoilValue(userState);
+  const [chat, setChat] = useState<string>('');
+
+  useEffect(() => {
+    if (user && chat) {
+      socket.emit('globalChat', { nickname: user.nickname, chat });
+      setChatContentsList((prev) => [
+        ...prev,
+        { name: user.nickname, content: chat },
+      ]);
+      setChat('');
+    }
+  }, [chat]);
+
+  useEffect(() => {
+    if (chatListRef.current) {
+      chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
+    }
+  }, [chatContentsList]);
+
+  useEffect(() => {
+    socket.connect();
+
+    socket.on(
+      'globalChat',
+      async (body: { nickname: string; chat: string }) => {
+        setChatContentsList((prev) => [
+          ...prev,
+          { name: body.nickname, content: body.chat },
+        ]);
+      },
+    );
+    return () => {
+      socket.off('connect');
+    };
+  }, []);
 
   const validateInput = (name: string, value: string) => {
     switch (name) {
@@ -104,7 +187,6 @@ export default function StudyRoomListPage() {
 
   const onChangeNewRoomInfo = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
     setNewRoomInfo({
       ...newRoomInfo,
       [name]: validateInput(name, value),
@@ -119,11 +201,13 @@ export default function StudyRoomListPage() {
   const createNewStudyRoom = () => {
     if (newRoomInfo.name === '' || newRoomInfo.maxPersonnel < 1) return;
 
-    createRoomRequest({
-      ...newRoomInfo,
-      tags: tagList,
-    });
-
+    if (user) {
+      createRoomRequest({
+        ...newRoomInfo,
+        managerId: user.userId,
+        tags: tagList,
+      });
+    }
     setTagList([]);
   };
 
@@ -166,6 +250,14 @@ export default function StudyRoomListPage() {
           </div>
         </SearchInfoLayout>
         <StudyRoomList searchResult={searchResult} />
+        <ChatContainer>
+          <ChatList ref={chatListRef}>
+            {chatContentsList.map(({ name, content }) => {
+              return <ChatItem key={v4()} name={name} content={content} />;
+            })}
+          </ChatList>
+          <ChatBar nickname={user?.nickname} setChat={setChat} />
+        </ChatContainer>
         {searchResult && (
           <Pagination
             pageCount={searchResult.pageCount}

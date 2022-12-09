@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
 import { StudyRoomService } from './study-room.service';
 import { createRoomDto } from './dto/createRoom.dto';
+import { DeleteResult } from 'typeorm';
 
 @Controller('study-room')
 export class StudyRoomController {
@@ -37,5 +38,22 @@ export class StudyRoomController {
       studyRoomId,
     );
     return participantsList;
+  }
+
+  @Post('/check-master')
+  @HttpCode(200)
+  async checkMasterOfRoom(
+    @Body() info: { studyRoomId: number; userId: string },
+  ): Promise<boolean> {
+    const isMaster = await this.studyRoomService.checkMasterOfRoom(
+      info.studyRoomId,
+      info.userId,
+    );
+    return isMaster;
+  }
+
+  @Post('/deleteRoom')
+  async leave(@Body() body: { studyRoomId: number }): Promise<DeleteResult> {
+    return await this.studyRoomService.deleteRoom(body.studyRoomId);
   }
 }

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-param-reassign */
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { ReactComponent as MicIcon } from '@assets/icons/mic.svg';
 import { ReactComponent as MicOffIcon } from '@assets/icons/mic-off.svg';
@@ -19,7 +19,13 @@ import SFU_EVENTS from 'constants/sfuEvents';
 import { Chat } from 'types/chat.types';
 import ParticipantsSideBar from '@components/studyRoom/ParticipantsSideBar';
 import Canvas from '@components/studyRoom/Canvas';
+import { useRecoilValue } from 'recoil';
+import { userState } from 'recoil/atoms';
 import getParticipantsListRequest from '../axios/requests/getParticipantsListRequest';
+import checkMasterRequest from '../axios/requests/checkMasterRequest';
+import enterRoomRequest from '../axios/requests/enterRoomRequest';
+import leaveRoomRequest from '../axios/requests/leaveRoomRequest';
+import deleteRoomRequest from '../axios/requests/deleteRoomRequest';
 
 const StudyRoomPageLayout = styled.div`
   height: 100vh;
@@ -137,26 +143,103 @@ const RoomExitButton = styled.button`
   font-size: 20px;
   font-weight: 700;
 `;
+const RoomDeleteButton = styled.button`
+  position: absolute;
+  top: 0;
+  right: 170px;
+  transform: translate(0, 50%);
+  width: 108px;
+  height: 46px;
+  background-color: var(--red);
+  border-radius: 8px;
+  color: var(--white);
+  font-family: 'yg-jalnan';
+  font-size: 20px;
+  font-weight: 700;
+`;
 
 const socket = io(process.env.REACT_APP_SFU_URL!, {
   autoConnect: false,
-  // path: '/sfu/socket.io',
+  path: '/sfu/socket.io',
 });
+
+let isPage = true;
 
 export default function SfuPage() {
   const { roomId } = useParams();
   const { state: roomInfo } = useLocation();
 
-  const [getParticipants, loading, error, participantsList] = useAxios<{
+  const [getParticipants, , , participantsList] = useAxios<{
     participantsList: any;
   }>(getParticipantsListRequest);
+
+  const user = useRecoilValue(userState);
+  const [enterRoom, , ,] = useAxios<void>(enterRoomRequest);
+  const [checkMaster, , , isMaster] = useAxios<boolean>(checkMasterRequest);
+  const [leaveRoom, , ,] = useAxios<void>(leaveRoomRequest);
+  const [deleteRoom, , ,] = useAxios<void>(deleteRoomRequest);
+
+  useEffect(() => {
+    if (user) {
+      checkMaster({
+        studyRoomId: roomId,
+        userId: user.userId,
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      enterRoom({
+        studyRoomId: roomInfo.studyRoomId,
+        userId: user.userId,
+        nickname: user.nickname,
+        isMaster: true,
+      });
+    }
+  }, []);
 
   useEffect(() => {
     getParticipants(roomInfo.studyRoomId);
   }, []);
 
+
   const [activeSideBar, setActiveSideBar] = useState('');
   const [isActiveCanvas, setIsActiveCanvas] = useState(false);
+        
+  const navigate = useNavigate();
+
+  const leaveRoomEvent = () => {
+    if (user) {
+      leaveRoom({
+        studyRoomId: roomInfo.studyRoomId,
+        userId: user.userId,
+      });
+    }
+    navigate(`/study-rooms`);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (user && isPage) {
+        leaveRoom({
+          studyRoomId: roomInfo.studyRoomId,
+          userId: user.userId,
+        });
+      }
+    };
+  }, []);
+
+  const deleteRoomEvent = () => {
+    if (user) {
+      deleteRoom({
+        studyRoomId: roomInfo.studyRoomId,
+      });
+      isPage = false;
+    }
+    navigate(`/study-rooms`);
+  };
+      
   const [myMediaState, setMyMediaState] = useState({
     video: true,
     mic: false,
@@ -411,7 +494,6 @@ export default function SfuPage() {
             <ChatSideBar
               sendDcRef={sendDcRef}
               chatList={chatList}
-              // setChatList={setChatList}
             />
           ) : (
             <ParticipantsSideBar participants={participantsList} />
@@ -468,7 +550,10 @@ export default function SfuPage() {
             멤버
           </MenuItem>
         </MenuList>
-        <RoomExitButton>나가기</RoomExitButton>
+        <RoomExitButton onClick={leaveRoomEvent}>나가기</RoomExitButton>
+        {isMaster ? (
+          <RoomDeleteButton onClick={deleteRoomEvent}>삭제</RoomDeleteButton>
+        ) : null}
       </BottomBarLayout>
     </StudyRoomPageLayout>
   );

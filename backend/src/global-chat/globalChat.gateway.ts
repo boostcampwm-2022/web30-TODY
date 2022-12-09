@@ -10,18 +10,19 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({ cors: true, path: '/globalChat' })
 export class globalChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer() server: Server;
 
   afterInit(server: Server) {
-    console.log('Socket server is running');
+    console.log('globalChat socket server is running');
   }
 
   async handleConnection(@ConnectedSocket() client: Socket) {
     console.log(`connected: ${client.id}`);
+    client.join('global');
     client.on('disconnecting', () => {
       console.log(client.id);
     });
@@ -31,12 +32,14 @@ export class globalChatGateway
     console.log(`disconnect: ${client.id}`);
   }
 
-  @SubscribeMessage('join')
-  async handleJoin(
+  @SubscribeMessage('globalChat')
+  async handleGlobalChat(
     @ConnectedSocket()
     client: Socket,
-    @MessageBody() roomName: any,
+    @MessageBody() body: { nickname: string; chat: string },
   ) {
-    client.join(roomName);
+    client.broadcast
+      .to('global')
+      .emit('globalChat', { nickname: body.nickname, chat: body.chat });
   }
 }
