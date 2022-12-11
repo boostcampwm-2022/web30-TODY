@@ -40,6 +40,14 @@ export class StudyRoomController {
     return participantsList;
   }
 
+  @Post('/check-is-full')
+  async checkIsFull(
+    @Body() body: { studyRoomId: number },
+  ): Promise<{ isFull: boolean }> {
+    const isFull = await this.studyRoomService.checkIsFull(body.studyRoomId);
+    return { isFull };
+  }
+
   @Post('/check-master')
   @HttpCode(200)
   async checkMasterOfRoom(
