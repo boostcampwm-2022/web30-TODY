@@ -1,15 +1,18 @@
 import axios, { AxiosPromise } from 'axios';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export default function useAxios<T>(
   axiosFunction: (arg?: any) => AxiosPromise<T>,
+  options?: { onMount?: boolean; arg?: any },
 ): [
   (arg?: any) => Promise<void>,
   boolean,
   { status: number | undefined; data: any } | null,
   T | null,
 ] {
-  const [loading, setLoading] = useState<boolean>(false);
+  const onMount = options?.onMount || false;
+  const argument = options?.arg || undefined;
+  const [loading, setLoading] = useState<boolean>(onMount);
   const [error, setError] = useState<{
     status: number | undefined;
     data: any;
@@ -39,6 +42,11 @@ export default function useAxios<T>(
     },
     [axiosFunction],
   );
+
+  useEffect(() => {
+    if (!onMount) return;
+    request(argument);
+  }, []);
 
   return [request, loading, error, data];
 }
