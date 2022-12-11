@@ -244,7 +244,10 @@ export default function SfuPage() {
   const [myMediaState, setMyMediaState] = useState({
     video: true,
     mic: false,
-    screen: false,
+  });
+
+  const [screenShare, setScreenShare] = useState({
+    use: false,
   });
 
   const RTCConfiguration = {
@@ -332,7 +335,7 @@ export default function SfuPage() {
     socket.connect();
 
     socket.on(SFU_EVENTS.CONNECT, async () => {
-      const stream = myMediaState.screen
+      const stream = screenShare.use
         ? await navigator.mediaDevices.getDisplayMedia()
         : await navigator.mediaDevices.getUserMedia({
             video: myMediaState.video,
@@ -418,7 +421,7 @@ export default function SfuPage() {
       socket.off(SFU_EVENTS.SOMEONE_LEFT_ROOM);
       socket.disconnect();
     };
-  }, [myMediaState]);
+  }, [screenShare]);
 
   async function toggleMediaState(type: string) {
     if (type === 'video') {
@@ -445,9 +448,9 @@ export default function SfuPage() {
     }
 
     if (type === 'screen') {
-      setMyMediaState({
-        ...myMediaState,
-        screen: !myMediaState.screen,
+      setScreenShare({
+        ...screenShare,
+        use: !screenShare.use,
       });
     }
   }
@@ -543,7 +546,7 @@ export default function SfuPage() {
               비디오 켜기
             </MenuItem>
           )}
-          {myMediaState.screen ? (
+          {screenShare.use ? (
             <MenuItem>
               <IconWrapper>
                 <MonitorIcon />
