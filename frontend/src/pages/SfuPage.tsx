@@ -169,39 +169,32 @@ export default function SfuPage() {
   const { roomId } = useParams();
   const { state: roomInfo } = useLocation();
 
-  const [getParticipants, , , participantsList] = useAxios<{
+  const [, , , participantsList] = useAxios<{
     participantsList: any;
-  }>(getParticipantsListRequest);
+  }>(getParticipantsListRequest, {
+    onMount: true,
+    arg: roomInfo.studyRoomId,
+  });
 
   const user = useRecoilValue(userState);
-  const [enterRoom, , ,] = useAxios<void>(enterRoomRequest);
-  const [checkMaster, , , isMaster] = useAxios<boolean>(checkMasterRequest);
+  const [, , ,] = useAxios<''>(enterRoomRequest, {
+    onMount: true,
+    arg: {
+      studyRoomId: roomInfo.studyRoomId,
+      userId: user?.userId,
+      nickname: user?.nickname,
+      isMaster: true,
+    },
+  });
   const [leaveRoom, , ,] = useAxios<void>(leaveRoomRequest);
   const [deleteRoom, , ,] = useAxios<void>(deleteRoomRequest);
-
-  useEffect(() => {
-    if (user) {
-      checkMaster({
-        studyRoomId: roomId,
-        userId: user.userId,
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    if (user) {
-      enterRoom({
-        studyRoomId: roomInfo.studyRoomId,
-        userId: user.userId,
-        nickname: user.nickname,
-        isMaster: true,
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    getParticipants(roomInfo.studyRoomId);
-  }, []);
+  const [, , , isMaster] = useAxios<boolean>(checkMasterRequest, {
+    onMount: true,
+    arg: {
+      studyRoomId: roomId,
+      userId: user?.userId,
+    },
+  });
 
   const [activeSideBar, setActiveSideBar] = useState('');
   const [isActiveCanvas, setIsActiveCanvas] = useState(false);
