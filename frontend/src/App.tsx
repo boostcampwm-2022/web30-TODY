@@ -1,4 +1,4 @@
-import { useSetRecoilState } from 'recoil';
+import { useRecoilState } from 'recoil';
 import { useEffect, useState } from 'react';
 import useAxios from '@hooks/useAxios';
 import { userState } from 'recoil/atoms';
@@ -8,9 +8,10 @@ import Router from './routes/Router';
 
 function App() {
   const [isAuthDone, setIsAuthDone] = useState(false);
-  const [requestSilentLogin, loading, err, silentLoginData] =
-    useAxios(silentLoginRequest);
-  const setUser = useSetRecoilState(userState);
+  const [, , err, silentLoginData] = useAxios(silentLoginRequest, {
+    onMount: true,
+  });
+  const [user, setUser] = useRecoilState(userState);
 
   useEffect(() => {
     if (!err) return;
@@ -20,14 +21,14 @@ function App() {
   }, [err]);
 
   useEffect(() => {
-    if (silentLoginData === null) return;
-    setUser(silentLoginData);
+    if (!user) return;
     setIsAuthDone(true);
-  }, [setUser, silentLoginData]);
+  }, [user]);
 
   useEffect(() => {
-    requestSilentLogin();
-  }, [requestSilentLogin]);
+    if (silentLoginData === null) return;
+    setUser(silentLoginData);
+  }, [silentLoginData]);
 
   if (!isAuthDone) {
     return <Loader />;
