@@ -7,6 +7,7 @@ import InitPage from '@pages/InitPage';
 import SfuPage from '@pages/SfuPage';
 import MeshPage from '@pages/MeshPage';
 import PrivateRoute from '@components/common/PrivateRoute';
+import StudyRoomGuard from '@components/common/StudyRoomGuard';
 
 export default function Router() {
   return (
@@ -27,7 +28,9 @@ export default function Router() {
           path="/study-room/:roomId"
           element={
             <PrivateRoute>
-              <SfuPage />
+              <StudyRoomGuard>
+                <SfuPage />
+              </StudyRoomGuard>
             </PrivateRoute>
           }
         />

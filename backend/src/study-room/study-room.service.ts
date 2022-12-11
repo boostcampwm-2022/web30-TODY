@@ -203,6 +203,15 @@ export class StudyRoomService {
     return searchResult;
   }
 
+  async checkIsFull(studyRoomId: number) {
+    const participants = await this.redisCacheService.getRoomValue(studyRoomId);
+    const room = await this.studyRoomRepository.findOne({
+      where: { studyRoomId },
+    });
+    const isFull = room.maxPersonnel <= Object.values(participants).length;
+    return isFull;
+  }
+
   async checkMasterOfRoom(studyRoomId: number, userId: string) {
     const res = await this.studyRoomRepository.find({
       relations: { managerId: true },
