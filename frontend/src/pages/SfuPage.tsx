@@ -64,13 +64,6 @@ const Content = styled.div`
   display: flex;
   overflow: hidden;
 `;
-
-const VideoListLayout = styled.div`
-  flex: 1;
-  display: flex;
-  padding: 58px 10px 10px;
-`;
-
 const VideoList = styled.div`
   flex: 1;
   display: flex;
@@ -78,12 +71,37 @@ const VideoList = styled.div`
   align-content: center;
   flex-wrap: wrap;
   gap: 10px;
+  overflow-y: auto;
 `;
-
 const VideoItem = styled.video`
-  width: 405px;
   height: 308px;
   border-radius: 12px;
+`;
+
+const VideoListLayout = styled.div`
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 58px 10px 10px;
+
+  &.activeCanvas {
+    flex-direction: row-reverse;
+    justify-content: space-evenly;
+    gap: 25px;
+
+    ${VideoList} {
+      max-height: 100%;
+      max-width: 284px;
+      min-width: 135px;
+      overflow-y: auto;
+    }
+    ${VideoItem} {
+      width: 100%;
+      height: auto;
+    }
+  }
 `;
 
 const BottomBarLayout = styled.div`
@@ -474,20 +492,26 @@ export default function SfuPage() {
   return (
     <StudyRoomPageLayout>
       <Content>
-        {isActiveCanvas && (
-          <Canvas sendDcRef={sendDcRef} receiveDcs={receiveDcs} />
-        )}
         <RoomInfo>
           <RoomTitle>{roomInfo.name}</RoomTitle>
           <RoomStatus>4/5</RoomStatus>
         </RoomInfo>
-        <VideoListLayout>
+        <VideoListLayout className={isActiveCanvas ? 'activeCanvas' : ''}>
           <VideoList>
             <VideoItem muted autoPlay ref={myVideoRef} />
             {Object.entries(remoteStreams).map(([peerId, remoteStream]) => (
-              <RemoteVideo key={peerId} remoteStream={remoteStream} />
+              <RemoteVideo
+                key={peerId}
+                remoteStream={remoteStream}
+                className={isActiveCanvas ? 'activeCanvas' : ''}
+              />
             ))}
           </VideoList>
+          <Canvas
+            sendDcRef={sendDcRef}
+            receiveDcs={receiveDcs}
+            isActive={isActiveCanvas}
+          />
         </VideoListLayout>
         {activeSideBar !== '' &&
           (activeSideBar === '채팅' ? (

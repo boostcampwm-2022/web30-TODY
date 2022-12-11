@@ -2,22 +2,26 @@ import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
 const CanvasLayout = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 100;
+  display: none;
+
+  &.active {
+    height: 100%;
+    display: block;
+  }
 `;
 const CanvasArea = styled.canvas`
+  max-height: 100%;
   background-color: white;
-  border: 1px solid black;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.25);
 `;
 
 interface Props {
   sendDcRef: React.RefObject<RTCDataChannel | null>;
   receiveDcs: { [socketId: string]: RTCDataChannel };
+  isActive: boolean;
 }
-export default function Canvas({ sendDcRef, receiveDcs }: Props) {
+
+export default function Canvas({ sendDcRef, receiveDcs, isActive }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const isPaintingRef = useRef<boolean>(false);
@@ -67,19 +71,22 @@ export default function Canvas({ sendDcRef, receiveDcs }: Props) {
   }, []);
 
   const sendCanvasEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const rect = canvasRef.current!.getBoundingClientRect();
+    const scaleX = 1200 / rect.width;
+    const scaleY = 900 / rect.height;
     if (!sendDcRef.current) return;
     const mouseEvent = e.type;
     const coor = {
       x1: currentCoor.current.x,
       y1: currentCoor.current.y,
-      x2: e.nativeEvent.offsetX,
-      y2: e.nativeEvent.offsetY,
+      x2: e.nativeEvent.offsetX * scaleX,
+      y2: e.nativeEvent.offsetY * scaleX,
     };
     switch (mouseEvent) {
       case 'mousedown':
         isPaintingRef.current = true;
-        currentCoor.current.x = e.nativeEvent.offsetX;
-        currentCoor.current.y = e.nativeEvent.offsetY;
+        currentCoor.current.x = e.nativeEvent.offsetX * scaleX;
+        currentCoor.current.y = e.nativeEvent.offsetY * scaleY;
         break;
       case 'mouseleave':
         isPaintingRef.current = false;
@@ -93,8 +100,8 @@ export default function Canvas({ sendDcRef, receiveDcs }: Props) {
         if (!isPaintingRef.current) return;
         draw(coor);
         sendDcRef.current.send(JSON.stringify({ type: 'canvas', ...coor }));
-        currentCoor.current.x = e.nativeEvent.offsetX;
-        currentCoor.current.y = e.nativeEvent.offsetY;
+        currentCoor.current.x = e.nativeEvent.offsetX * scaleX;
+        currentCoor.current.y = e.nativeEvent.offsetY * scaleY;
         break;
       default:
         break;
@@ -102,10 +109,10 @@ export default function Canvas({ sendDcRef, receiveDcs }: Props) {
   };
 
   return (
-    <CanvasLayout>
+    <CanvasLayout className={isActive ? 'active' : ''}>
       <CanvasArea
-        height={800}
-        width={1000}
+        width={1200}
+        height={900}
         ref={canvasRef}
         onMouseDown={sendCanvasEvent}
         onMouseMove={sendCanvasEvent}
