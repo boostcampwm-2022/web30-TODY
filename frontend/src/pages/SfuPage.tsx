@@ -10,6 +10,8 @@ import { ReactComponent as VideoOffIcon } from '@assets/icons/video-off.svg';
 import { ReactComponent as CanvasIcon } from '@assets/icons/canvas.svg';
 import { ReactComponent as ChatIcon } from '@assets/icons/chat.svg';
 import { ReactComponent as ParticipantsIcon } from '@assets/icons/participants.svg';
+import { ReactComponent as MonitorIcon } from '@assets/icons/monitor.svg';
+import { ReactComponent as MonitorOffIcon } from '@assets/icons/monitor-off.svg';
 import ChatSideBar from '@components/studyRoom/ChatSideBar';
 import RemoteVideo from '@components/studyRoom/RemoteVideo';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -244,6 +246,10 @@ export default function SfuPage() {
     mic: false,
   });
 
+  const [screenShare, setScreenShare] = useState({
+    use: false,
+  });
+
   const RTCConfiguration = {
     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
   };
@@ -329,12 +335,15 @@ export default function SfuPage() {
     socket.connect();
 
     socket.on(SFU_EVENTS.CONNECT, async () => {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: myMediaState.video,
-        audio: myMediaState.mic,
-      });
+      const stream = screenShare.use
+        ? await navigator.mediaDevices.getDisplayMedia()
+        : await navigator.mediaDevices.getUserMedia({
+            video: myMediaState.video,
+            audio: myMediaState.mic,
+          });
 
       myStream.current = stream;
+
       myVideoRef.current!.srcObject = myStream.current;
 
       socket.emit(SFU_EVENTS.JOIN, roomInfo.studyRoomId);
@@ -412,9 +421,9 @@ export default function SfuPage() {
       socket.off(SFU_EVENTS.SOMEONE_LEFT_ROOM);
       socket.disconnect();
     };
-  }, []);
+  }, [screenShare]);
 
-  function toggleMediaState(type: string) {
+  async function toggleMediaState(type: string) {
     if (type === 'video') {
       myStream.current!.getVideoTracks().forEach((track: MediaStreamTrack) => {
         track.enabled = !track.enabled;
@@ -435,6 +444,13 @@ export default function SfuPage() {
       setMyMediaState({
         ...myMediaState,
         mic: !myMediaState.mic,
+      });
+    }
+
+    if (type === 'screen') {
+      setScreenShare({
+        ...screenShare,
+        use: !screenShare.use,
       });
     }
   }
@@ -461,6 +477,9 @@ export default function SfuPage() {
       case '비디오 끄기':
       case '비디오 켜기':
         toggleMediaState('video');
+        break;
+      case '화면 공유':
+        toggleMediaState('screen');
         break;
       case '캔버스 공유':
         setIsActiveCanvas(!isActiveCanvas);
@@ -525,6 +544,21 @@ export default function SfuPage() {
                 <VideoOffIcon />
               </IconWrapper>
               비디오 켜기
+            </MenuItem>
+          )}
+          {screenShare.use ? (
+            <MenuItem>
+              <IconWrapper>
+                <MonitorIcon />
+              </IconWrapper>
+              화면 공유
+            </MenuItem>
+          ) : (
+            <MenuItem className="text-red">
+              <IconWrapper>
+                <MonitorOffIcon />
+              </IconWrapper>
+              화면 공유
             </MenuItem>
           )}
           <MenuItem className={isActiveCanvas ? 'active' : ''}>
