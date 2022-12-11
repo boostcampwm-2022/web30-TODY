@@ -62,6 +62,7 @@ const Content = styled.div`
   position: relative;
   flex: 1;
   display: flex;
+  overflow: hidden;
 `;
 
 const VideoListLayout = styled.div`
@@ -203,10 +204,9 @@ export default function SfuPage() {
     getParticipants(roomInfo.studyRoomId);
   }, []);
 
-
   const [activeSideBar, setActiveSideBar] = useState('');
   const [isActiveCanvas, setIsActiveCanvas] = useState(false);
-        
+
   const navigate = useNavigate();
 
   const leaveRoomEvent = () => {
@@ -239,7 +239,7 @@ export default function SfuPage() {
     }
     navigate(`/study-rooms`);
   };
-      
+
   const [myMediaState, setMyMediaState] = useState({
     video: true,
     mic: false,
@@ -491,10 +491,7 @@ export default function SfuPage() {
         </VideoListLayout>
         {activeSideBar !== '' &&
           (activeSideBar === '채팅' ? (
-            <ChatSideBar
-              sendDcRef={sendDcRef}
-              chatList={chatList}
-            />
+            <ChatSideBar sendDcRef={sendDcRef} chatList={chatList} />
           ) : (
             <ParticipantsSideBar participants={participantsList} />
           ))}

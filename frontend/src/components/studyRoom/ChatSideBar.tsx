@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import DownArrowIcon from '@assets/icons/down-triangle.svg';
 import { Chat } from 'types/chat.types';
@@ -24,10 +24,22 @@ const ChatTitle = styled.h1`
 const ChatContent = styled.div`
   margin: 48px 17px 0;
   flex: 1;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    border-radius: 3px;
+    background: var(--orange3);
+  }
+  &::-webkit-scrollbar-thumb {
+    margin-left: 3px;
+    border-radius: 3px;
+    background: var(--orange);
+  }
 `;
 
 const ChatInputLayout = styled.div`
-  margin: 0 15px;
+  margin: 10px 15px 0;
   padding: 15px 0;
   border-top: 1px solid #d9d9d9;
 `;
@@ -92,10 +104,18 @@ export default function ChatSideBar({ sendDcRef, chatList }: Props) {
     e.currentTarget.value = '';
   };
 
+  const chatListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatListRef.current) {
+      chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
+    }
+  }, [chatList]);
+
   return (
     <StudyRoomSideBarLayout>
       <ChatTitle>채팅</ChatTitle>
-      <ChatContent>
+      <ChatContent ref={chatListRef}>
         {chatList?.map((chat: Chat) => (
           <ChatItem key={chat.id} chat={chat} />
         ))}
