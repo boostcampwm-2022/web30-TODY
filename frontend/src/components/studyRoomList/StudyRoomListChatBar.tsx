@@ -24,6 +24,7 @@ const ChatInputBar = styled.input`
   padding-left: 18px;
   background-color: var(--orange4);
   border: none;
+  border-radius: 5px;
   font-family: 'Pretendard';
   font-weight: 400;
   font-size: 18px;
@@ -41,10 +42,10 @@ export default function StudyRoomListChatBar(props: Props) {
     <ChatBar>
       <ChatModeBar>모두에게</ChatModeBar>
       <ChatInputBar
-        onKeyPress={(e: any) => {
-          if (e.key === 'Enter' && nickname && e.target.value !== '') {
-            setChat(e.target.value);
-            e.target.value = '';
+        onKeyPress={(e: KeyboardEvent<HTMLInputElement>) => {
+          if (e.key === 'Enter' && nickname && e.currentTarget.value !== '') {
+            setChat(e.currentTarget.value);
+            e.currentTarget.value = '';
           }
         }}
         placeholder="채팅을 입력하세요."

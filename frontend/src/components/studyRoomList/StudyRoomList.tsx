@@ -3,7 +3,7 @@ import StudyRoomItem from '@components/studyRoomList/StudyRoomItem';
 import { RoomListData } from 'types/studyRoomList.types';
 
 const RoomListLayout = styled.div`
-  min-height: 485px;
+  flex: 1;
   margin: 30px 0 35px;
 `;
 
