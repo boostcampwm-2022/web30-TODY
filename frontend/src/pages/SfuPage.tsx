@@ -202,6 +202,13 @@ export default function SfuPage() {
     },
   });
 
+  const [userList, setUserList] = useState<any>([]);
+
+  useEffect(() => {
+    if (!roomInfo) return;
+    setUserList([...roomInfo.nickNameOfParticipants]);
+  }, [roomInfo]);
+
   useEffect(() => {
     if (enterRoomData === null) return;
     requestGetStudyRoomInfo(roomId);
@@ -343,7 +350,8 @@ export default function SfuPage() {
   }, []);
 
   useEffect(() => {
-    if (!roomInfo) return;
+    if (!user || !roomInfo) return;
+    console.log();
     socket.connect();
 
     socket.on(SFU_EVENTS.CONNECT, async () => {
@@ -364,7 +372,14 @@ export default function SfuPage() {
         socket.emit(SFU_EVENTS.JOIN, roomId);
 
         const offer = await createSender();
-        socket.emit(SFU_EVENTS.SENDER_OFFER, { offer });
+        socket.emit(SFU_EVENTS.SENDER_OFFER, {
+          offer,
+          userData: {
+            userId: user.userId,
+            userName: user.nickname,
+            roomId,
+          },
+        });
       }
     });
 
@@ -386,7 +401,8 @@ export default function SfuPage() {
       receivePcs.current![targetId].setRemoteDescription(answer);
     });
 
-    socket.on(SFU_EVENTS.NEW_PEER, async ({ peerId }) => {
+    socket.on(SFU_EVENTS.NEW_PEER, async ({ peerId, userName }) => {
+      setUserList((prev: any) => [...prev, userName]);
       const offer = await createReceiver(peerId);
       socket.emit(SFU_EVENTS.RECEIVER_OFFER, {
         offer,
@@ -408,7 +424,8 @@ export default function SfuPage() {
       await sendPcRef.current!.addIceCandidate(icecandidate);
     });
 
-    socket.on(SFU_EVENTS.SOMEONE_LEFT_ROOM, (peerId) => {
+    socket.on(SFU_EVENTS.SOMEONE_LEFT_ROOM, ({ peerId, userName }) => {
+      setUserList((prev: any) => [...prev.filter((x: any) => x !== userName)]);
       const receivePc = receivePcs.current[peerId];
       receivePc.close();
       delete receivePcs.current[peerId];
@@ -522,7 +539,7 @@ export default function SfuPage() {
         <RoomInfo>
           <RoomTitle>{roomInfo.name}</RoomTitle>
           <RoomStatus>
-            {roomInfo.currentPersonnel}/{roomInfo.maxPersonnel}
+            {userList.length}/{roomInfo.maxPersonnel}
           </RoomStatus>
         </RoomInfo>
         <VideoListLayout className={isActiveCanvas ? 'activeCanvas' : ''}>
@@ -546,9 +563,7 @@ export default function SfuPage() {
           (activeSideBar === '채팅' ? (
             <ChatSideBar sendDcRef={sendDcRef} chatList={chatList} />
           ) : (
-            <ParticipantsSideBar
-              participants={roomInfo.nickNameOfParticipants}
-            />
+            <ParticipantsSideBar participants={userList} />
           ))}
       </Content>
       <BottomBarLayout>

@@ -53,13 +53,16 @@ export class SfuGateway
         Object.values(sendDcs[client.id]).forEach((sendDc) => sendDc.close());
         delete sendDcs[client.id];
       }
-      client.to(roomName).emit(SFU_EVENTS.SOMEONE_LEFT_ROOM, client.id);
+      client.to(roomName).emit(SFU_EVENTS.SOMEONE_LEFT_ROOM, {
+        peerId: client.id,
+        userName: client.data.userName,
+      });
     });
   }
 
   async handleDisconnect(client: Socket) {
     await this.redisCacheService.leaveRoom({
-      studyRoomId: client.data.roomName,
+      studyRoomId: client.data.roomId,
       userId: client.data.userName,
     });
     console.log(`disconnect: ${client.id}`);
@@ -79,8 +82,6 @@ export class SfuGateway
     client: Socket,
     @MessageBody() { userName, studyRoomId: roomName }: any,
   ) {
-    client.data = { userName, roomName };
-
     client.join(roomName);
     const socketsInRoom = await this.server.in(roomName).fetchSockets();
     const peerIdsInRoom = socketsInRoom
@@ -92,8 +93,9 @@ export class SfuGateway
   @SubscribeMessage(SFU_EVENTS.SENDER_OFFER)
   async handleSenderOffer(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { offer }: any,
+    @MessageBody() { offer, userData }: any,
   ) {
+    client.data = { ...userData };
     const receivePc: RTCPeerConnection = new wrtc.RTCPeerConnection(
       RTCConfiguration,
     );
@@ -111,9 +113,11 @@ export class SfuGateway
         ? streams[client.id].push(track.streams[0])
         : (streams[client.id] = [track.streams[0]]);
       if (streams[client.id].length > 1) return;
-      client.broadcast
-        .to(roomName)
-        .emit(SFU_EVENTS.NEW_PEER, { peerId: client.id });
+
+      client.broadcast.to(roomName).emit(SFU_EVENTS.NEW_PEER, {
+        peerId: client.id,
+        userName: client.data.userName,
+      });
     };
 
     receivePc.ondatachannel = (e: RTCDataChannelEvent) => {
