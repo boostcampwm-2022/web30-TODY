@@ -22,12 +22,13 @@ import { Chat } from 'types/chat.types';
 import ParticipantsSideBar from '@components/studyRoom/ParticipantsSideBar';
 import Canvas from '@components/studyRoom/Canvas';
 import { useRecoilValue } from 'recoil';
+import Loader from '@components/common/Loader';
 import { userState } from 'recoil/atoms';
-import getParticipantsListRequest from '../axios/requests/getParticipantsListRequest';
 import checkMasterRequest from '../axios/requests/checkMasterRequest';
 import enterRoomRequest from '../axios/requests/enterRoomRequest';
 import leaveRoomRequest from '../axios/requests/leaveRoomRequest';
 import deleteRoomRequest from '../axios/requests/deleteRoomRequest';
+import getStudyRoomInfo from '../axios/requests/getStudyRoomInfoRequest';
 
 const StudyRoomPageLayout = styled.div`
   height: 100vh;
@@ -188,25 +189,38 @@ let isPage = true;
 
 export default function SfuPage() {
   const { roomId } = useParams();
-  const { state: roomInfo } = useLocation();
-
-  const [, , , participantsList] = useAxios<{
-    participantsList: any;
-  }>(getParticipantsListRequest, {
-    onMount: true,
-    arg: roomInfo.studyRoomId,
-  });
-
+  const { state } = useLocation();
+  const [roomInfo, setRoomInfo] = useState(state);
+  console.log(roomInfo);
+  const [
+    requestGetStudyRoomInfo,
+    getStudyRoomInfoLoading,
+    ,
+    getStudyRoomInfoData,
+  ] = useAxios<any>(getStudyRoomInfo);
   const user = useRecoilValue(userState);
-  const [, , ,] = useAxios<''>(enterRoomRequest, {
+  const [, , , enterRoomData] = useAxios<''>(enterRoomRequest, {
     onMount: true,
     arg: {
-      studyRoomId: roomInfo.studyRoomId,
+      studyRoomId: roomId,
       userId: user?.userId,
       nickname: user?.nickname,
       isMaster: true,
     },
   });
+
+  useEffect(() => {
+    if (enterRoomData === null) return;
+    if (!roomInfo) {
+      requestGetStudyRoomInfo(roomId);
+    }
+  }, [enterRoomData]);
+
+  useEffect(() => {
+    if (getStudyRoomInfoData === null) return;
+    setRoomInfo(getStudyRoomInfoData);
+  }, [getStudyRoomInfoData]);
+
   const [leaveRoom, , ,] = useAxios<void>(leaveRoomRequest);
   const [deleteRoom, , ,] = useAxios<void>(deleteRoomRequest);
   const [, , , isMaster] = useAxios<boolean>(checkMasterRequest, {
@@ -225,7 +239,7 @@ export default function SfuPage() {
   const leaveRoomEvent = () => {
     if (user) {
       leaveRoom({
-        studyRoomId: roomInfo.studyRoomId,
+        studyRoomId: roomId,
         userId: user.userId,
       });
     }
@@ -236,7 +250,7 @@ export default function SfuPage() {
     return () => {
       if (user && isPage) {
         leaveRoom({
-          studyRoomId: roomInfo.studyRoomId,
+          studyRoomId: roomId,
           userId: user.userId,
         });
       }
@@ -246,7 +260,7 @@ export default function SfuPage() {
   const deleteRoomEvent = () => {
     if (user) {
       deleteRoom({
-        studyRoomId: roomInfo.studyRoomId,
+        studyRoomId: roomId,
       });
       isPage = false;
     }
@@ -344,6 +358,7 @@ export default function SfuPage() {
   }, []);
 
   useEffect(() => {
+    if (!roomInfo) return;
     socket.connect();
 
     socket.on(SFU_EVENTS.CONNECT, async () => {
@@ -356,9 +371,10 @@ export default function SfuPage() {
 
       myStream.current = stream;
 
+      if (!myVideoRef.current) return;
       myVideoRef.current!.srcObject = myStream.current;
 
-      socket.emit(SFU_EVENTS.JOIN, roomInfo.studyRoomId);
+      socket.emit(SFU_EVENTS.JOIN, roomId);
 
       const offer = await createSender();
       socket.emit(SFU_EVENTS.SENDER_OFFER, { offer });
@@ -422,6 +438,7 @@ export default function SfuPage() {
       });
     });
 
+    // eslint-disable-next-line consistent-return
     return () => {
       socket.off(SFU_EVENTS.CONNECT);
       socket.off(SFU_EVENTS.NOTICE_ALL_PEERS);
@@ -433,7 +450,7 @@ export default function SfuPage() {
       socket.off(SFU_EVENTS.SOMEONE_LEFT_ROOM);
       socket.disconnect();
     };
-  }, [screenShare]);
+  }, [screenShare, roomInfo]);
 
   async function toggleMediaState(type: string) {
     if (type === 'video') {
@@ -501,12 +518,18 @@ export default function SfuPage() {
     }
   };
 
+  if (!roomInfo) {
+    return <Loader />;
+  }
+
   return (
     <StudyRoomPageLayout>
       <Content>
         <RoomInfo>
           <RoomTitle>{roomInfo.name}</RoomTitle>
-          <RoomStatus>4/5</RoomStatus>
+          <RoomStatus>
+            {roomInfo.currentPersonnel}/{roomInfo.maxPersonnel}
+          </RoomStatus>
         </RoomInfo>
         <VideoListLayout className={isActiveCanvas ? 'activeCanvas' : ''}>
           <VideoList>
@@ -529,7 +552,9 @@ export default function SfuPage() {
           (activeSideBar === '채팅' ? (
             <ChatSideBar sendDcRef={sendDcRef} chatList={chatList} />
           ) : (
-            <ParticipantsSideBar participants={participantsList} />
+            <ParticipantsSideBar
+              participants={roomInfo.nickNameOfParticipants}
+            />
           ))}
       </Content>
       <BottomBarLayout>
