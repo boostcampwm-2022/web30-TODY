@@ -189,15 +189,8 @@ let isPage = true;
 
 export default function SfuPage() {
   const { roomId } = useParams();
-  const { state } = useLocation();
-  const [roomInfo, setRoomInfo] = useState(state);
-  console.log(roomInfo);
-  const [
-    requestGetStudyRoomInfo,
-    getStudyRoomInfoLoading,
-    ,
-    getStudyRoomInfoData,
-  ] = useAxios<any>(getStudyRoomInfo);
+  const [requestGetStudyRoomInfo, , , roomInfo] =
+    useAxios<any>(getStudyRoomInfo);
   const user = useRecoilValue(userState);
   const [, , , enterRoomData] = useAxios<''>(enterRoomRequest, {
     onMount: true,
@@ -211,15 +204,8 @@ export default function SfuPage() {
 
   useEffect(() => {
     if (enterRoomData === null) return;
-    if (!roomInfo) {
-      requestGetStudyRoomInfo(roomId);
-    }
+    requestGetStudyRoomInfo(roomId);
   }, [enterRoomData]);
-
-  useEffect(() => {
-    if (getStudyRoomInfoData === null) return;
-    setRoomInfo(getStudyRoomInfoData);
-  }, [getStudyRoomInfoData]);
 
   const [leaveRoom, , ,] = useAxios<void>(leaveRoomRequest);
   const [deleteRoom, , ,] = useAxios<void>(deleteRoomRequest);
