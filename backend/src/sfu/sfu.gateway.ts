@@ -96,6 +96,15 @@ export class SfuGateway
     @MessageBody() { offer, userData }: any,
   ) {
     client.data = { ...userData };
+
+    const roomName = [...client.rooms].filter(
+      (roomName) => roomName !== client.id,
+    )[0];
+    client.broadcast.to(roomName).emit(SFU_EVENTS.NEW_PEER, {
+      peerId: client.id,
+      userName: client.data.userName,
+    });
+
     const receivePc: RTCPeerConnection = new wrtc.RTCPeerConnection(
       RTCConfiguration,
     );
@@ -106,18 +115,10 @@ export class SfuGateway
       });
     };
     receivePc.ontrack = async (track: RTCTrackEvent) => {
-      const roomName = [...client.rooms].filter(
-        (roomName) => roomName !== client.id,
-      )[0];
       streams[client.id]
         ? streams[client.id].push(track.streams[0])
         : (streams[client.id] = [track.streams[0]]);
       if (streams[client.id].length > 1) return;
-
-      client.broadcast.to(roomName).emit(SFU_EVENTS.NEW_PEER, {
-        peerId: client.id,
-        userName: client.data.userName,
-      });
     };
 
     receivePc.ondatachannel = (e: RTCDataChannelEvent) => {
@@ -174,10 +175,12 @@ export class SfuGateway
         : (sendDcs[client.id] = { [targetId]: datachannel });
     };
 
-    const streamToSend = streams[targetId][0];
-    streamToSend.getTracks().forEach((track: MediaStreamTrack) => {
-      sendPc.addTrack(track, streamToSend);
-    });
+    if (streams[targetId]) {
+      const streamToSend = streams[targetId][0];
+      streamToSend.getTracks().forEach((track: MediaStreamTrack) => {
+        sendPc.addTrack(track, streamToSend);
+      });
+    }
 
     const answer = await sendPc.createAnswer({
       offerToReceiveAudio: false,
