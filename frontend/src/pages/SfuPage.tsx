@@ -358,7 +358,10 @@ export default function SfuPage() {
 
       myVideoRef.current!.srcObject = myStream.current;
 
-      socket.emit(SFU_EVENTS.JOIN, roomInfo.studyRoomId);
+      socket.emit(SFU_EVENTS.JOIN, {
+        userName: user!.userId,
+        studyRoomId: roomId,
+      });
 
       const offer = await createSender();
       socket.emit(SFU_EVENTS.SENDER_OFFER, { offer });
@@ -431,6 +434,7 @@ export default function SfuPage() {
       socket.off(SFU_EVENTS.SENDER_ICECANDIDATE);
       socket.off(SFU_EVENTS.NEW_PEER);
       socket.off(SFU_EVENTS.SOMEONE_LEFT_ROOM);
+
       socket.disconnect();
     };
   }, [screenShare]);

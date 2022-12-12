@@ -1,3 +1,4 @@
+import { Inject } from '@nestjs/common';
 import {
   MessageBody,
   SubscribeMessage,
@@ -10,6 +11,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import SFU_EVENTS from 'src/constants/sfuEvents';
+import { RedisCacheService } from 'src/redis/redis-cache.service';
 import { getCanvasBody, getChatBody } from 'src/utils/sendDcBodyFormatter';
 import * as wrtc from 'wrtc';
 
@@ -25,13 +27,15 @@ const RTCConfiguration = {
 export class SfuGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
+  @Inject(RedisCacheService)
+  private redisCacheService: RedisCacheService;
   @WebSocketServer() server: Server;
 
   afterInit(server: Server) {
     console.log('sfu Socket server is running');
   }
 
-  async handleConnection(@ConnectedSocket() client: Socket) {
+  async handleConnection(client: Socket) {
     console.log(`connected: ${client.id}`);
     client.on(SFU_EVENTS.DISCONNECTING, () => {
       const roomName = [...client.rooms].filter(
@@ -54,6 +58,10 @@ export class SfuGateway
   }
 
   async handleDisconnect(client: Socket) {
+    this.redisCacheService.leaveRoom({
+      studyRoomId: client.data.roomName,
+      userId: client.data.userName,
+    });
     console.log(`disconnect: ${client.id}`);
   }
 
@@ -61,8 +69,10 @@ export class SfuGateway
   async handleJoin(
     @ConnectedSocket()
     client: Socket,
-    @MessageBody() roomName: any,
+    @MessageBody() { userName, studyRoomId: roomName }: any,
   ) {
+    client.data = { userName, roomName };
+
     client.join(roomName);
     const socketsInRoom = await this.server.in(roomName).fetchSockets();
     const peerIdsInRoom = socketsInRoom
