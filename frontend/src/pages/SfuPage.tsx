@@ -444,12 +444,11 @@ export default function SfuPage() {
       });
     });
 
-
     socket.on('deletedThisRoom', () => {
       alert('방장이 공부방을 삭제했습니다 :(');
       leaveRoomEvent();
     });
-    
+
     // eslint-disable-next-line consistent-return
     return () => {
       socket.off(SFU_EVENTS.CONNECT);

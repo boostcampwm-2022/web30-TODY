@@ -2,7 +2,6 @@ import styled from 'styled-components';
 import { Link, useLocation } from 'react-router-dom';
 import menuHome from '../../assets/home.png';
 import menuStudy from '../../assets/study.png';
-import menuQuestion from '../../assets/question.png';
 
 const List = styled.div`
   display: flex;
