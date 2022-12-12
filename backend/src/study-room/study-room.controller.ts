@@ -1,4 +1,12 @@
-import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { StudyRoomService } from './study-room.service';
 import { createRoomDto } from './dto/createRoom.dto';
 import { DeleteResult } from 'typeorm';
@@ -27,6 +35,22 @@ export class StudyRoomController {
       page,
     );
     return searchResult;
+  }
+
+  @Get('/roomInfo/:roomId')
+  async getRoom(@Param('roomId') roomId: number): Promise<{
+    studyRoomId: number;
+    name: string;
+    content: string;
+    currentPersonnel: number;
+    maxPersonnel: number;
+    managerNickname: string;
+    tags: string[];
+    nickNameOfParticipants: string[];
+    created: string;
+  }> {
+    const result = await this.studyRoomService.getStudyRoom(roomId);
+    return result;
   }
 
   @Get('/participants')

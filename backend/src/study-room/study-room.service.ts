@@ -203,6 +203,33 @@ export class StudyRoomService {
     return searchResult;
   }
 
+  async getStudyRoom(roomId: number) {
+    const roomInfo = await this.studyRoomRepository.findOne({
+      relations: { managerId: true },
+      where: { studyRoomId: roomId },
+    });
+    const participants = await this.redisCacheService.getRoomValue(roomId);
+    const currentPersonnel = participants
+      ? Object.values(participants).length
+      : 0;
+    const nickNameOfParticipants = participants
+      ? Object.values(participants).map(
+          (p: { nickname: string; isMaster: boolean }) => p.nickname,
+        )
+      : [];
+    return {
+      studyRoomId: roomId,
+      name: roomInfo.studyRoomName,
+      content: roomInfo.studyRoomContent,
+      currentPersonnel,
+      maxPersonnel: roomInfo.maxPersonnel,
+      managerNickname: roomInfo.managerId.nickname,
+      tags: [roomInfo.tag1, roomInfo.tag2],
+      nickNameOfParticipants,
+      created: dateFormatter(roomInfo.createTime),
+    };
+  }
+
   async checkIsFull(studyRoomId: number) {
     const participants = await this.redisCacheService.getRoomValue(studyRoomId);
     const room = await this.studyRoomRepository.findOne({
