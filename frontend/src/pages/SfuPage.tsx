@@ -302,9 +302,11 @@ export default function SfuPage() {
       });
     };
 
-    myStream.current!.getTracks().forEach((track: MediaStreamTrack) => {
-      sendPc.addTrack(track, myStream.current!);
-    });
+    if (myStream.current) {
+      myStream.current.getTracks().forEach((track: MediaStreamTrack) => {
+        sendPc.addTrack(track, myStream.current!);
+      });
+    }
 
     const senderDc = sendPc.createDataChannel('chat');
     sendDcRef.current = senderDc;
@@ -362,22 +364,25 @@ export default function SfuPage() {
     socket.connect();
 
     socket.on(SFU_EVENTS.CONNECT, async () => {
-      const stream = screenShare.use
-        ? await navigator.mediaDevices.getDisplayMedia()
-        : await navigator.mediaDevices.getUserMedia({
-            video: myMediaState.video,
-            audio: myMediaState.mic,
-          });
+      try {
+        const stream = screenShare.use
+          ? await navigator.mediaDevices.getDisplayMedia()
+          : await navigator.mediaDevices.getUserMedia({
+              video: myMediaState.video,
+              audio: myMediaState.mic,
+            });
+        myStream.current = stream;
 
-      myStream.current = stream;
+        if (!myVideoRef.current) return;
+        myVideoRef.current!.srcObject = myStream.current;
+      } catch (err) {
+        alert('사용 가능한 카메라가 없습니다.');
+      } finally {
+        socket.emit(SFU_EVENTS.JOIN, roomId);
 
-      if (!myVideoRef.current) return;
-      myVideoRef.current!.srcObject = myStream.current;
-
-      socket.emit(SFU_EVENTS.JOIN, roomId);
-
-      const offer = await createSender();
-      socket.emit(SFU_EVENTS.SENDER_OFFER, { offer });
+        const offer = await createSender();
+        socket.emit(SFU_EVENTS.SENDER_OFFER, { offer });
+      }
     });
 
     socket.on(SFU_EVENTS.NOTICE_ALL_PEERS, (peerIdsInRoom) => {
