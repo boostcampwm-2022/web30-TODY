@@ -189,15 +189,8 @@ let isPage = true;
 
 export default function SfuPage() {
   const { roomId } = useParams();
-  const { state } = useLocation();
-  const [roomInfo, setRoomInfo] = useState(state);
-  console.log(roomInfo);
-  const [
-    requestGetStudyRoomInfo,
-    getStudyRoomInfoLoading,
-    ,
-    getStudyRoomInfoData,
-  ] = useAxios<any>(getStudyRoomInfo);
+  const [requestGetStudyRoomInfo, , , roomInfo] =
+    useAxios<any>(getStudyRoomInfo);
   const user = useRecoilValue(userState);
   const [, , , enterRoomData] = useAxios<''>(enterRoomRequest, {
     onMount: true,
@@ -211,15 +204,8 @@ export default function SfuPage() {
 
   useEffect(() => {
     if (enterRoomData === null) return;
-    if (!roomInfo) {
-      requestGetStudyRoomInfo(roomId);
-    }
+    requestGetStudyRoomInfo(roomId);
   }, [enterRoomData]);
-
-  useEffect(() => {
-    if (getStudyRoomInfoData === null) return;
-    setRoomInfo(getStudyRoomInfoData);
-  }, [getStudyRoomInfoData]);
 
   const [leaveRoom, , ,] = useAxios<void>(leaveRoomRequest);
   const [deleteRoom, , ,] = useAxios<void>(deleteRoomRequest);
@@ -258,7 +244,10 @@ export default function SfuPage() {
   }, []);
 
   const deleteRoomEvent = () => {
+    if (!window.confirm('방을 삭제하시겠습니까?')) return;
+    alert('방이 삭제되었습니다.');
     if (user) {
+      socket.emit('deleteRoom', roomId);
       deleteRoom({
         studyRoomId: roomId,
       });
@@ -443,6 +432,11 @@ export default function SfuPage() {
       });
     });
 
+    socket.on('deletedThisRoom', () => {
+      alert('방장이 공부방을 삭제했습니다 :(');
+      leaveRoomEvent();
+    });
+
     // eslint-disable-next-line consistent-return
     return () => {
       socket.off(SFU_EVENTS.CONNECT);
@@ -453,6 +447,7 @@ export default function SfuPage() {
       socket.off(SFU_EVENTS.SENDER_ICECANDIDATE);
       socket.off(SFU_EVENTS.NEW_PEER);
       socket.off(SFU_EVENTS.SOMEONE_LEFT_ROOM);
+
       socket.disconnect();
     };
   }, [screenShare, roomInfo]);

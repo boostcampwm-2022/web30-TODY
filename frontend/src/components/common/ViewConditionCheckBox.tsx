@@ -28,13 +28,17 @@ const StyledInput = styled.input`
 
 interface Props {
   children: string;
+  setState: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export default function ViewConditionCheckBox({ children }: Props) {
+export default function ViewConditionCheckBox({ children, setState }: Props) {
+  const handleCheckBox = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setState(e.target.checked);
+  };
   return (
     <ViewConditionCheckBoxLayout>
       <StyledLabel htmlFor={children}>
-        <StyledInput type="checkbox" id={children} />
+        <StyledInput type="checkbox" id={children} onChange={handleCheckBox} />
         {children}
       </StyledLabel>
     </ViewConditionCheckBoxLayout>

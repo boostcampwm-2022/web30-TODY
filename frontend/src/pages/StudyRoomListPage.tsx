@@ -69,7 +69,9 @@ export default function StudyRoomListPage() {
 
   const [page, setPage] = useState(queryString.page || 1);
   const [keyword, setKeyword] = useState(queryString.keyword || '');
-  const [attendable, setAttendable] = useState(queryString.attendable || false);
+  const [attendable, setAttendable] = useState(
+    Boolean(queryString.attendable) || false,
+  );
 
   useEffect(() => {
     getRoomListRequest({
@@ -170,7 +172,9 @@ export default function StudyRoomListPage() {
             총 {searchResult?.totalCount}건
           </SearchResultText>
           <div className="flex-row">
-            <ViewConditionCheckBox>참여 가능한 방만 보기</ViewConditionCheckBox>
+            <ViewConditionCheckBox setState={setAttendable}>
+              참여 가능한 방만 보기
+            </ViewConditionCheckBox>
           </div>
         </SearchInfoLayout>
         <StudyRoomList searchResult={searchResult} />
