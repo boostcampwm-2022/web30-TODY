@@ -65,6 +65,14 @@ export class SfuGateway
     console.log(`disconnect: ${client.id}`);
   }
 
+  @SubscribeMessage('deleteRoom')
+  async handleDelete(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() roomId: string,
+  ) {
+    client.broadcast.to(roomId).emit('deletedThisRoom');
+  }
+
   @SubscribeMessage(SFU_EVENTS.JOIN)
   async handleJoin(
     @ConnectedSocket()

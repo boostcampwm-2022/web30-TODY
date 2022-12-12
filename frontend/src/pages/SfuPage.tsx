@@ -244,7 +244,10 @@ export default function SfuPage() {
   }, []);
 
   const deleteRoomEvent = () => {
+    if (!window.confirm('방을 삭제하시겠습니까?')) return;
+    alert('방이 삭제되었습니다.');
     if (user) {
+      socket.emit('deleteRoom', roomId);
       deleteRoom({
         studyRoomId: roomInfo.studyRoomId,
       });
@@ -425,6 +428,10 @@ export default function SfuPage() {
       });
     });
 
+    socket.on('deletedThisRoom', () => {
+      alert('방장이 공부방을 삭제했습니다 :(');
+      leaveRoomEvent();
+    });
     return () => {
       socket.off(SFU_EVENTS.CONNECT);
       socket.off(SFU_EVENTS.NOTICE_ALL_PEERS);
