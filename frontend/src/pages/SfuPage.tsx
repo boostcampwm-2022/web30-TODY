@@ -223,12 +223,6 @@ export default function SfuPage() {
   const navigate = useNavigate();
 
   const leaveRoomEvent = () => {
-    if (user) {
-      leaveRoom({
-        studyRoomId: roomId,
-        userId: user.userId,
-      });
-    }
     navigate(`/study-rooms`);
   };
 

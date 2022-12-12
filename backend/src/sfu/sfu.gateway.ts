@@ -58,7 +58,7 @@ export class SfuGateway
   }
 
   async handleDisconnect(client: Socket) {
-    this.redisCacheService.leaveRoom({
+    await this.redisCacheService.leaveRoom({
       studyRoomId: client.data.roomName,
       userId: client.data.userName,
     });
