@@ -25,7 +25,9 @@ export class StudyRoomService {
       studyRoomName: roomInfo.name,
       studyRoomContent: roomInfo.content,
       maxPersonnel: roomInfo.maxPersonnel,
-      managerId: '1',
+      managerId: {
+        userId: roomInfo.managerId,
+      },
       tag1: roomInfo.tags[0],
       tag2: roomInfo.tags[1],
       createTime: new Date(),
@@ -199,5 +201,60 @@ export class StudyRoomService {
       studyRoomList,
     };
     return searchResult;
+  }
+
+  async getStudyRoom(roomId: number) {
+    const roomInfo = await this.studyRoomRepository.findOne({
+      relations: { managerId: true },
+      where: { studyRoomId: roomId },
+    });
+    const participants = await this.redisCacheService.getRoomValue(roomId);
+    const currentPersonnel = participants
+      ? Object.values(participants).length
+      : 0;
+    const nickNameOfParticipants = participants
+      ? Object.values(participants).map(
+          (p: { nickname: string; isMaster: boolean }) => p.nickname,
+        )
+      : [];
+    return {
+      studyRoomId: roomId,
+      name: roomInfo.studyRoomName,
+      content: roomInfo.studyRoomContent,
+      currentPersonnel,
+      maxPersonnel: roomInfo.maxPersonnel,
+      managerNickname: roomInfo.managerId.nickname,
+      tags: [roomInfo.tag1, roomInfo.tag2],
+      nickNameOfParticipants,
+      created: dateFormatter(roomInfo.createTime),
+    };
+  }
+
+  async checkIsFull(studyRoomId: number) {
+    const participants = await this.redisCacheService.getRoomValue(studyRoomId);
+    const room = await this.studyRoomRepository.findOne({
+      where: { studyRoomId },
+    });
+    const isFull = room.maxPersonnel <= Object.values(participants).length;
+    return isFull;
+  }
+
+  async checkMasterOfRoom(studyRoomId: number, userId: string) {
+    const res = await this.studyRoomRepository.find({
+      relations: { managerId: true },
+      where: {
+        studyRoomId: studyRoomId,
+      },
+    });
+    const isMaster = res[0].managerId.userId === userId ? true : false;
+    return isMaster;
+  }
+
+  async deleteRoom(studyRoomId: number) {
+    const res = await this.studyRoomRepository.delete({
+      studyRoomId: studyRoomId,
+    });
+    await this.redisCacheService.deleteRoomValue(studyRoomId);
+    return res;
   }
 }

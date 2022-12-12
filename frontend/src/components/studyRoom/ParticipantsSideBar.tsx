@@ -36,7 +36,7 @@ const ProfileImage = styled.div`
   border-radius: 100%;
 `;
 const NickName = styled.div`
-  font-size: 18px;
+  font-size: 21px;
 `;
 
 export default function ParticipantsSideBar({ participants }: any) {
@@ -46,9 +46,9 @@ export default function ParticipantsSideBar({ participants }: any) {
       <Title>참여자 목록</Title>
       <Content>
         {participantsList.map((participant: any) => (
-          <ParticipantItem key={participant.nickname}>
+          <ParticipantItem key={participant}>
             <ProfileImage />
-            <NickName>{participant.nickname}</NickName>
+            <NickName>{participant}</NickName>
           </ParticipantItem>
         ))}
       </Content>

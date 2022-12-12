@@ -15,8 +15,17 @@ export class RedisCacheService {
     return valueFromKey;
   }
 
+  async getIsInRoomValue(userId: string) {
+    const isInRoom = await this.cacheManager.get<boolean>(`isInRoom${userId}`);
+    return isInRoom || false;
+  }
+
   async getRoomValue(studyRoomId: number): Promise<any> {
     return await this.cacheManager.get(`studyRoom${studyRoomId}`);
+  }
+
+  async deleteRoomValue(studyRoomId: number): Promise<any> {
+    return await this.cacheManager.del(`studyRoom${studyRoomId}`);
   }
 
   async enterRoom(body: {
@@ -31,6 +40,8 @@ export class RedisCacheService {
     const isMaster = body.isMaster;
     const key = `studyRoom${studyRoomId}`;
     const roomValue = await this.cacheManager.get(key);
+
+    await this.cacheManager.set(`isInRoom${userId}`, true);
 
     if (roomValue) {
       roomValue[userId] = { nickname, isMaster };
@@ -53,6 +64,10 @@ export class RedisCacheService {
     const studyRoomId = body.studyRoomId;
     const userId = body.userId;
     const key = `studyRoom${studyRoomId}`;
+
+    console.log('leave:', studyRoomId, userId);
+    if (!studyRoomId || !userId) return;
+    await this.cacheManager.del(`isInRoom${userId}`);
 
     const roomValue = await this.cacheManager.get(key);
     delete roomValue[userId];

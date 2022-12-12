@@ -1,6 +1,10 @@
+import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import DownArrowIcon from '@assets/icons/down-triangle.svg';
-import SpeechBubble from './SpeechBubble';
+import { Chat } from 'types/chat.types';
+import { useRecoilValue } from 'recoil';
+import { userState } from 'recoil/atoms';
+import ChatItem from './ChatItem';
 
 const StudyRoomSideBarLayout = styled.div`
   width: 420px;
@@ -20,10 +24,22 @@ const ChatTitle = styled.h1`
 const ChatContent = styled.div`
   margin: 48px 17px 0;
   flex: 1;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    border-radius: 3px;
+    background: var(--orange3);
+  }
+  &::-webkit-scrollbar-thumb {
+    margin-left: 3px;
+    border-radius: 3px;
+    background: var(--orange);
+  }
 `;
 
 const ChatInputLayout = styled.div`
-  margin: 0 15px;
+  margin: 10px 15px 0;
   padding: 15px 0;
   border-top: 1px solid #d9d9d9;
 `;
@@ -67,22 +83,42 @@ const SelectReceiver = styled.select`
   outline: none;
 `;
 
-export default function ChatSideBar() {
+interface Props {
+  sendDcRef?: React.RefObject<RTCDataChannel | null>;
+  chatList?: Chat[];
+}
+
+export default function ChatSideBar({ sendDcRef, chatList }: Props) {
+  const user = useRecoilValue(userState);
+  const sendChat = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter' || !e.currentTarget.value) return;
+    if (!sendDcRef || !sendDcRef.current || !user) return;
+    const { value } = e.currentTarget;
+
+    const body = JSON.stringify({
+      type: 'chat',
+      message: value,
+      sender: user.nickname,
+    });
+    sendDcRef.current.send(body);
+    e.currentTarget.value = '';
+  };
+
+  const chatListRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatListRef.current) {
+      chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
+    }
+  }, [chatList]);
+
   return (
     <StudyRoomSideBarLayout>
       <ChatTitle>채팅</ChatTitle>
-      <ChatContent>
-        {' '}
-        <SpeechBubble
-          chat={{ sender: '콩순이', message: '안녕안녕^-^', time: '오후 3:12' }}
-        />
-        <SpeechBubble
-          chat={{
-            sender: '멍냥',
-            message: '옹 들어왔구낭 안뇽',
-            time: '오후 3:12',
-          }}
-        />
+      <ChatContent ref={chatListRef}>
+        {chatList?.map((chat: Chat) => (
+          <ChatItem key={chat.id} chat={chat} />
+        ))}
       </ChatContent>
       <ChatInputLayout>
         <SelectReceiverLayout>
@@ -92,8 +128,17 @@ export default function ChatSideBar() {
           </SelectReceiver>
         </SelectReceiverLayout>
 
-        <ChatInput type="text" placeholder="메세지를 입력하세요." />
+        <ChatInput
+          type="text"
+          onKeyUp={sendChat}
+          placeholder="메세지를 입력하세요."
+        />
       </ChatInputLayout>
     </StudyRoomSideBarLayout>
   );
 }
+
+ChatSideBar.defaultProps = {
+  sendDcRef: null,
+  chatList: [],
+};

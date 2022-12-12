@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import MainSideBar from '@components/common/MainSideBar';
@@ -9,17 +8,16 @@ import Modal from '@components/common/Modal';
 import CustomInput from '@components/common/CustomInput';
 import CustomButton from '@components/common/CustomButton';
 import TagInput from '@components/studyRoomList/TagInput';
-import useAxios from '@hooks/useAxios';
 import Loader from '@components/common/Loader';
-import {
-  NewRoomInfoData,
-  RoomListData,
-} from '@components/studyRoomList/studyRoomList.types';
+import { NewRoomInfoData, RoomListData } from 'types/studyRoomList.types';
 import StudyRoomList from '@components/studyRoomList/StudyRoomList';
+import Pagination from '@components/common/Pagination';
 import { useLocation, useNavigate } from 'react-router-dom';
 import qs from 'qs';
-import Pagination from '@components/common/Pagination';
-import { io } from 'socket.io-client';
+import useAxios from '@hooks/useAxios';
+import { useRecoilValue } from 'recoil';
+import { userState } from 'recoil/atoms';
+import GlobalChat from '@components/studyRoomList/GlobalChat';
 import getStudyRoomListRequest from '../axios/requests/getStudyRoomListRequest';
 import createStudyRoomRequest from '../axios/requests/createStudyRoomRequest';
 
@@ -28,9 +26,11 @@ const StudyRoomListPageLayout = styled.div`
 `;
 
 const Content = styled.div`
-  flex: 1;
   position: relative;
-  padding: 45px 30px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 45px 30px 0;
   height: 100vh;
   overflow: auto;
 `;
@@ -45,17 +45,13 @@ const PageTitle = styled.h1`
 const SearchInfoLayout = styled.div`
   display: flex;
   justify-content: space-between;
+  align-items: center;
 `;
 
 const SearchResultText = styled.h3`
   font-weight: 700;
   font-size: 20px;
 `;
-
-const socket = io(process.env.REACT_APP_SOCKET_URL!, {
-  autoConnect: false,
-  path: '/globalChat/socket.io',
-});
 
 export default function StudyRoomListPage() {
   const navigate = useNavigate();
@@ -73,15 +69,9 @@ export default function StudyRoomListPage() {
 
   const [page, setPage] = useState(queryString.page || 1);
   const [keyword, setKeyword] = useState(queryString.keyword || '');
-  const [attendable, setAttendable] = useState(queryString.attendable || false);
-
-  useEffect(() => {
-    socket.connect();
-    console.log(socket.id);
-    return () => {
-      socket.off('connect');
-    };
-  }, []);
+  const [attendable, setAttendable] = useState(
+    Boolean(queryString.attendable) || false,
+  );
 
   useEffect(() => {
     getRoomListRequest({
@@ -107,6 +97,8 @@ export default function StudyRoomListPage() {
   const [tagList, setTagList] = useState<string[]>([]);
   const [modal, setModal] = useState(false);
 
+  const user = useRecoilValue(userState);
+
   const validateInput = (name: string, value: string) => {
     switch (name) {
       case 'name':
@@ -122,7 +114,6 @@ export default function StudyRoomListPage() {
 
   const onChangeNewRoomInfo = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
     setNewRoomInfo({
       ...newRoomInfo,
       [name]: validateInput(name, value),
@@ -137,11 +128,13 @@ export default function StudyRoomListPage() {
   const createNewStudyRoom = () => {
     if (newRoomInfo.name === '' || newRoomInfo.maxPersonnel < 1) return;
 
-    createRoomRequest({
-      ...newRoomInfo,
-      tags: tagList,
-    });
-
+    if (user) {
+      createRoomRequest({
+        ...newRoomInfo,
+        managerId: user.userId,
+        tags: tagList,
+      });
+    }
     setTagList([]);
   };
 
@@ -179,8 +172,9 @@ export default function StudyRoomListPage() {
             총 {searchResult?.totalCount}건
           </SearchResultText>
           <div className="flex-row">
-            <ViewConditionCheckBox>참여 가능한 방만 보기</ViewConditionCheckBox>
-            {/* <ViewConditionCheckBox>비밀 방만 보기</ViewConditionCheckBox> */}
+            <ViewConditionCheckBox setState={setAttendable}>
+              참여 가능한 방만 보기
+            </ViewConditionCheckBox>
           </div>
         </SearchInfoLayout>
         <StudyRoomList searchResult={searchResult} />
@@ -192,6 +186,7 @@ export default function StudyRoomListPage() {
             getRoomConditions={{ keyword, attendable }}
           />
         )}
+        <GlobalChat />
       </Content>
       {modal && (
         <Modal setModal={setModal}>

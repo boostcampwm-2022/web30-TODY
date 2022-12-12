@@ -2,7 +2,8 @@ import styled from 'styled-components';
 import CreateIcon from '@assets/icons/create.svg';
 
 const Button = styled.button`
-  float: right;
+  width: fit-content;
+  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 12px;
