@@ -80,7 +80,7 @@ export class SfuGateway
   async handleJoin(
     @ConnectedSocket()
     client: Socket,
-    @MessageBody() { studyRoomId: roomName }: any,
+    @MessageBody() roomName: any,
   ) {
     client.join(roomName);
     const socketsInRoom = await this.server.in(roomName).fetchSockets();
