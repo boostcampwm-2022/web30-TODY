@@ -31,15 +31,15 @@ export default function BlockRoomEnter({ children }: Props) {
     return <Loader />;
   }
 
-  // if (checkIsInRoomData?.valueOf() === true) {
-  //   alert(notifications.isAlreadyInRoom);
-  //   return <Navigate to="/study-rooms" />;
-  // }
+  if (checkIsInRoomData?.valueOf() === true) {
+    alert(notifications.isAlreadyInRoom);
+    return <Navigate to="/study-rooms" />;
+  }
 
-  // if (checkIsFullData?.isFull) {
-  //   alert(notifications.roomIsFull);
-  //   return <Navigate to="/study-rooms" />;
-  // }
+  if (checkIsFullData?.isFull) {
+    alert(notifications.roomIsFull);
+    return <Navigate to="/study-rooms" />;
+  }
 
   return children;
 }
