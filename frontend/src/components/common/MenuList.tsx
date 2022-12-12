@@ -43,11 +43,6 @@ export default function MenuList() {
       iconSrc: menuStudy,
       path: '/study-rooms',
     },
-    {
-      name: '질문방',
-      iconSrc: menuQuestion,
-      path: '/question-board',
-    },
   ];
 
   return (
