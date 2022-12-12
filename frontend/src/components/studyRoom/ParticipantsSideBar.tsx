@@ -36,7 +36,7 @@ const ProfileImage = styled.div`
   border-radius: 100%;
 `;
 const NickName = styled.div`
-  font-size: 18px;
+  font-size: 21px;
 `;
 
 export default function ParticipantsSideBar({ participants }: any) {
