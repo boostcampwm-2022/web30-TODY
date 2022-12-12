@@ -65,8 +65,6 @@ export class RedisCacheService {
     const userId = body.userId;
     const key = `studyRoom${studyRoomId}`;
 
-    console.log('leave:', studyRoomId, userId);
-    if (!studyRoomId || !userId) return;
     await this.cacheManager.del(`isInRoom${userId}`);
 
     const roomValue = await this.cacheManager.get(key);

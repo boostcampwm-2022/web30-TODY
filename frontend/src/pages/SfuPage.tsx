@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-param-reassign */
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { ReactComponent as MicIcon } from '@assets/icons/mic.svg';
 import { ReactComponent as MicOffIcon } from '@assets/icons/mic-off.svg';
@@ -26,7 +26,6 @@ import Loader from '@components/common/Loader';
 import { userState } from 'recoil/atoms';
 import checkMasterRequest from '../axios/requests/checkMasterRequest';
 import enterRoomRequest from '../axios/requests/enterRoomRequest';
-import leaveRoomRequest from '../axios/requests/leaveRoomRequest';
 import deleteRoomRequest from '../axios/requests/deleteRoomRequest';
 import getStudyRoomInfo from '../axios/requests/getStudyRoomInfoRequest';
 
@@ -185,8 +184,6 @@ const socket = io(process.env.REACT_APP_SFU_URL!, {
   path: '/sfu/socket.io',
 });
 
-let isPage = true;
-
 export default function SfuPage() {
   const { roomId } = useParams();
   const [requestGetStudyRoomInfo, , , roomInfo] =
@@ -214,7 +211,6 @@ export default function SfuPage() {
     requestGetStudyRoomInfo(roomId);
   }, [enterRoomData]);
 
-  const [leaveRoom, , ,] = useAxios<void>(leaveRoomRequest);
   const [deleteRoom, , ,] = useAxios<void>(deleteRoomRequest);
   const [, , , isMaster] = useAxios<boolean>(checkMasterRequest, {
     onMount: true,
@@ -233,17 +229,6 @@ export default function SfuPage() {
     navigate(`/study-rooms`);
   };
 
-  useEffect(() => {
-    return () => {
-      if (user && isPage) {
-        leaveRoom({
-          studyRoomId: roomId,
-          userId: user.userId,
-        });
-      }
-    };
-  }, []);
-
   const deleteRoomEvent = () => {
     if (!window.confirm('방을 삭제하시겠습니까?')) return;
     alert('방이 삭제되었습니다.');
@@ -252,7 +237,6 @@ export default function SfuPage() {
       deleteRoom({
         studyRoomId: roomId,
       });
-      isPage = false;
     }
     navigate(`/study-rooms`);
   };
