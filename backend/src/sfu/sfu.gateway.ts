@@ -63,7 +63,7 @@ export class SfuGateway
   async handleDisconnect(client: Socket) {
     await this.redisCacheService.leaveRoom({
       studyRoomId: client.data.roomId,
-      userId: client.data.userName,
+      userId: client.data.userId,
     });
     console.log(`disconnect: ${client.id}`);
   }
@@ -80,7 +80,7 @@ export class SfuGateway
   async handleJoin(
     @ConnectedSocket()
     client: Socket,
-    @MessageBody() { userName, studyRoomId: roomName }: any,
+    @MessageBody() roomName: any,
   ) {
     client.join(roomName);
     const socketsInRoom = await this.server.in(roomName).fetchSockets();
