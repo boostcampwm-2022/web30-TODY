@@ -184,7 +184,6 @@ export default function SfuPage() {
 
   const {
     remoteStreams,
-    chatList,
     userList,
     receiveDcs,
     sendDcRef,
@@ -225,7 +224,7 @@ export default function SfuPage() {
         </VideoListLayout>
         {activeSideBar !== '' &&
           (activeSideBar === '채팅' ? (
-            <ChatSideBar sendDcRef={sendDcRef} chatList={chatList} />
+            <ChatSideBar sendDcRef={sendDcRef} receiveDcs={receiveDcs} />
           ) : (
             <ParticipantsSideBar participants={userList} />
           ))}

@@ -2,7 +2,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import SFU_EVENTS from 'constants/sfuEvents';
 import socket from 'sockets/sfuSocket';
-import { Chat } from 'types/chat.types';
 
 const RTCConfiguration = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
@@ -12,7 +11,6 @@ export function useSfu(roomInfo: any, user: any, myMediaState: any) {
   const [remoteStreams, setRemoteStreams] = useState<{
     [socketId: string]: MediaStream;
   }>({});
-  const [chatList, setChatList] = useState<Chat[]>([]);
   const myVideoRef = useRef<HTMLVideoElement | null>(null);
   const myStream = useRef<MediaStream | null>(null);
   const receivePcs = useRef<{ [socketId: string]: RTCPeerConnection }>({});
@@ -63,13 +61,6 @@ export function useSfu(roomInfo: any, user: any, myMediaState: any) {
 
     const senderDc = sendPc.createDataChannel('chat');
     sendDcRef.current = senderDc;
-    senderDc.onmessage = (e) => {
-      // 이동
-      const body = JSON.parse(e.data);
-      if (body.type === 'chat') {
-        setChatList((prev) => [...prev, body]);
-      }
-    };
 
     const offer = await sendPc.createOffer({
       offerToReceiveAudio: false,
@@ -98,13 +89,6 @@ export function useSfu(roomInfo: any, user: any, myMediaState: any) {
 
     const receiveDc = receivePc.createDataChannel('chat');
     setReceiveDcs((prev) => ({ ...prev, [peerId]: receiveDc }));
-    receiveDc.onmessage = (e: any) => {
-      // 이동
-      const body = JSON.parse(e.data);
-      if (body.type === 'chat') {
-        setChatList((prev) => [...prev, body]);
-      }
-    };
 
     const offer = await receivePc.createOffer({
       offerToReceiveAudio: true,
@@ -227,7 +211,6 @@ export function useSfu(roomInfo: any, user: any, myMediaState: any) {
   return {
     myVideoRef,
     remoteStreams,
-    chatList,
     userList,
     receiveDcs,
     sendDcRef,
