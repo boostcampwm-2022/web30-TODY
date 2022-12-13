@@ -335,7 +335,6 @@ export default function SfuPage() {
 
   useEffect(() => {
     if (!user || !roomInfo) return;
-    console.log();
     socket.connect();
 
     socket.on(SFU_EVENTS.CONNECT, async () => {
@@ -351,7 +350,7 @@ export default function SfuPage() {
         if (!myVideoRef.current) return;
         myVideoRef.current!.srcObject = myStream.current;
       } catch (err) {
-        alert('사용 가능한 카메라가 없습니다.');
+        // alert('사용 가능한 카메라가 없습니다.');
       } finally {
         socket.emit(SFU_EVENTS.JOIN, roomId);
 
