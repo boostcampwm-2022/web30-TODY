@@ -1,7 +1,7 @@
 # 프로젝트 소개
 > [wiki 바로가기](https://github.com/boostcampwm-2022/web30-TODY/wiki)
 
-> [배포링크](https://j221.tk)
+> [배포링크](https://tody.kr/)
 
 ## TODY (TOgether stuDY)
 
