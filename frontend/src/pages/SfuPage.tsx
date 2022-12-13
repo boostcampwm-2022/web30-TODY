@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable no-param-reassign */
-import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { ReactComponent as MicIcon } from '@assets/icons/mic.svg';
 import { ReactComponent as MicOffIcon } from '@assets/icons/mic-off.svg';
@@ -14,20 +10,11 @@ import { ReactComponent as MonitorIcon } from '@assets/icons/monitor.svg';
 import { ReactComponent as MonitorOffIcon } from '@assets/icons/monitor-off.svg';
 import ChatSideBar from '@components/studyRoom/ChatSideBar';
 import RemoteVideo from '@components/studyRoom/RemoteVideo';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { io } from 'socket.io-client';
-import useAxios from '@hooks/useAxios';
-import SFU_EVENTS from 'constants/sfuEvents';
-import { Chat } from 'types/chat.types';
+import { useSfu } from '@hooks/useSfu';
+import { useStudyRoomPage } from '@hooks/useStudyRoomPage';
 import ParticipantsSideBar from '@components/studyRoom/ParticipantsSideBar';
 import Canvas from '@components/studyRoom/Canvas';
-import { useRecoilValue } from 'recoil';
 import Loader from '@components/common/Loader';
-import { userState } from 'recoil/atoms';
-import checkMasterRequest from '../axios/requests/checkMasterRequest';
-import enterRoomRequest from '../axios/requests/enterRoomRequest';
-import deleteRoomRequest from '../axios/requests/deleteRoomRequest';
-import getStudyRoomInfo from '../axios/requests/getStudyRoomInfoRequest';
 
 const StudyRoomPageLayout = styled.div`
   height: 100vh;
@@ -140,6 +127,9 @@ const MenuItem = styled.button`
   }
   &.text-red {
     color: var(--red);
+    path {
+      fill: var(--red);
+    }
   }
 `;
 
@@ -179,338 +169,29 @@ const RoomDeleteButton = styled.button`
   font-weight: 700;
 `;
 
-const socket = io(process.env.REACT_APP_SFU_URL!, {
-  autoConnect: false,
-  path: '/sfu/socket.io',
-});
-
 export default function SfuPage() {
-  const { roomId } = useParams();
-  const [requestGetStudyRoomInfo, , , roomInfo] =
-    useAxios<any>(getStudyRoomInfo);
-  const user = useRecoilValue(userState);
-  const [, , , enterRoomData] = useAxios<''>(enterRoomRequest, {
-    onMount: true,
-    arg: {
-      studyRoomId: roomId,
-      userId: user?.userId,
-      nickname: user?.nickname,
-      isMaster: true,
-    },
-  });
+  const {
+    roomInfo,
+    user,
+    isMaster,
+    myMediaState,
+    isActiveCanvas,
+    activeSideBar,
+    onClickButtons,
+    deleteRoom,
+    leaveRoom,
+  } = useStudyRoomPage();
 
-  const [userList, setUserList] = useState<any>([]);
-
-  useEffect(() => {
-    if (!roomInfo) return;
-    setUserList([...roomInfo.nickNameOfParticipants]);
-  }, [roomInfo]);
-
-  useEffect(() => {
-    if (enterRoomData === null) return;
-    requestGetStudyRoomInfo(roomId);
-  }, [enterRoomData]);
-
-  const [deleteRoom, , ,] = useAxios<void>(deleteRoomRequest);
-  const [, , , isMaster] = useAxios<boolean>(checkMasterRequest, {
-    onMount: true,
-    arg: {
-      studyRoomId: roomId,
-      userId: user?.userId,
-    },
-  });
-
-  const [activeSideBar, setActiveSideBar] = useState('');
-  const [isActiveCanvas, setIsActiveCanvas] = useState(false);
-
-  const navigate = useNavigate();
-
-  const leaveRoomEvent = () => {
-    navigate(`/study-rooms`);
-  };
-
-  const deleteRoomEvent = () => {
-    if (!window.confirm('방을 삭제하시겠습니까?')) return;
-    alert('방이 삭제되었습니다.');
-    if (user) {
-      socket.emit('deleteRoom', roomId);
-      deleteRoom({
-        studyRoomId: roomId,
-      });
-    }
-    navigate(`/study-rooms`);
-  };
-
-  const [myMediaState, setMyMediaState] = useState({
-    video: true,
-    mic: false,
-  });
-
-  const [screenShare, setScreenShare] = useState({
-    use: false,
-  });
-
-  const RTCConfiguration = {
-    iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-  };
-
-  const [remoteStreams, setRemoteStreams] = useState<{
-    [socketId: string]: MediaStream;
-  }>({});
-  const [chatList, setChatList] = useState<Chat[]>([]);
-  const myVideoRef = useRef<HTMLVideoElement | null>(null);
-  const myStream = useRef<MediaStream | null>(null);
-  const receivePcs = useRef<{ [socketId: string]: RTCPeerConnection }>({});
-  const [receiveDcs, setReceiveDcs] = useState<{
-    [socketId: string]: RTCDataChannel;
-  }>({});
-  const sendPcRef = useRef<RTCPeerConnection | null>(null);
-  const sendDcRef = useRef<RTCDataChannel | null>(null);
-
-  const createSender = useCallback(async () => {
-    const sendPc = new RTCPeerConnection(RTCConfiguration);
-    sendPcRef.current = sendPc;
-    sendPc.onicecandidate = (ice: RTCPeerConnectionIceEvent) => {
-      socket.emit(SFU_EVENTS.SENDER_ICECANDIDATE, {
-        icecandidate: ice.candidate,
-      });
-    };
-
-    if (myStream.current) {
-      myStream.current.getTracks().forEach((track: MediaStreamTrack) => {
-        sendPc.addTrack(track, myStream.current!);
-      });
-    }
-
-    const senderDc = sendPc.createDataChannel('chat');
-    sendDcRef.current = senderDc;
-    senderDc.onmessage = (e) => {
-      const body = JSON.parse(e.data);
-      if (body.type === 'chat') {
-        setChatList((prev) => [...prev, body]);
-      }
-    };
-
-    const offer = await sendPc.createOffer({
-      offerToReceiveAudio: false,
-      offerToReceiveVideo: false,
-    });
-    await sendPc.setLocalDescription(offer);
-    return offer;
-  }, []);
-
-  const createReceiver = useCallback(async (peerId: string) => {
-    const receivePc = new RTCPeerConnection(RTCConfiguration);
-    receivePcs.current[peerId] = receivePc;
-    receivePc.onicecandidate = (ice: RTCPeerConnectionIceEvent) => {
-      socket.emit(SFU_EVENTS.RECEIVER_ICECANDIDATE, {
-        icecandidate: ice.candidate,
-        peerId,
-      });
-    };
-    receivePc.ontrack = (track: RTCTrackEvent) => {
-      const remoteStream = track.streams[0];
-      setRemoteStreams((prev) => {
-        const next = { ...prev, [peerId]: remoteStream };
-        return next;
-      });
-    };
-
-    const receiveDc = receivePc.createDataChannel('chat');
-    setReceiveDcs((prev) => ({ ...prev, [peerId]: receiveDc }));
-    receiveDc.onmessage = (e: any) => {
-      const body = JSON.parse(e.data);
-      if (body.type === 'chat') {
-        setChatList((prev) => [...prev, body]);
-      }
-    };
-
-    const offer = await receivePc.createOffer({
-      offerToReceiveAudio: true,
-      offerToReceiveVideo: true,
-    });
-    await receivePc.setLocalDescription(offer);
-    return offer;
-  }, []);
-
-  useEffect(() => {
-    if (!user || !roomInfo) return;
-    socket.connect();
-
-    socket.on(SFU_EVENTS.CONNECT, async () => {
-      try {
-        const stream = screenShare.use
-          ? await navigator.mediaDevices.getDisplayMedia()
-          : await navigator.mediaDevices.getUserMedia({
-              video: myMediaState.video,
-              audio: myMediaState.mic,
-            });
-        myStream.current = stream;
-
-        if (!myVideoRef.current) return;
-        myVideoRef.current!.srcObject = myStream.current;
-      } catch (err) {
-        // alert('사용 가능한 카메라가 없습니다.');
-      } finally {
-        socket.emit(SFU_EVENTS.JOIN, roomId);
-
-        const offer = await createSender();
-        socket.emit(SFU_EVENTS.SENDER_OFFER, {
-          offer,
-          userData: {
-            userId: user.userId,
-            userName: user.nickname,
-            roomId,
-          },
-        });
-      }
-    });
-
-    socket.on(SFU_EVENTS.NOTICE_ALL_PEERS, (peerIdsInRoom) => {
-      peerIdsInRoom.forEach(async (peerId: string) => {
-        const offer = await createReceiver(peerId);
-        socket.emit(SFU_EVENTS.RECEIVER_OFFER, {
-          offer,
-          targetId: peerId,
-        });
-      });
-    });
-
-    socket.on(SFU_EVENTS.SENDER_ANSWER, ({ answer }) => {
-      sendPcRef.current?.setRemoteDescription(answer);
-    });
-
-    socket.on(SFU_EVENTS.RECEIVER_ANSWER, ({ answer, targetId }) => {
-      receivePcs.current![targetId].setRemoteDescription(answer);
-    });
-
-    socket.on(SFU_EVENTS.NEW_PEER, async ({ peerId, userName }) => {
-      setUserList((prev: any) => [...prev, userName]);
-      const offer = await createReceiver(peerId);
-      socket.emit(SFU_EVENTS.RECEIVER_OFFER, {
-        offer,
-        targetId: peerId,
-      });
-    });
-
-    socket.on(
-      SFU_EVENTS.SENDER_ICECANDIDATE,
-      async ({ icecandidate, targetId }) => {
-        const receivePc = receivePcs.current[targetId];
-        if (!icecandidate) return;
-        await receivePc.addIceCandidate(icecandidate);
-      },
-    );
-
-    socket.on(SFU_EVENTS.RECEIVER_ICECANDIDATE, async ({ icecandidate }) => {
-      if (!icecandidate) return;
-      await sendPcRef.current!.addIceCandidate(icecandidate);
-    });
-
-    socket.on(SFU_EVENTS.SOMEONE_LEFT_ROOM, ({ peerId, userName }) => {
-      setUserList((prev: any) => [...prev.filter((x: any) => x !== userName)]);
-      const receivePc = receivePcs.current[peerId];
-      receivePc.close();
-      delete receivePcs.current[peerId];
-
-      setReceiveDcs((cur) => {
-        const newReceiveDcs = { ...cur };
-        delete newReceiveDcs[peerId];
-        return newReceiveDcs;
-      });
-
-      setRemoteStreams((prev) => {
-        const next = { ...prev };
-        delete next[peerId];
-        return next;
-      });
-    });
-
-    socket.on('deletedThisRoom', () => {
-      alert('방장이 공부방을 삭제했습니다 :(');
-      leaveRoomEvent();
-    });
-
-    // eslint-disable-next-line consistent-return
-    return () => {
-      socket.off(SFU_EVENTS.CONNECT);
-      socket.off(SFU_EVENTS.NOTICE_ALL_PEERS);
-      socket.off(SFU_EVENTS.RECEIVER_ANSWER);
-      socket.off(SFU_EVENTS.SENDER_ANSWER);
-      socket.off(SFU_EVENTS.RECEIVER_ICECANDIDATE);
-      socket.off(SFU_EVENTS.SENDER_ICECANDIDATE);
-      socket.off(SFU_EVENTS.NEW_PEER);
-      socket.off(SFU_EVENTS.SOMEONE_LEFT_ROOM);
-
-      socket.disconnect();
-    };
-  }, [screenShare, roomInfo]);
-
-  async function toggleMediaState(type: string) {
-    if (type === 'video') {
-      myStream.current!.getVideoTracks().forEach((track: MediaStreamTrack) => {
-        track.enabled = !track.enabled;
-      });
-
-      setMyMediaState({
-        ...myMediaState,
-        video: !myMediaState.video,
-      });
-      return;
-    }
-
-    if (type === 'mic') {
-      myStream.current!.getAudioTracks().forEach((track: MediaStreamTrack) => {
-        track.enabled = !track.enabled;
-      });
-
-      setMyMediaState({
-        ...myMediaState,
-        mic: !myMediaState.mic,
-      });
-    }
-
-    if (type === 'screen') {
-      setScreenShare({
-        ...screenShare,
-        use: !screenShare.use,
-      });
-    }
-  }
-
-  const onClickSideBarMenu = (clickedMenu: string) => {
-    if (clickedMenu === activeSideBar) setActiveSideBar('');
-    else setActiveSideBar(clickedMenu);
-  };
-
-  const onClickButtons = (e: any) => {
-    const buttonEl = e.target.closest('button').textContent;
-
-    switch (buttonEl) {
-      case '':
-        break;
-      case '채팅':
-      case '멤버':
-        onClickSideBarMenu(buttonEl);
-        break;
-      case '마이크 끄기':
-      case '마이크 켜기':
-        toggleMediaState('mic');
-        break;
-      case '비디오 끄기':
-      case '비디오 켜기':
-        toggleMediaState('video');
-        break;
-      case '화면 공유':
-        toggleMediaState('screen');
-        break;
-      case '캔버스 공유':
-        setIsActiveCanvas(!isActiveCanvas);
-        break;
-      default:
-        break;
-    }
-  };
+  const {
+    remoteStreams,
+    chatList,
+    userList,
+    receiveDcs,
+    sendDcRef,
+    myVideoRef,
+    isScreenShare,
+    toggleScreenShare,
+  } = useSfu(roomInfo, user, myMediaState);
 
   if (!roomInfo) {
     return <Loader />;
@@ -527,7 +208,7 @@ export default function SfuPage() {
         </RoomInfo>
         <VideoListLayout className={isActiveCanvas ? 'activeCanvas' : ''}>
           <VideoList>
-            <VideoItem muted autoPlay ref={myVideoRef} />
+            <VideoItem autoPlay ref={myVideoRef} />
             {Object.entries(remoteStreams).map(([peerId, remoteStream]) => (
               <RemoteVideo
                 key={peerId}
@@ -581,15 +262,15 @@ export default function SfuPage() {
               비디오 켜기
             </MenuItem>
           )}
-          {screenShare.use ? (
-            <MenuItem>
+          {isScreenShare ? (
+            <MenuItem onClick={toggleScreenShare}>
               <IconWrapper>
                 <MonitorIcon />
               </IconWrapper>
               화면 공유
             </MenuItem>
           ) : (
-            <MenuItem className="text-red">
+            <MenuItem className="text-red" onClick={toggleScreenShare}>
               <IconWrapper>
                 <MonitorOffIcon />
               </IconWrapper>
@@ -615,9 +296,9 @@ export default function SfuPage() {
             멤버
           </MenuItem>
         </MenuList>
-        <RoomExitButton onClick={leaveRoomEvent}>나가기</RoomExitButton>
+        <RoomExitButton onClick={leaveRoom}>나가기</RoomExitButton>
         {isMaster ? (
-          <RoomDeleteButton onClick={deleteRoomEvent}>삭제</RoomDeleteButton>
+          <RoomDeleteButton onClick={deleteRoom}>삭제</RoomDeleteButton>
         ) : null}
       </BottomBarLayout>
     </StudyRoomPageLayout>
