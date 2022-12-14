@@ -8,8 +8,15 @@ import * as cookieParser from 'cookie-parser';
 import corsConfig from './config/cors.config';
 import { SfuModule } from './sfu/sfu.module';
 import { globalChatModule } from './global-chat/globalChat.module';
+import * as pm2ClusterCache from 'pm2-cluster-cache';
 
 async function bootstrap() {
+  console.log(pm2ClusterCache);
+  const cache = await pm2ClusterCache.init({
+    storage: 'cluster',
+    defaultTtl: 0,
+  });
+  console.log(cache);
   const app = await NestFactory.create(AppModule, {
     cors: corsConfig,
   });
