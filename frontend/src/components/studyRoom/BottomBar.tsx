@@ -9,7 +9,14 @@ import { ReactComponent as ChatIcon } from '@assets/icons/chat.svg';
 import { ReactComponent as ParticipantsIcon } from '@assets/icons/participants.svg';
 import { ReactComponent as MonitorIcon } from '@assets/icons/monitor.svg';
 import { ReactComponent as MonitorOffIcon } from '@assets/icons/monitor-off.svg';
-import { useCallback, useEffect, useState } from 'react';
+import {
+  Dispatch,
+  RefObject,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 import { useRecoilValue } from 'recoil';
 import { userState } from 'recoil/atoms';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -53,7 +60,7 @@ const MenuItem = styled.button`
   &.text-red {
     color: var(--red);
     path {
-      fill: var(--red);
+      color: var(--red);
     }
   }
 `;
@@ -94,17 +101,25 @@ const RoomDeleteButton = styled.button`
   font-weight: 700;
 `;
 
-// interface Props {}
+interface Props {
+  myStream: RefObject<MediaStream | null>;
+  isScreenShare: boolean;
+  setIsScreenShare: Dispatch<SetStateAction<boolean>>;
+  setIsActiveCanvas: Dispatch<SetStateAction<boolean>>;
+  isActiveCanvas: boolean;
+  activeSideBar: string;
+  setActiveSideBar: Dispatch<React.SetStateAction<string>>;
+}
 
 export default function BottomBar({
   myStream,
   isScreenShare,
-  toggleScreenShare,
+  setIsScreenShare,
   setIsActiveCanvas,
   isActiveCanvas,
   activeSideBar,
   setActiveSideBar,
-}: any) {
+}: Props) {
   const { roomId } = useParams();
   const user = useRecoilValue(userState);
   const navigate = useNavigate();
@@ -118,6 +133,10 @@ export default function BottomBar({
       userId: user?.userId,
     },
   });
+
+  const toggleScreenShare = useCallback(() => {
+    setIsScreenShare(!isScreenShare);
+  }, [isScreenShare]);
 
   const leaveRoom = useCallback(() => {
     navigate(`/study-rooms`);
@@ -186,25 +205,22 @@ export default function BottomBar({
   );
 
   const onClickButtons = useCallback(
-    (e: any) => {
-      const buttonEl = e.target.closest('button').textContent;
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const target = e.target as Element;
+      const buttonName = target.closest('button')?.name;
 
-      switch (buttonEl) {
+      switch (buttonName) {
         case '':
           break;
-        case '채팅':
-        case '멤버':
-          onClickSideBarMenu(buttonEl);
+        case 'chat':
+        case 'member':
+          onClickSideBarMenu(buttonName);
           break;
-        case '마이크 끄기':
-        case '마이크 켜기':
-          toggleMediaState('mic');
+        case 'mic':
+        case 'video':
+          toggleMediaState(buttonName);
           break;
-        case '비디오 끄기':
-        case '비디오 켜기':
-          toggleMediaState('video');
-          break;
-        case '캔버스 공유':
+        case 'canvas':
           setIsActiveCanvas(!isActiveCanvas);
           break;
         default:
@@ -217,58 +233,35 @@ export default function BottomBar({
   return (
     <BottomBarLayout>
       <MenuList onClick={onClickButtons}>
-        {myMediaState.mic ? (
-          <MenuItem>
-            <IconWrapper>
-              <MicIcon />
-            </IconWrapper>
-            마이크 끄기
-          </MenuItem>
-        ) : (
-          <MenuItem className="text-red">
-            <IconWrapper>
-              <MicOffIcon />
-            </IconWrapper>
-            마이크 켜기
-          </MenuItem>
-        )}
-        {myMediaState.video ? (
-          <MenuItem>
-            <IconWrapper>
-              <VideoIcon />
-            </IconWrapper>
-            비디오 끄기
-          </MenuItem>
-        ) : (
-          <MenuItem className="text-red">
-            <IconWrapper>
-              <VideoOffIcon />
-            </IconWrapper>
-            비디오 켜기
-          </MenuItem>
-        )}
-        {isScreenShare ? (
-          <MenuItem onClick={toggleScreenShare}>
-            <IconWrapper>
-              <MonitorIcon />
-            </IconWrapper>
-            화면 공유
-          </MenuItem>
-        ) : (
-          <MenuItem className="text-red" onClick={toggleScreenShare}>
-            <IconWrapper>
-              <MonitorOffIcon />
-            </IconWrapper>
-            화면 공유
-          </MenuItem>
-        )}
-        <MenuItem className={isActiveCanvas ? 'active' : ''}>
+        <MenuItem name="mic" className={myMediaState.mic ? '' : 'text-red'}>
+          <IconWrapper>
+            {myMediaState.mic ? <MicIcon /> : <MicOffIcon />}
+          </IconWrapper>
+          마이크 {myMediaState.mic ? '끄기' : '켜기'}
+        </MenuItem>
+        <MenuItem name="video" className={myMediaState.video ? '' : 'text-red'}>
+          <IconWrapper>
+            {myMediaState.video ? <VideoIcon /> : <VideoOffIcon />}
+          </IconWrapper>
+          비디오 {myMediaState.video ? '끄기' : '켜기'}
+        </MenuItem>
+        <MenuItem
+          onClick={toggleScreenShare}
+          className={isScreenShare ? '' : 'text-red'}>
+          <IconWrapper>
+            {isScreenShare ? <MonitorIcon /> : <MonitorOffIcon />}
+          </IconWrapper>
+          화면 공유
+        </MenuItem>
+        <MenuItem name="canvas" className={isActiveCanvas ? 'active' : ''}>
           <IconWrapper>
             <CanvasIcon />
           </IconWrapper>
           캔버스 공유
         </MenuItem>
-        <MenuItem className={activeSideBar === '채팅' ? 'active' : ''}>
+        <MenuItem
+          name="chat"
+          className={activeSideBar === '채팅' ? 'active' : ''}>
           <IconWrapper>
             <ChatIcon />
           </IconWrapper>

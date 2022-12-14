@@ -103,7 +103,7 @@ export default function SfuPage() {
     sendDcRef,
     myVideoRef,
     isScreenShare,
-    toggleScreenShare,
+    setIsScreenShare,
   } = useSfu(roomInfo, user);
 
   if (!roomInfo) {
@@ -137,7 +137,7 @@ export default function SfuPage() {
           />
         </VideoListLayout>
         {activeSideBar !== '' &&
-          (activeSideBar === '채팅' ? (
+          (activeSideBar === 'chat' ? (
             <ChatSideBar sendDcRef={sendDcRef} receiveDcs={receiveDcs} />
           ) : (
             <ParticipantsSideBar participants={userList} />
@@ -146,7 +146,7 @@ export default function SfuPage() {
       <BottomBar
         myStream={myStream}
         isScreenShare={isScreenShare}
-        toggleScreenShare={toggleScreenShare}
+        setIsScreenShare={setIsScreenShare}
         isActiveCanvas={isActiveCanvas}
         setIsActiveCanvas={setIsActiveCanvas}
         activeSideBar={activeSideBar}

@@ -22,10 +22,6 @@ export function useSfu(roomInfo: any, user: any) {
   const [userList, setUserList] = useState<any>([]);
   const [isScreenShare, setIsScreenShare] = useState<boolean>(false);
 
-  const toggleScreenShare = useCallback(() => {
-    setIsScreenShare(!isScreenShare);
-  }, [isScreenShare]);
-
   useEffect(() => {
     if (!roomInfo) return;
     setUserList([...roomInfo.nickNameOfParticipants]);
@@ -204,6 +200,6 @@ export function useSfu(roomInfo: any, user: any) {
     receiveDcs,
     sendDcRef,
     isScreenShare,
-    toggleScreenShare,
+    setIsScreenShare,
   };
 }
