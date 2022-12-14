@@ -11,7 +11,7 @@ export class createRoomDto {
   readonly managerId: string;
 
   @IsString()
-  @MaxLength(10, { message: 'title is too long' })
+  @MaxLength(25, { message: 'title is too long' })
   readonly name: string;
 
   @IsString()

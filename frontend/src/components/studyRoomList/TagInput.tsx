@@ -57,7 +57,7 @@ interface Props {
 
 export default function TagInput({ tagList, setTagList }: Props) {
   const addTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (tagList.length === 5) {
+    if (tagList.length === 2) {
       (e.target as HTMLInputElement).value = '';
       return;
     }
@@ -80,7 +80,7 @@ export default function TagInput({ tagList, setTagList }: Props) {
         onKeyUp={(e) => (e.key === 'Enter' ? addTag(e) : null)}
         placeholder="원하는 태그를 입력 후, Enter를 입력하세요."
       />
-      <GuideText>※ 태그는 최대 5개까지 입력 가능합니다.</GuideText>
+      <GuideText>※ 태그는 최대 2개까지 입력 가능합니다.</GuideText>
       <TagList>
         {tagList.map((tag, index) => (
           <TagItem key={tag}>
