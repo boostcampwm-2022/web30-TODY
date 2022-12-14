@@ -261,13 +261,15 @@ export default function BottomBar({
         </MenuItem>
         <MenuItem
           name="chat"
-          className={activeSideBar === '채팅' ? 'active' : ''}>
+          className={activeSideBar === 'chat' ? 'active' : ''}>
           <IconWrapper>
             <ChatIcon />
           </IconWrapper>
           채팅
         </MenuItem>
-        <MenuItem className={activeSideBar === '멤버' ? 'active' : ''}>
+        <MenuItem
+          name="member"
+          className={activeSideBar === 'member' ? 'active' : ''}>
           <IconWrapper>
             <ParticipantsIcon />
           </IconWrapper>
