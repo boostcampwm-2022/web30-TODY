@@ -10,7 +10,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "cross-env NODE_ENV=development nest start --watch",
-    "start:dev": "nest start --watch",
+    "start:dev": "cross-env NODE_ENV=development pm2 start dist/main.js -i 4",
     "start:debug": "nest start --debug --watch",
     "start:prod": "cross-env NODE_ENV=production pm2 start dist/main.js -i max",
     "start:reload": "cross-env NODE_ENV=production pm2 reload main --update-env",

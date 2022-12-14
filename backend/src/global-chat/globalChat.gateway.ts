@@ -19,8 +19,8 @@ export class globalChatGateway
   @WebSocketServer() server: Server;
 
   afterInit(server: Server) {
-    //server.adapter(createAdapter());
-    //setupWorker(server);
+    server.adapter(createAdapter());
+    setupWorker(server);
     console.log('globalChat socket server is running');
   }
 
@@ -42,6 +42,7 @@ export class globalChatGateway
     client: Socket,
     @MessageBody() body: { nickname: string; chat: string },
   ) {
+    console.log(`${body.nickname} : ${body.chat}`);
     client.broadcast
       .to('global')
       .emit('globalChat', { nickname: body.nickname, chat: body.chat });
