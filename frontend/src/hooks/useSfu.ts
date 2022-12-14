@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import SFU_EVENTS from 'constants/sfuEvents';
 import socket from 'sockets/sfuSocket';
 
@@ -21,6 +21,16 @@ export function useSfu(roomInfo: any, user: any) {
   const sendDcRef = useRef<RTCDataChannel | null>(null);
   const [userList, setUserList] = useState<any>([]);
   const [isScreenShare, setIsScreenShare] = useState<boolean>(false);
+  const [isCameraUsable, setIsCameraUsable] = useState<boolean>(true);
+  // const [noCamPeerIds, setNoCamPeerIds] = useState<string[]>([]);
+  const nicknameRef = useRef<{ [socketId: string]: string }>({});
+
+  const noCamPeerIds = useMemo(() => {
+    const noCamSocketIds = Object.keys(receiveDcs).filter(
+      (socketId) => !(socketId in remoteStreams),
+    );
+    return noCamSocketIds;
+  }, [remoteStreams, receiveDcs]);
 
   useEffect(() => {
     if (!roomInfo) return;
@@ -87,7 +97,6 @@ export function useSfu(roomInfo: any, user: any) {
     socket.connect();
 
     socket.on(SFU_EVENTS.CONNECT, async () => {
-      if (!myVideoRef.current) return;
       try {
         const stream = isScreenShare
           ? await navigator.mediaDevices.getDisplayMedia()
@@ -96,10 +105,13 @@ export function useSfu(roomInfo: any, user: any) {
               audio: false,
             });
         myStream.current = stream;
+        if (!myVideoRef.current) return;
         myVideoRef.current.srcObject = stream;
       } catch (err) {
         if (isScreenShare) {
           setIsScreenShare(false);
+        } else {
+          setIsCameraUsable(false);
         }
       } finally {
         socket.emit(SFU_EVENTS.JOIN, roomInfo.roomId);
@@ -116,7 +128,8 @@ export function useSfu(roomInfo: any, user: any) {
       }
     });
 
-    socket.on(SFU_EVENTS.NOTICE_ALL_PEERS, (peerIdsInRoom) => {
+    socket.on(SFU_EVENTS.NOTICE_ALL_PEERS, ({ peerIdsInRoom, userNames }) => {
+      nicknameRef.current = { ...nicknameRef.current, ...userNames };
       peerIdsInRoom.forEach(async (peerId: string) => {
         const offer = await createReceiver(peerId);
         socket.emit(SFU_EVENTS.RECEIVER_OFFER, {
@@ -137,6 +150,7 @@ export function useSfu(roomInfo: any, user: any) {
     });
 
     socket.on(SFU_EVENTS.NEW_PEER, async ({ peerId, userName }) => {
+      nicknameRef.current[peerId] = userName;
       setUserList((prev: any) => [...prev, userName]); // 이동
       const offer = await createReceiver(peerId);
       socket.emit(SFU_EVENTS.RECEIVER_OFFER, {
@@ -161,6 +175,7 @@ export function useSfu(roomInfo: any, user: any) {
     });
 
     socket.on(SFU_EVENTS.SOMEONE_LEFT_ROOM, ({ peerId, userName }) => {
+      delete nicknameRef.current[peerId];
       setUserList((prev: any) => [...prev.filter((x: any) => x !== userName)]); // 이동
       const receivePc = receivePcs.current[peerId];
       receivePc.close();
@@ -200,6 +215,9 @@ export function useSfu(roomInfo: any, user: any) {
     receiveDcs,
     sendDcRef,
     isScreenShare,
+    noCamPeerIds,
+    nicknameRef,
+    isCameraUsable,
     setIsScreenShare,
   };
 }

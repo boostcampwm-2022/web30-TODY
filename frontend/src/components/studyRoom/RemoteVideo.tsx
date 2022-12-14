@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
+const VideoLayout = styled.div`
+  width: 100%;
+`;
 const Video = styled.video`
-  /* width: 100%; */
   /* height: 100%; */
   height: 308px;
   border-radius: 12px;
@@ -29,7 +31,11 @@ export default function RemoteVideo({
   }, [remoteStream]);
 
   // eslint-disable-next-line jsx-a11y/media-has-caption
-  return <Video autoPlay ref={ref} className={className} />;
+  return (
+    <VideoLayout>
+      <Video autoPlay ref={ref} className={className} />
+    </VideoLayout>
+  );
 }
 
 RemoteVideo.defaultProps = {
