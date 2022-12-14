@@ -19,8 +19,8 @@ export class globalChatGateway
   @WebSocketServer() server: Server;
 
   afterInit(server: Server) {
-    server.adapter(createAdapter());
-    setupWorker(server);
+    //server.adapter(createAdapter());
+    //setupWorker(server);
     console.log('globalChat socket server is running');
   }
 
