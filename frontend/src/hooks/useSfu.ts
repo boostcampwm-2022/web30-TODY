@@ -7,7 +7,7 @@ const RTCConfiguration = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
 };
 
-export function useSfu(roomInfo: any, user: any, myMediaState: any) {
+export function useSfu(roomInfo: any, user: any) {
   const [remoteStreams, setRemoteStreams] = useState<{
     [socketId: string]: MediaStream;
   }>({});
@@ -25,18 +25,6 @@ export function useSfu(roomInfo: any, user: any, myMediaState: any) {
   const toggleScreenShare = useCallback(() => {
     setIsScreenShare(!isScreenShare);
   }, [isScreenShare]);
-
-  useEffect(() => {
-    // 이동
-    if (!myStream.current) return;
-    myStream.current.getAudioTracks().forEach((track: MediaStreamTrack) => {
-      track.enabled = myMediaState.mic;
-    });
-
-    myStream.current.getVideoTracks().forEach((track: MediaStreamTrack) => {
-      track.enabled = myMediaState.video;
-    });
-  }, [myMediaState]);
 
   useEffect(() => {
     if (!roomInfo) return;
@@ -108,8 +96,8 @@ export function useSfu(roomInfo: any, user: any, myMediaState: any) {
         const stream = isScreenShare
           ? await navigator.mediaDevices.getDisplayMedia()
           : await navigator.mediaDevices.getUserMedia({
-              video: myMediaState.video,
-              audio: myMediaState.mic,
+              video: true,
+              audio: false,
             });
         myStream.current = stream;
         myVideoRef.current.srcObject = stream;
@@ -209,6 +197,7 @@ export function useSfu(roomInfo: any, user: any, myMediaState: any) {
   }, [roomInfo, isScreenShare]);
 
   return {
+    myStream,
     myVideoRef,
     remoteStreams,
     userList,
