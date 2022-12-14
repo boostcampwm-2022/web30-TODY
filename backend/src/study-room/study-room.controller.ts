@@ -72,6 +72,17 @@ export class StudyRoomController {
     return { isFull };
   }
 
+  @Get('/enterable')
+  async checkEnterable(
+    @Query() query: { roomId: number; userId: string },
+  ): Promise<{ enterable: boolean }> {
+    const { enterable } = await this.studyRoomService.checkEnterable(
+      query.roomId,
+      query.userId,
+    );
+    return { enterable };
+  }
+
   @Post('/check-master')
   @HttpCode(200)
   async checkMasterOfRoom(
