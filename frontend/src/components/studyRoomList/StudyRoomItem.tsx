@@ -19,6 +19,9 @@ const NameLayout = styled.div`
   margin: 12px 0 10px;
 `;
 const Name = styled.div`
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-weight: 700;
   font-size: 20px;
   padding-left: 15px;
