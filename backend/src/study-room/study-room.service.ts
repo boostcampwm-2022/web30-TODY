@@ -230,15 +230,6 @@ export class StudyRoomService {
     };
   }
 
-  async checkIsFull(studyRoomId: number) {
-    const participants = await this.redisCacheService.getRoomValue(studyRoomId);
-    const room = await this.studyRoomRepository.findOne({
-      where: { studyRoomId },
-    });
-    const isFull = room.maxPersonnel <= Object.values(participants).length;
-    return isFull;
-  }
-
   async checkEnterable(roomId: number, userId: string) {
     const isInRoom = await this.redisCacheService.getValue(`isInRoom${userId}`);
     if (isInRoom)
