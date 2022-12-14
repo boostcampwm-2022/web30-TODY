@@ -160,7 +160,7 @@ export default function BottomBar({
     if (deleteRoomData === null) return;
     alert('방이 삭제되었습니다.');
     socket.emit('deleteRoom', roomId);
-    navigate(`/study-rooms`);
+    navigate(`/study-rooms`, { replace: true });
   }, [deleteRoomData]);
 
   useEffect(() => {
