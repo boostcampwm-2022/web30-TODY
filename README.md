@@ -31,7 +31,7 @@
 ### 화상 공유
 
 - **WebRTC**를 활용한 **화상 연결** 구현
-     ![image](https://user-images.githubusercontent.com/109154976/206093979-2b5b5e69-9939-43ad-b48c-026cf27eacec.png)
+     ![공부방 채팅](https://user-images.githubusercontent.com/109154976/207522850-2fcf00f7-79d8-442a-ad47-c3ba0cf615ff.gif)
 
 
 ### 실시간 채팅
@@ -39,22 +39,29 @@
 **1. 전체 사용자 간 채팅**
 
 - 전체 사용자 간 실시간 채팅은 공부방에 참여하기 전 채팅을 통해 **목적이나 목표가 맞는 사용자**끼리 만나 공부방을 생성하도록 유도하기 위한 기능이다.
+    ![전체채팅](https://user-images.githubusercontent.com/109154976/207523013-43401208-f896-4ed4-84ca-5c644d96c7cc.gif)
 
-    ![study-list_(%EC%A0%84%EC%B2%B4_%EC%B1%84%ED%8C%85%EC%B0%BD_on)_-_default](https://user-images.githubusercontent.com/109154976/206093817-bf45d3d2-1ef1-4165-a91a-81a2edbfe537.png)
 
 
 **2. 공부방 내 사용자 간 채팅**
 
 - 비디오 공유를 할 수 없는 경우의 참여자 또한 소통이 가능하도록 **실시간 채팅 기능**을 제공한다.
+    ![공부방 채팅](https://user-images.githubusercontent.com/109154976/207522850-2fcf00f7-79d8-442a-ad47-c3ba0cf615ff.gif)
 
-    ![Untitled 1](https://user-images.githubusercontent.com/109154976/206093845-865996ef-77df-46d9-9d96-40d317d6ea47.png)
+    
 
 
 ### 캔버스 공유
 
 - 공부방 내 참여자 간 **실시간 캔버스** 공유
-     [ GIF 영상 첨부 예정 ]
+    [캔버스 공유](https://user-images.githubusercontent.com/109154976/207522916-31fafde5-6a11-400f-9b83-b5d55e2beb91.gif)
+
 
 ## 기술 스택
 
 ![Untitled 2](https://user-images.githubusercontent.com/109154976/206093781-88aef41d-b9fd-4632-a07c-62b1b34faa07.png)
+
+## 아키텍처
+
+![image](https://user-images.githubusercontent.com/109154976/207525357-af7d36cb-e53e-49c8-9f2d-61484cd6aaa6.png)
+
