@@ -82,6 +82,7 @@ const Wrapper = styled.div`
 const socket = io(process.env.REACT_APP_SOCKET_URL!, {
   autoConnect: false,
   path: '/globalChat/socket.io',
+  transports: ['websocket'],
 });
 
 export default function GlobalChat() {

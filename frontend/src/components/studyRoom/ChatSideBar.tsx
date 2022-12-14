@@ -1,10 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import DownArrowIcon from '@assets/icons/down-triangle.svg';
-import { Chat } from 'types/chat.types';
 import { useRecoilValue } from 'recoil';
 import { userState } from 'recoil/atoms';
-import ChatItem from './ChatItem';
+import ChatList from './ChatList';
 
 const StudyRoomSideBarLayout = styled.div`
   width: 420px;
@@ -19,23 +18,6 @@ const ChatTitle = styled.h1`
   font-family: 'yg-jalnan';
   font-size: 18px;
   font-weight: 700;
-`;
-
-const ChatContent = styled.div`
-  margin: 48px 17px 0;
-  flex: 1;
-  overflow-y: auto;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-    border-radius: 3px;
-    background: var(--orange3);
-  }
-  &::-webkit-scrollbar-thumb {
-    margin-left: 3px;
-    border-radius: 3px;
-    background: var(--orange);
-  }
 `;
 
 const ChatInputLayout = styled.div`
@@ -84,11 +66,11 @@ const SelectReceiver = styled.select`
 `;
 
 interface Props {
-  sendDcRef?: React.RefObject<RTCDataChannel | null>;
-  chatList?: Chat[];
+  sendDcRef: React.RefObject<RTCDataChannel | null>;
+  receiveDcs: { [id: string]: RTCDataChannel };
 }
 
-export default function ChatSideBar({ sendDcRef, chatList }: Props) {
+export default function ChatSideBar({ sendDcRef, receiveDcs }: Props) {
   const user = useRecoilValue(userState);
   const sendChat = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter' || !e.currentTarget.value) return;
@@ -104,22 +86,10 @@ export default function ChatSideBar({ sendDcRef, chatList }: Props) {
     e.currentTarget.value = '';
   };
 
-  const chatListRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (chatListRef.current) {
-      chatListRef.current.scrollTop = chatListRef.current.scrollHeight;
-    }
-  }, [chatList]);
-
   return (
     <StudyRoomSideBarLayout>
       <ChatTitle>채팅</ChatTitle>
-      <ChatContent ref={chatListRef}>
-        {chatList?.map((chat: Chat) => (
-          <ChatItem key={chat.id} chat={chat} />
-        ))}
-      </ChatContent>
+      <ChatList sendDcRef={sendDcRef} receiveDcs={receiveDcs} />
       <ChatInputLayout>
         <SelectReceiverLayout>
           <span className="to">To.</span>
@@ -137,8 +107,3 @@ export default function ChatSideBar({ sendDcRef, chatList }: Props) {
     </StudyRoomSideBarLayout>
   );
 }
-
-ChatSideBar.defaultProps = {
-  sendDcRef: null,
-  chatList: [],
-};

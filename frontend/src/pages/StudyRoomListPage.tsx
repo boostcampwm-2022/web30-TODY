@@ -102,7 +102,7 @@ export default function StudyRoomListPage() {
   const validateInput = (name: string, value: string) => {
     switch (name) {
       case 'name':
-        return value.slice(0, 10);
+        return value.slice(0, 25);
       case 'content':
         return value.slice(0, 100);
       case 'maxPersonnel':
@@ -193,7 +193,7 @@ export default function StudyRoomListPage() {
           <PageTitle>새로운 공부방 만들기</PageTitle>
           <CustomInput
             placeholder="방 이름"
-            guideText="※ 방 이름은 10자 이내로 작성해주세요."
+            guideText="※ 방 이름은 25자 이내로 작성해주세요."
             name="name"
             value={newRoomInfo.name}
             onChange={onChangeNewRoomInfo}
