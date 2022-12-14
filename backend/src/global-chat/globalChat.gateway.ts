@@ -9,8 +9,6 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { createAdapter } from '@socket.io/cluster-adapter';
-import { setupWorker } from '@socket.io/sticky';
 
 @WebSocketGateway({ cors: true, path: '/globalChat' })
 export class globalChatGateway
@@ -19,8 +17,6 @@ export class globalChatGateway
   @WebSocketServer() server: Server;
 
   afterInit(server: Server) {
-    server.adapter(createAdapter());
-    setupWorker(server);
     console.log('globalChat socket server is running');
   }
 
