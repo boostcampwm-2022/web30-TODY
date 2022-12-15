@@ -115,7 +115,7 @@ export function useSfu(roomInfo: RoomInfoData, user: UserData) {
           setIsCameraUsable(false);
         }
       } finally {
-        socket.emit(SFU_EVENTS.JOIN, roomInfo.studyRoomId);
+        socket.emit(SFU_EVENTS.JOIN, String(roomInfo.studyRoomId));
 
         const offer = await createSender();
         socket.emit(SFU_EVENTS.SENDER_OFFER, {
