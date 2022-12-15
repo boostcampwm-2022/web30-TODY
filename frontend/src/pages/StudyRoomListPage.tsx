@@ -67,8 +67,8 @@ export default function StudyRoomListPage() {
     searchResult,
   ] = useAxios<RoomListData>(getStudyRoomListRequest);
 
-  const [page, setPage] = useState(queryString.page || 1);
-  const [keyword, setKeyword] = useState(queryString.keyword || '');
+  const [page, setPage] = useState((Number(queryString.page) as number) || 1);
+  const [keyword, setKeyword] = useState((queryString.keyword as string) || '');
   const [attendable, setAttendable] = useState(
     Boolean(queryString.attendable) || false,
   );

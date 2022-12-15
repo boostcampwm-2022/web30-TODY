@@ -48,9 +48,9 @@ const SearchBarButton = styled.button`
 
 interface Props {
   guideText?: string;
-  setKeyword: any;
-  setPage: any;
-  attendable: any;
+  setKeyword: React.Dispatch<React.SetStateAction<string>>;
+  setPage: React.Dispatch<React.SetStateAction<number>>;
+  attendable: boolean;
 }
 
 export default function SearchBar({
@@ -61,7 +61,7 @@ export default function SearchBar({
 }: Props) {
   const navigate = useNavigate();
   const [input, setInput] = useState('');
-  const onChange = (e: any) => {
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
   };
 

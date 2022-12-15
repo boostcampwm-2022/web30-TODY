@@ -15,7 +15,12 @@ const NameBox = styled.div`
   color: white;
 `;
 
-export default function NicknameWrapper({ children, nickname }: any) {
+interface Props {
+  children: JSX.Element;
+  nickname: string | undefined;
+}
+
+export default function NicknameWrapper({ children, nickname }: Props) {
   return (
     <NicknameWrapperLayout>
       <NameBox>{nickname}</NameBox>

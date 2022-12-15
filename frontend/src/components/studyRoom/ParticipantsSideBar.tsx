@@ -39,13 +39,17 @@ const NickName = styled.div`
   font-size: 21px;
 `;
 
-export default function ParticipantsSideBar({ participants }: any) {
+interface Props {
+  participants: string[];
+}
+
+export default function ParticipantsSideBar({ participants }: Props) {
   const participantsList = participants ? Object.values(participants) : [];
   return (
     <ParticipantsSideBarLayout>
       <Title>참여자 목록</Title>
       <Content>
-        {participantsList.map((participant: any) => (
+        {participantsList.map((participant: string) => (
           <ParticipantItem key={participant}>
             <ProfileImage />
             <NickName>{participant}</NickName>
