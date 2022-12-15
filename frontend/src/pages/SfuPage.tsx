@@ -54,14 +54,21 @@ const VideoList = styled.div`
   flex-wrap: wrap;
   gap: 10px;
   overflow-y: auto;
+  width: 100%;
+
+  &.alone {
+    width: auto;
+  }
 
   & > div {
-    flex-basis: auto;
-    aspect-ratio: 4 / 3;
+    flex-basis: 200px;
+    flex-grow: 1;
+    height: auto;
   }
 `;
+
 const VideoItem = styled.video`
-  /* height: 308px;/ */
+  width: 100%;
   border-radius: 12px;
 `;
 
@@ -84,19 +91,12 @@ const VideoListLayout = styled.div`
       min-width: 135px;
       overflow-y: auto;
     }
-    ${VideoItem} {
-      width: 100%;
-      height: auto;
-    }
   }
 `;
 
 const BlankBox = styled.div`
-  background-color: black;
-  width: 100%;
-  height: 100%;
-  /* height: 308px; */
-  /* width: 410px; */
+  background-color: #ffce70;
+  padding-top: 75%;
   border-radius: 12px;
 `;
 
@@ -138,7 +138,12 @@ export default function SfuPage() {
           </RoomStatus>
         </RoomInfo>
         <VideoListLayout className={isActiveCanvas ? 'activeCanvas' : ''}>
-          <VideoList>
+          <VideoList
+            className={
+              !Object.keys(remoteStreams).length && !noCamPeerIds.length
+                ? 'alone'
+                : ''
+            }>
             <NicknameWrapper nickname={user?.nickname}>
               {isCameraUsable || isScreenShare ? (
                 <VideoItem autoPlay ref={myVideoRef} />
@@ -150,10 +155,7 @@ export default function SfuPage() {
               <NicknameWrapper
                 key={peerId}
                 nickname={nicknameRef.current[peerId]}>
-                <RemoteVideo
-                  remoteStream={remoteStream}
-                  className={isActiveCanvas ? 'activeCanvas' : ''}
-                />
+                <RemoteVideo remoteStream={remoteStream} />
               </NicknameWrapper>
             ))}
             {noCamPeerIds.map((peerId) => (

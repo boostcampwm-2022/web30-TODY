@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 const NicknameWrapperLayout = styled.div`
   position: relative;
-  /* width: 100%; */
+  width: 100%;
 `;
 
 const NameBox = styled.div`
