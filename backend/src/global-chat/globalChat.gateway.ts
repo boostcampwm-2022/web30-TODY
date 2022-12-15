@@ -1,3 +1,4 @@
+import { UseFilters } from '@nestjs/common';
 import {
   MessageBody,
   SubscribeMessage,
@@ -9,7 +10,9 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { SocketExceptionsFilter } from 'src/filter/socket-exceptions.filter';
 
+@UseFilters(new SocketExceptionsFilter())
 @WebSocketGateway({ cors: true, path: '/globalChat' })
 export class globalChatGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect

@@ -1,4 +1,5 @@
 import { Inject } from '@nestjs/common';
+import { UseFilters } from '@nestjs/common';
 import {
   MessageBody,
   SubscribeMessage,
@@ -13,6 +14,7 @@ import { Server, Socket } from 'socket.io';
 import SFU_EVENTS from 'src/constants/sfuEvents';
 import { RedisCacheService } from 'src/redis/redis-cache.service';
 import { getCanvasBody, getChatBody } from 'src/utils/sendDcBodyFormatter';
+import { SocketExceptionsFilter } from 'src/filter/socket-exceptions.filter';
 import * as wrtc from 'wrtc';
 
 const receivePcs: { [id: string]: RTCPeerConnection } = {};
@@ -23,6 +25,7 @@ const RTCConfiguration = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
 };
 
+@UseFilters(new SocketExceptionsFilter())
 @WebSocketGateway({ cors: true, path: '/sfu' })
 export class SfuGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
