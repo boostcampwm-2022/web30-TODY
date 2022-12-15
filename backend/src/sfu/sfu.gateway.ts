@@ -86,7 +86,7 @@ export class SfuGateway
     console.log(typeof clientRoom);
     // console.log('deletedRoomId: ', roomId, clientRoom);
     // console.log(clientRoom === roomId);
-    client.broadcast.to(roomId).emit('deletedThisRoom');
+    client.broadcast.to(clientRoom).emit('deletedThisRoom');
   }
 
   @SubscribeMessage(SFU_EVENTS.JOIN)
