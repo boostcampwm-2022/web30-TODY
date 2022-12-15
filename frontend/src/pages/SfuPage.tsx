@@ -7,6 +7,7 @@ import ParticipantsSideBar from '@components/studyRoom/ParticipantsSideBar';
 import Canvas from '@components/studyRoom/Canvas';
 import Loader from '@components/common/Loader';
 import BottomBar from '@components/studyRoom/BottomBar';
+import NicknameWrapper from '@components/studyRoom/NicknameWrapper';
 
 const StudyRoomPageLayout = styled.div`
   height: 100vh;
@@ -53,9 +54,21 @@ const VideoList = styled.div`
   flex-wrap: wrap;
   gap: 10px;
   overflow-y: auto;
+  width: 100%;
+
+  &.alone {
+    width: auto;
+  }
+
+  & > div {
+    flex-basis: 200px;
+    flex-grow: 1;
+    height: auto;
+  }
 `;
+
 const VideoItem = styled.video`
-  height: 308px;
+  width: 100%;
   border-radius: 12px;
 `;
 
@@ -78,11 +91,13 @@ const VideoListLayout = styled.div`
       min-width: 135px;
       overflow-y: auto;
     }
-    ${VideoItem} {
-      width: 100%;
-      height: auto;
-    }
   }
+`;
+
+const BlankBox = styled.div`
+  background-color: #ffce70;
+  padding-top: 75%;
+  border-radius: 12px;
 `;
 
 export default function SfuPage() {
@@ -103,6 +118,9 @@ export default function SfuPage() {
     sendDcRef,
     myVideoRef,
     isScreenShare,
+    noCamPeerIds,
+    nicknameRef,
+    isCameraUsable,
     setIsScreenShare,
   } = useSfu(roomInfo, user);
 
@@ -120,14 +138,32 @@ export default function SfuPage() {
           </RoomStatus>
         </RoomInfo>
         <VideoListLayout className={isActiveCanvas ? 'activeCanvas' : ''}>
-          <VideoList>
-            <VideoItem autoPlay ref={myVideoRef} />
+          <VideoList
+            className={
+              !Object.keys(remoteStreams).length && !noCamPeerIds.length
+                ? 'alone'
+                : ''
+            }>
+            <NicknameWrapper nickname={user?.nickname}>
+              {isCameraUsable || isScreenShare ? (
+                <VideoItem autoPlay ref={myVideoRef} />
+              ) : (
+                <BlankBox />
+              )}
+            </NicknameWrapper>
             {Object.entries(remoteStreams).map(([peerId, remoteStream]) => (
-              <RemoteVideo
+              <NicknameWrapper
                 key={peerId}
-                remoteStream={remoteStream}
-                className={isActiveCanvas ? 'activeCanvas' : ''}
-              />
+                nickname={nicknameRef.current[peerId]}>
+                <RemoteVideo remoteStream={remoteStream} />
+              </NicknameWrapper>
+            ))}
+            {noCamPeerIds.map((peerId) => (
+              <NicknameWrapper
+                key={peerId}
+                nickname={nicknameRef.current[peerId]}>
+                <BlankBox />
+              </NicknameWrapper>
             ))}
           </VideoList>
           <Canvas
