@@ -5,7 +5,7 @@ import CustomInput from '@components/common/CustomInput';
 import StyledHeader1 from '@components/common/StyledHeader1';
 import { useNavigate, Link } from 'react-router-dom';
 import useAxios from '@hooks/useAxios';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import Loader from '@components/common/Loader';
 import useInputValidation from '@hooks/useInputValidation';
 import { useRecoilState, useRecoilValue } from 'recoil';
@@ -48,6 +48,8 @@ export default function LoginPage() {
     nickname: string;
   }>(loginRequest, { errNavigate: false });
   const [user, setUser] = useRecoilState(userState);
+  const idInputRef = useRef<HTMLInputElement | null>(null);
+  const pwInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (user === null) return;
@@ -58,9 +60,10 @@ export default function LoginPage() {
     if (!loginError) return;
     if (loginError.statusCode === 400) {
       alert('로그인에 실패하였습니다.');
-      return;
     }
-    alert(loginError.message);
+    if (!idInputRef.current || !pwInputRef.current) return;
+    idInputRef.current.value = '';
+    pwInputRef.current.value = '';
   }, [loginError]);
 
   useEffect(() => {
@@ -95,12 +98,18 @@ export default function LoginPage() {
         <Wrapper>
           <StyledHeader1>로그인</StyledHeader1>
           <form onSubmit={login}>
-            <CustomInput name="id" placeholder="아이디" onChange={validateId} />
+            <CustomInput
+              name="id"
+              placeholder="아이디"
+              onChange={validateId}
+              inputRef={idInputRef}
+            />
             <CustomInput
               onChange={validatePw}
               name="password"
               placeholder="비밀번호"
               type="password"
+              inputRef={pwInputRef}
             />
             <CustomButton
               type="submit"
