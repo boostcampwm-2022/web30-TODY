@@ -36,35 +36,45 @@ export class SfuGateway
   }
 
   async handleConnection(client: Socket) {
-    console.log(`connected: ${client.id}`);
-    client.on(SFU_EVENTS.DISCONNECTING, () => {
-      const roomName = [...client.rooms].filter(
-        (roomName) => roomName !== client.id,
-      )[0];
-      if (receivePcs[client.id]) {
-        receivePcs[client.id].close();
-        delete receivePcs[client.id];
-      }
-      if (sendPcs[client.id]) {
-        Object.values(sendPcs[client.id]).forEach((sendPc) => sendPc.close());
-        delete sendPcs[client.id];
-      }
-      if (sendDcs[client.id]) {
-        Object.values(sendDcs[client.id]).forEach((sendDc) => sendDc.close());
-        delete sendDcs[client.id];
-      }
-      client.to(roomName).emit(SFU_EVENTS.SOMEONE_LEFT_ROOM, {
-        peerId: client.id,
-        userName: client.data.userName,
+    try {
+      console.log(`connected: ${client.id}`);
+      client.on(SFU_EVENTS.DISCONNECTING, () => {
+        const roomName = [...client.rooms].filter(
+          (roomName) => roomName !== client.id,
+        )[0];
+        if (receivePcs[client.id]) {
+          receivePcs[client.id].close();
+          delete receivePcs[client.id];
+        }
+        if (sendPcs[client.id]) {
+          Object.values(sendPcs[client.id]).forEach((sendPc) => sendPc.close());
+          delete sendPcs[client.id];
+        }
+        if (sendDcs[client.id]) {
+          Object.values(sendDcs[client.id]).forEach((sendDc) => sendDc.close());
+          delete sendDcs[client.id];
+        }
+        client.to(roomName).emit(SFU_EVENTS.SOMEONE_LEFT_ROOM, {
+          peerId: client.id,
+          userName: client.data.userName,
+        });
       });
-    });
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async handleDisconnect(client: Socket) {
-    axios.create({ baseURL: process.env.API_URL }).post('/user/leaveRoom', {
-      studyRoomId: client.data.roomId,
-      userId: client.data.userId,
-    });
+    try {
+      await axios
+        .create({ baseURL: process.env.API_URL })
+        .post('/user/leaveRoom', {
+          studyRoomId: client.data.roomId,
+          userId: client.data.userId,
+        });
+    } catch (e) {
+      console.log(e);
+    }
     console.log(`disconnect: ${client.id}`);
   }
 
@@ -80,20 +90,36 @@ export class SfuGateway
   async handleJoin(
     @ConnectedSocket()
     client: Socket,
-    @MessageBody() roomName: any,
+    @MessageBody() roomName: string,
   ) {
     client.join(roomName);
     const socketsInRoom = await this.server.in(roomName).fetchSockets();
     const peerIdsInRoom = socketsInRoom
       .filter((socket) => socket.id !== client.id)
       .map((socket) => socket.id);
-    client.emit(SFU_EVENTS.NOTICE_ALL_PEERS, peerIdsInRoom);
+
+    const userNames = {};
+    socketsInRoom.forEach((socket) => {
+      if (socket.id !== client.id) userNames[socket.id] = socket.data.userName;
+    });
+    client.emit(SFU_EVENTS.NOTICE_ALL_PEERS, { peerIdsInRoom, userNames });
   }
 
   @SubscribeMessage(SFU_EVENTS.SENDER_OFFER)
   async handleSenderOffer(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { offer, userData }: any,
+    @MessageBody()
+    {
+      offer,
+      userData,
+    }: {
+      offer: RTCSessionDescriptionInit;
+      userData: {
+        userId: string | undefined;
+        userName: string | undefined;
+        roomId: number;
+      };
+    },
   ) {
     client.data = { ...userData };
 
@@ -150,7 +176,8 @@ export class SfuGateway
   @SubscribeMessage(SFU_EVENTS.RECEIVER_OFFER)
   async handleReceiverOffer(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { offer, targetId }: any,
+    @MessageBody()
+    { offer, targetId }: { offer: RTCSessionDescriptionInit; targetId: string },
   ) {
     const sendPc: RTCPeerConnection = new wrtc.RTCPeerConnection(
       RTCConfiguration,
@@ -168,7 +195,7 @@ export class SfuGateway
       });
     };
 
-    sendPc.ondatachannel = (e: any) => {
+    sendPc.ondatachannel = (e: RTCDataChannelEvent) => {
       const datachannel = e.channel;
       sendDcs[client.id]
         ? (sendDcs[client.id][targetId] = datachannel)
@@ -193,7 +220,7 @@ export class SfuGateway
   @SubscribeMessage(SFU_EVENTS.SENDER_ICECANDIDATE)
   async handleSenderIcecandidate(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { icecandidate }: any,
+    @MessageBody() { icecandidate }: { icecandidate: RTCIceCandidate | null },
   ) {
     if (!icecandidate) return;
     const receivePc = receivePcs[client.id];
@@ -203,7 +230,11 @@ export class SfuGateway
   @SubscribeMessage(SFU_EVENTS.RECEIVER_ICECANDIDATE)
   async handleReceiverIcecandidate(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { icecandidate, targetId }: any,
+    @MessageBody()
+    {
+      icecandidate,
+      targetId,
+    }: { icecandidate: RTCIceCandidate | null; targetId: string },
   ) {
     const sendPc = sendPcs[client.id]?.[targetId];
     if (!icecandidate || !sendPc) return;

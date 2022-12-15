@@ -90,7 +90,7 @@ export class SfuGateway
   async handleJoin(
     @ConnectedSocket()
     client: Socket,
-    @MessageBody() roomName: any,
+    @MessageBody() roomName: string,
   ) {
     client.join(roomName);
     const socketsInRoom = await this.server.in(roomName).fetchSockets();
@@ -108,7 +108,18 @@ export class SfuGateway
   @SubscribeMessage(SFU_EVENTS.SENDER_OFFER)
   async handleSenderOffer(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { offer, userData }: any,
+    @MessageBody()
+    {
+      offer,
+      userData,
+    }: {
+      offer: RTCSessionDescriptionInit;
+      userData: {
+        userId: string | undefined;
+        userName: string | undefined;
+        roomId: number;
+      };
+    },
   ) {
     client.data = { ...userData };
 
@@ -165,7 +176,8 @@ export class SfuGateway
   @SubscribeMessage(SFU_EVENTS.RECEIVER_OFFER)
   async handleReceiverOffer(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { offer, targetId }: any,
+    @MessageBody()
+    { offer, targetId }: { offer: RTCSessionDescriptionInit; targetId: string },
   ) {
     const sendPc: RTCPeerConnection = new wrtc.RTCPeerConnection(
       RTCConfiguration,
@@ -183,7 +195,7 @@ export class SfuGateway
       });
     };
 
-    sendPc.ondatachannel = (e: any) => {
+    sendPc.ondatachannel = (e: RTCDataChannelEvent) => {
       const datachannel = e.channel;
       sendDcs[client.id]
         ? (sendDcs[client.id][targetId] = datachannel)
@@ -208,7 +220,7 @@ export class SfuGateway
   @SubscribeMessage(SFU_EVENTS.SENDER_ICECANDIDATE)
   async handleSenderIcecandidate(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { icecandidate }: any,
+    @MessageBody() { icecandidate }: { icecandidate: RTCIceCandidate | null },
   ) {
     if (!icecandidate) return;
     const receivePc = receivePcs[client.id];
@@ -218,7 +230,11 @@ export class SfuGateway
   @SubscribeMessage(SFU_EVENTS.RECEIVER_ICECANDIDATE)
   async handleReceiverIcecandidate(
     @ConnectedSocket() client: Socket,
-    @MessageBody() { icecandidate, targetId }: any,
+    @MessageBody()
+    {
+      icecandidate,
+      targetId,
+    }: { icecandidate: RTCIceCandidate | null; targetId: string },
   ) {
     const sendPc = sendPcs[client.id]?.[targetId];
     if (!icecandidate || !sendPc) return;
