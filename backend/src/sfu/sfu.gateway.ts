@@ -36,28 +36,32 @@ export class SfuGateway
   }
 
   async handleConnection(client: Socket) {
-    console.log(`connected: ${client.id}`);
-    client.on(SFU_EVENTS.DISCONNECTING, () => {
-      const roomName = [...client.rooms].filter(
-        (roomName) => roomName !== client.id,
-      )[0];
-      if (receivePcs[client.id]) {
-        receivePcs[client.id].close();
-        delete receivePcs[client.id];
-      }
-      if (sendPcs[client.id]) {
-        Object.values(sendPcs[client.id]).forEach((sendPc) => sendPc.close());
-        delete sendPcs[client.id];
-      }
-      if (sendDcs[client.id]) {
-        Object.values(sendDcs[client.id]).forEach((sendDc) => sendDc.close());
-        delete sendDcs[client.id];
-      }
-      client.to(roomName).emit(SFU_EVENTS.SOMEONE_LEFT_ROOM, {
-        peerId: client.id,
-        userName: client.data.userName,
+    try {
+      console.log(`connected: ${client.id}`);
+      client.on(SFU_EVENTS.DISCONNECTING, () => {
+        const roomName = [...client.rooms].filter(
+          (roomName) => roomName !== client.id,
+        )[0];
+        if (receivePcs[client.id]) {
+          receivePcs[client.id].close();
+          delete receivePcs[client.id];
+        }
+        if (sendPcs[client.id]) {
+          Object.values(sendPcs[client.id]).forEach((sendPc) => sendPc.close());
+          delete sendPcs[client.id];
+        }
+        if (sendDcs[client.id]) {
+          Object.values(sendDcs[client.id]).forEach((sendDc) => sendDc.close());
+          delete sendDcs[client.id];
+        }
+        client.to(roomName).emit(SFU_EVENTS.SOMEONE_LEFT_ROOM, {
+          peerId: client.id,
+          userName: client.data.userName,
+        });
       });
-    });
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async handleDisconnect(client: Socket) {
