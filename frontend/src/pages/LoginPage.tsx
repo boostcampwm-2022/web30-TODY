@@ -56,7 +56,11 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loginError) return;
-    alert(loginError.data);
+    if (loginError.statusCode === 400) {
+      alert('로그인에 실패하였습니다.');
+      return;
+    }
+    alert(loginError.message);
   }, [loginError]);
 
   useEffect(() => {

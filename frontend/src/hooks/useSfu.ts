@@ -122,7 +122,7 @@ export function useSfu(roomInfo: any, user: any) {
           userData: {
             userId: user.userId,
             userName: user.nickname,
-            roomId: roomInfo.roomId,
+            roomId: roomInfo.studyRoomId,
           },
         });
       }

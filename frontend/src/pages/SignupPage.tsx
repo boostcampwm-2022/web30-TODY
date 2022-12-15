@@ -116,15 +116,15 @@ export default function SignupPage() {
   }, [checkUniqueNicknameData]);
 
   useEffect(() => {
-    if (signupError) alert(signupError);
+    if (signupError) alert(signupError.message);
   }, [signupError]);
 
   useEffect(() => {
-    if (checkUniqueIdError) alert(checkUniqueIdError);
+    if (checkUniqueIdError) alert(checkUniqueIdError.message);
   }, [checkUniqueIdError]);
 
   useEffect(() => {
-    if (checkUniqueNicknameError) alert(checkUniqueNicknameError);
+    if (checkUniqueNicknameError) alert(checkUniqueNicknameError.message);
   }, [checkUniqueNicknameError]);
 
   const validateSignupForm = useCallback(

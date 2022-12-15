@@ -64,12 +64,15 @@ export class StudyRoomController {
     return participantsList;
   }
 
-  @Post('/check-is-full')
-  async checkIsFull(
-    @Body() body: { studyRoomId: number },
-  ): Promise<{ isFull: boolean }> {
-    const isFull = await this.studyRoomService.checkIsFull(body.studyRoomId);
-    return { isFull };
+  @Get('/enterable')
+  async checkEnterable(
+    @Query() query: { roomId: number; userId: string },
+  ): Promise<{ enterable: boolean }> {
+    const { enterable } = await this.studyRoomService.checkEnterable(
+      query.roomId,
+      query.userId,
+    );
+    return { enterable };
   }
 
   @Post('/check-master')

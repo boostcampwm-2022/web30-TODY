@@ -8,6 +8,7 @@ import SfuPage from '@pages/SfuPage';
 import MeshPage from '@pages/MeshPage';
 import PrivateRoute from '@components/common/PrivateRoute';
 import StudyRoomGuard from '@components/common/StudyRoomGuard';
+import NotFoundPage from '@pages/NotFoundPage';
 
 export default function Router() {
   return (
@@ -43,6 +44,7 @@ export default function Router() {
           }
         />
         <Route path="/study-room-mesh" element={<MeshPage />} />
+        <Route path="/*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
