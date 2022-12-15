@@ -18,6 +18,7 @@ export default function BlockRoomEnter({ children }: Props) {
   }>(checkEnterableRequest, {
     onMount: true,
     arg: { roomId, userId: user?.userId },
+    errNavigate: false,
   });
 
   if (loading) {

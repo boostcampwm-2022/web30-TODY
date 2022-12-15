@@ -8,6 +8,7 @@ import MenuList from './MenuList';
 import UserProfile from './UserProfile';
 import Logo from '../../assets/StyledLogo.png';
 import logoutRequest from '../../axios/requests/logoutRequest';
+import Loader from './Loader';
 
 const SideBarWrapper = styled.div`
   display: flex;
@@ -46,7 +47,8 @@ interface Props {
 
 export default function MainSideBar(props: Props) {
   const navigate = useNavigate();
-  const [requestLogout, , , logoutData] = useAxios<''>(logoutRequest);
+  const [requestLogout, logoutLoading, , logoutData] =
+    useAxios<''>(logoutRequest);
   const setUser = useSetRecoilState(userState);
 
   useEffect(() => {
@@ -61,6 +63,7 @@ export default function MainSideBar(props: Props) {
 
   return (
     <SideBarWrapper>
+      {logoutLoading && <Loader />}
       <SideBar {...props}>
         <Link to="/home">
           <LogoStyle src={Logo} alt="Logo" />
