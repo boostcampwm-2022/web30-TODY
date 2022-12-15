@@ -232,6 +232,9 @@ export class StudyRoomService {
 
   async checkIsFull(studyRoomId: number) {
     const participants = await this.redisCacheService.getRoomValue(studyRoomId);
+    if (!participants) {
+      return false;
+    }
     const room = await this.studyRoomRepository.findOne({
       where: { studyRoomId },
     });
