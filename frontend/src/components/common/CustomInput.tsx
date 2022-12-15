@@ -43,6 +43,7 @@ interface Props {
   guideText?: string;
   type?: string;
   min?: number;
+  maxLength?: number;
   inputRef?: React.MutableRefObject<HTMLInputElement | null>;
 }
 
@@ -56,6 +57,7 @@ export default function CustomInput(props: Props) {
     name,
     value,
     onChange,
+    maxLength,
     min,
     inputRef,
   } = props;
@@ -70,6 +72,7 @@ export default function CustomInput(props: Props) {
         value={value}
         onChange={onChange}
         min={min}
+        maxLength={maxLength}
         ref={inputRef}
       />
       {guideText && <GuideText>{guideText}</GuideText>}
@@ -88,5 +91,6 @@ CustomInput.defaultProps = {
   warningText: '',
   guideText: '',
   min: undefined,
+  maxLength: undefined,
   inputRef: null,
 };

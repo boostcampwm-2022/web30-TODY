@@ -95,7 +95,7 @@ const VideoListLayout = styled.div`
 `;
 
 const BlankBox = styled.div`
-  background-color: #ffce70;
+  background-color: var(--yellow);
   padding-top: 75%;
   border-radius: 12px;
 `;
