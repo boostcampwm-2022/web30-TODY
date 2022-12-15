@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StudyRoom } from './entities/studyRoom.entity';
 import { Repository, Like } from 'typeorm';
@@ -238,16 +238,23 @@ export class StudyRoomService {
     };
   }
 
-  async checkIsFull(studyRoomId: number) {
-    const participants = await this.redisCacheService.getRoomValue(studyRoomId);
-    if (!participants) {
-      return false;
-    }
-    const room = await this.studyRoomRepository.findOne({
-      where: { studyRoomId },
+  async checkEnterable(roomId: number, userId: string) {
+    const isInRoom = await this.redisCacheService.getValue(`isInRoom${userId}`);
+    if (isInRoom)
+      throw new BadRequestException('이미 다른 방에 참여 중입니다.');
+    const isRoomExist = await this.studyRoomRepository.count({
+      where: { studyRoomId: roomId },
     });
-    const isFull = room.maxPersonnel <= Object.values(participants).length;
-    return isFull;
+    if (!isRoomExist) throw new BadRequestException('존재하지 않는 방입니다.');
+    const participants = await this.redisCacheService.getRoomValue(roomId);
+    const room = await this.studyRoomRepository.findOne({
+      where: { studyRoomId: roomId },
+    });
+    const isFull =
+      room.maxPersonnel <= Object.values(participants || {}).length;
+    if (isFull)
+      throw new BadRequestException('방 입장 최대 인원을 초과하였습니다.');
+    return { enterable: true };
   }
 
   async checkMasterOfRoom(studyRoomId: number, userId: string) {

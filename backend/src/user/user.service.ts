@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { User } from '../user/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JwtService } from '@nestjs/jwt';
@@ -29,10 +29,7 @@ export class UserService {
       });
       return { userId, nickname };
     } catch (err) {
-      throw new HttpException(
-        { statusCode: HttpStatus.UNAUTHORIZED, message: '로그인 실패' },
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new UnauthorizedException();
     }
   }
 
@@ -95,10 +92,7 @@ export class UserService {
         nickname,
       };
     } else {
-      throw new HttpException(
-        { statusCode: HttpStatus.UNAUTHORIZED, message: '로그인 실패' },
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new UnauthorizedException('로그인에 실패하였습니다.');
     }
   }
 }

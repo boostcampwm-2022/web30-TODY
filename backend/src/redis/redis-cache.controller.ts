@@ -39,10 +39,4 @@ export class RedisCacheController {
   ): Promise<void> {
     return await this.redisCacheService.leaveRoom(body);
   }
-
-  @Get('/user/isInRoom')
-  async checkIsInRoom(@Query('user-id') userId: string): Promise<boolean> {
-    const isInRoom = await this.redisCacheService.getIsInRoomValue(userId);
-    return isInRoom;
-  }
 }

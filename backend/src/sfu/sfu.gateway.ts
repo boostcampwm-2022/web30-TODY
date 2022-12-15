@@ -91,7 +91,12 @@ export class SfuGateway
     const peerIdsInRoom = socketsInRoom
       .filter((socket) => socket.id !== client.id)
       .map((socket) => socket.id);
-    client.emit(SFU_EVENTS.NOTICE_ALL_PEERS, peerIdsInRoom);
+
+    const userNames = {};
+    socketsInRoom.forEach((socket) => {
+      if (socket.id !== client.id) userNames[socket.id] = socket.data.userName;
+    });
+    client.emit(SFU_EVENTS.NOTICE_ALL_PEERS, { peerIdsInRoom, userNames });
   }
 
   @SubscribeMessage(SFU_EVENTS.SENDER_OFFER)

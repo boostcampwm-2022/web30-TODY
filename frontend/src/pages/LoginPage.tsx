@@ -5,10 +5,10 @@ import CustomInput from '@components/common/CustomInput';
 import StyledHeader1 from '@components/common/StyledHeader1';
 import { useNavigate, Link } from 'react-router-dom';
 import useAxios from '@hooks/useAxios';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import Loader from '@components/common/Loader';
 import useInputValidation from '@hooks/useInputValidation';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState } from 'recoil';
 import { userState } from 'recoil/atoms';
 import loginRequest from '../axios/requests/loginRequest';
 
@@ -46,8 +46,10 @@ export default function LoginPage() {
   const [requestLogin, loginLoading, loginError, loginData] = useAxios<{
     userId: string;
     nickname: string;
-  }>(loginRequest);
+  }>(loginRequest, { errNavigate: false });
   const [user, setUser] = useRecoilState(userState);
+  const idInputRef = useRef<HTMLInputElement | null>(null);
+  const pwInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (user === null) return;
@@ -56,7 +58,14 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loginError) return;
-    alert(loginError.data);
+    if (loginError.statusCode === 400) {
+      alert('로그인에 실패하였습니다.');
+    } else {
+      alert(loginError.message);
+    }
+    if (!idInputRef.current || !pwInputRef.current) return;
+    idInputRef.current.value = '';
+    pwInputRef.current.value = '';
   }, [loginError]);
 
   useEffect(() => {
@@ -91,12 +100,18 @@ export default function LoginPage() {
         <Wrapper>
           <StyledHeader1>로그인</StyledHeader1>
           <form onSubmit={login}>
-            <CustomInput name="id" placeholder="아이디" onChange={validateId} />
+            <CustomInput
+              name="id"
+              placeholder="아이디"
+              onChange={validateId}
+              inputRef={idInputRef}
+            />
             <CustomInput
               onChange={validatePw}
               name="password"
               placeholder="비밀번호"
               type="password"
+              inputRef={pwInputRef}
             />
             <CustomButton
               type="submit"

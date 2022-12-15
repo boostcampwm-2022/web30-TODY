@@ -3,21 +3,21 @@ import { useEffect, useState } from 'react';
 import useAxios from '@hooks/useAxios';
 import { userState } from 'recoil/atoms';
 import Loader from '@components/common/Loader';
+import { UserData } from 'types/recoil.types';
 import silentLoginRequest from './axios/requests/silentLoginRequest';
 import Router from './routes/Router';
 
 function App() {
   const [isAuthDone, setIsAuthDone] = useState(false);
-  const [, , err, silentLoginData] = useAxios(silentLoginRequest, {
+  const [, , err, silentLoginData] = useAxios<UserData>(silentLoginRequest, {
     onMount: true,
+    errNavigate: false,
   });
   const [user, setUser] = useRecoilState(userState);
 
   useEffect(() => {
     if (!err) return;
-    if (err.status === 401) {
-      setIsAuthDone(true);
-    }
+    setIsAuthDone(true);
   }, [err]);
 
   useEffect(() => {

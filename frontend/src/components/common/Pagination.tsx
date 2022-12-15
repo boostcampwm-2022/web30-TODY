@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import { ReactComponent as LeftArrowIcon } from '@assets/icons/leftArrow.svg';
 import { ReactComponent as RightArrowIcon } from '@assets/icons/rightArrow.svg';
 import { useNavigate } from 'react-router-dom';
+import React, { SetStateAction } from 'react';
 
 const PaginationLayout = styled.div`
   width: fit-content;
@@ -26,8 +27,8 @@ const Page = styled.button<{ selected: boolean }>`
 interface Props {
   pageCount: number;
   currentPage: number;
-  getRoomConditions: { keyword: any; attendable: any };
-  setPage: any;
+  getRoomConditions: { keyword: string; attendable: boolean };
+  setPage: React.Dispatch<SetStateAction<number>>;
 }
 
 export default function Pagination({
@@ -39,8 +40,8 @@ export default function Pagination({
   const navigate = useNavigate();
   const { keyword, attendable } = getRoomConditions;
 
-  const onClickPage = (e: any) => {
-    const nextPage = e.target.innerText;
+  const onClickPage = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const nextPage = Number((e.target as HTMLElement).innerText);
     if (currentPage === nextPage) return;
     navigate(
       `/study-rooms?page=${nextPage}&keyword=${keyword}&attendable=${attendable}`,
