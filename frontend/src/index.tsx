@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
 import App from './App';
 import '@styles/reset.css';
@@ -10,7 +11,9 @@ const root = ReactDOM.createRoot(
 );
 
 root.render(
-  <RecoilRoot>
-    <App />
-  </RecoilRoot>,
+  <BrowserRouter>
+    <RecoilRoot>
+      <App />
+    </RecoilRoot>
+  </BrowserRouter>,
 );

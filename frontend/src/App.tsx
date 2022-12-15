@@ -15,9 +15,7 @@ function App() {
 
   useEffect(() => {
     if (!err) return;
-    if (err.statusCode === 401) {
-      setIsAuthDone(true);
-    }
+    setIsAuthDone(true);
   }, [err]);
 
   useEffect(() => {

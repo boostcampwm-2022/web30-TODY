@@ -46,7 +46,7 @@ export default function LoginPage() {
   const [requestLogin, loginLoading, loginError, loginData] = useAxios<{
     userId: string;
     nickname: string;
-  }>(loginRequest);
+  }>(loginRequest, { errNavigate: false });
   const [user, setUser] = useRecoilState(userState);
 
   useEffect(() => {
