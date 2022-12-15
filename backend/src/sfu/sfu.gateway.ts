@@ -61,10 +61,14 @@ export class SfuGateway
   }
 
   async handleDisconnect(client: Socket) {
-    axios.create({ baseURL: process.env.API_URL }).post('/user/leaveRoom', {
-      studyRoomId: client.data.roomId,
-      userId: client.data.userId,
-    });
+    try {
+      axios.create({ baseURL: process.env.API_URL }).post('/user/leaveRoom', {
+        studyRoomId: client.data.roomId,
+        userId: client.data.userId,
+      });
+    } catch (e) {
+      console.log(e);
+    }
     console.log(`disconnect: ${client.id}`);
   }
 

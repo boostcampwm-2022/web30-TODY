@@ -69,8 +69,10 @@ export class RedisCacheService {
     await this.cacheManager.del(`isInRoom${userId}`);
 
     const roomValue = await this.cacheManager.get(key);
-    delete roomValue[userId];
-    await this.cacheManager.set(key, roomValue);
+    if (roomValue) {
+      delete roomValue[userId];
+      await this.cacheManager.set(key, roomValue);
+    }
     return;
   }
 }

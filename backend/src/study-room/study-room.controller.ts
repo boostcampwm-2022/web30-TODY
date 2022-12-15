@@ -6,12 +6,15 @@ import {
   Param,
   Post,
   Query,
+  UseFilters,
 } from '@nestjs/common';
 import { StudyRoomService } from './study-room.service';
 import { createRoomDto } from './dto/createRoom.dto';
 import { DeleteResult } from 'typeorm';
+import { StudyRoomExceptionFilter } from '../filter/study-room-exception.filter';
 
 @Controller('study-room')
+@UseFilters(StudyRoomExceptionFilter)
 export class StudyRoomController {
   constructor(private studyRoomService: StudyRoomService) {}
 

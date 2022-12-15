@@ -1,8 +1,10 @@
-import { CacheModule, Module } from '@nestjs/common';
+import { CacheModule, Module, UseFilters } from '@nestjs/common';
 import * as redisStore from 'cache-manager-ioredis';
 import { RedisCacheController } from './redis-cache.controller';
 import { RedisCacheService } from './redis-cache.service';
+import { RedisExceptionFilter } from 'src/filter/redis-exception.filter';
 
+@UseFilters(RedisExceptionFilter)
 @Module({
   imports: [
     CacheModule.register({
