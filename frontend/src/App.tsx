@@ -10,6 +10,7 @@ function App() {
   const [isAuthDone, setIsAuthDone] = useState(false);
   const [, , err, silentLoginData] = useAxios(silentLoginRequest, {
     onMount: true,
+    errNavigate: false,
   });
   const [user, setUser] = useRecoilState(userState);
 
