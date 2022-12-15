@@ -1,9 +1,10 @@
 import axios, { AxiosPromise } from 'axios';
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function useAxios<T>(
   axiosFunction: (arg?: any) => AxiosPromise<T>,
-  options?: { onMount?: boolean; arg?: any },
+  options?: { onMount?: boolean; arg?: any; errNavigate?: boolean },
 ): [
   (arg?: any) => Promise<void>,
   boolean,
@@ -16,6 +17,7 @@ export default function useAxios<T>(
 ] {
   const onMount = options?.onMount || false;
   const argument = options?.arg || undefined;
+  const errNavigate = options?.errNavigate ?? true;
   const [loading, setLoading] = useState<boolean>(onMount);
   const [error, setError] = useState<{
     statusCode: number | undefined;
@@ -23,6 +25,12 @@ export default function useAxios<T>(
     error: string;
   } | null>(null);
   const [data, setData] = useState<T | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!error) return;
+    if (!error.statusCode || errNavigate) navigate('/error', { state: error });
+  }, [error]);
 
   const request = useCallback(
     async (arg?: any) => {
