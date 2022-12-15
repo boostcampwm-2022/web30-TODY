@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import CustomButton from '@components/common/CustomButton';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Navigate } from 'react-router-dom';
 
 const PageLayout = styled.div`
   height: 100vh;
@@ -26,6 +26,11 @@ const MessageBox = styled.div`
 export default function ErrorPage() {
   const navigate = useNavigate();
   const { state } = useLocation();
+
+  if (!state) {
+    return <Navigate to="/" />;
+  }
+
   const { message, statusCode, error } = state || {};
 
   const text =
