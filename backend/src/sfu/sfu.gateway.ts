@@ -83,6 +83,13 @@ export class SfuGateway
     @ConnectedSocket() client: Socket,
     @MessageBody() roomId: string,
   ) {
+    const clientRoom = [...client.rooms].filter(
+      (roomName) => roomName !== client.id,
+    )[0];
+    console.log(typeof roomId);
+    console.log(typeof clientRoom);
+    // console.log('deletedRoomId: ', roomId, clientRoom);
+    // console.log(clientRoom === roomId);
     client.broadcast.to(roomId).emit('deletedThisRoom');
   }
 
