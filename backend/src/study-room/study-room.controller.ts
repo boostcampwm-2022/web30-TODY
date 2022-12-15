@@ -17,7 +17,7 @@ export class StudyRoomController {
 
   @Post()
   @HttpCode(200)
-  async createRoom(@Body() roomInfo: createRoomDto): Promise<any> {
+  async createRoom(@Body() roomInfo: createRoomDto): Promise<string> {
     const createdRoomID = await this.studyRoomService.createStudyRoom(roomInfo);
     return createdRoomID;
   }
@@ -28,7 +28,23 @@ export class StudyRoomController {
     @Query('keyword') keyword: string,
     @Query('attendable') attendable: boolean,
     @Query('page') page: number,
-  ): Promise<any> {
+  ): Promise<{
+    keyword: string;
+    currentPage: number;
+    pageCount: number;
+    totalCount: number;
+    studyRoomList: {
+      studyRoomId: number;
+      name: string;
+      content: string;
+      currentPersonnel: number;
+      maxPersonnel: number;
+      managerNickname: string;
+      tags: string[];
+      nickNameOfParticipants: string[];
+      created: string;
+    }[];
+  }> {
     const searchResult = await this.studyRoomService.searchStudyRoomList(
       keyword,
       attendable,
@@ -57,7 +73,7 @@ export class StudyRoomController {
   @HttpCode(200)
   async getParticiantsOfRoom(
     @Query('study-room-id') studyRoomId: string,
-  ): Promise<any> {
+  ): Promise<string> {
     const participantsList = await this.studyRoomService.getParticipants(
       studyRoomId,
     );

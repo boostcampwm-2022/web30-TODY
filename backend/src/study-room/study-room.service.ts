@@ -54,7 +54,7 @@ export class StudyRoomService {
 
     const studyRoomListAllFullData = await Promise.all(
       studyRoomListAllData.map(async (roomInfo) => {
-        const tags = [];
+        const tags: string[] = [];
         if (roomInfo.tag1) {
           tags.push(roomInfo.tag1);
         }
@@ -151,7 +151,7 @@ export class StudyRoomService {
     const pageCount = Math.ceil(totalCount / 9);
     const studyRoomList = await Promise.all(
       studyRoomListData.map(async (roomInfo) => {
-        const tags = [];
+        const tags: string[] = [];
         if (roomInfo.tag1) {
           tags.push(roomInfo.tag1);
         }

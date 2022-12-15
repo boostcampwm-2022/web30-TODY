@@ -37,7 +37,7 @@ export class SocketGateway
   async handleJoin(
     @ConnectedSocket()
     client: Socket,
-    @MessageBody() roomName: any,
+    @MessageBody() roomName: string,
   ) {
     client.join(roomName);
     const socketsInRoom = await this.server.in(roomName).fetchSockets();

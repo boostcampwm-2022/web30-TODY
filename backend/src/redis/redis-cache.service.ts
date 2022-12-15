@@ -15,11 +15,13 @@ export class RedisCacheService {
     return valueFromKey;
   }
 
-  async getRoomValue(studyRoomId: number): Promise<any> {
+  async getRoomValue(
+    studyRoomId: number,
+  ): Promise<{ [id: string]: { nickname: string; isMaster: boolean } }> {
     return await this.cacheManager.get(`studyRoom${studyRoomId}`);
   }
 
-  async deleteRoomValue(studyRoomId: number): Promise<any> {
+  async deleteRoomValue(studyRoomId: number): Promise<void> {
     return await this.cacheManager.del(`studyRoom${studyRoomId}`);
   }
 
