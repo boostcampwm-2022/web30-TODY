@@ -73,19 +73,15 @@ export default function SignupPage() {
   const idInputRef = useRef<HTMLInputElement>(null);
   const nicknameInputRef = useRef<HTMLInputElement>(null);
   const [isPasswordSame, setIsPasswordSame] = useState(true);
-  const [requestSignup, signupLoading, signupError, signupData] = useAxios<{
+  const [requestSignup, signupLoading, , signupData] = useAxios<{
     nickname: string;
   }>(signupRequest);
-  const [
-    requestCheckUniqueId,
-    checkUniqueIdLoading,
-    checkUniqueIdError,
-    checkUniqueIdData,
-  ] = useAxios<{ isUnique: boolean; id: string }>(checkUniqueIdRequest);
+  const [requestCheckUniqueId, checkUniqueIdLoading, , checkUniqueIdData] =
+    useAxios<{ isUnique: boolean; id: string }>(checkUniqueIdRequest);
   const [
     requestCheckUniqueNickname,
     checkUniqueNicknameLoading,
-    checkUniqueNicknameError,
+    ,
     checkUniqueNicknameData,
   ] = useAxios<{ isUnique: boolean; nickname: string }>(
     checkUniqueNicknameRequest,
@@ -114,18 +110,6 @@ export default function SignupPage() {
         : notifications.nicknameIsNotUnique,
     );
   }, [checkUniqueNicknameData]);
-
-  useEffect(() => {
-    if (signupError) alert(signupError.message);
-  }, [signupError]);
-
-  useEffect(() => {
-    if (checkUniqueIdError) alert(checkUniqueIdError.message);
-  }, [checkUniqueIdError]);
-
-  useEffect(() => {
-    if (checkUniqueNicknameError) alert(checkUniqueNicknameError.message);
-  }, [checkUniqueNicknameError]);
 
   const validateSignupForm = useCallback(
     (formData: { [k: string]: FormDataEntryValue }) => {

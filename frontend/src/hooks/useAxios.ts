@@ -29,7 +29,7 @@ export default function useAxios<T>(
 
   useEffect(() => {
     if (!error) return;
-    if (!error.statusCode || errNavigate) navigate('/error', { state: error });
+    if (errNavigate) navigate('/error', { state: error });
   }, [error]);
 
   const request = useCallback(

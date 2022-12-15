@@ -8,7 +8,7 @@ import useAxios from '@hooks/useAxios';
 import { useCallback, useEffect, useRef } from 'react';
 import Loader from '@components/common/Loader';
 import useInputValidation from '@hooks/useInputValidation';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState } from 'recoil';
 import { userState } from 'recoil/atoms';
 import loginRequest from '../axios/requests/loginRequest';
 
@@ -60,6 +60,8 @@ export default function LoginPage() {
     if (!loginError) return;
     if (loginError.statusCode === 400) {
       alert('로그인에 실패하였습니다.');
+    } else {
+      alert(loginError.message);
     }
     if (!idInputRef.current || !pwInputRef.current) return;
     idInputRef.current.value = '';
