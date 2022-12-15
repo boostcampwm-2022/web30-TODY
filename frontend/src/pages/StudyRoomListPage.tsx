@@ -4,22 +4,16 @@ import MainSideBar from '@components/common/MainSideBar';
 import SearchBar from '@components/common/SearchBar';
 import ViewConditionCheckBox from '@components/common/ViewConditionCheckBox';
 import CreateButton from '@components/common/CreatButton';
-import Modal from '@components/common/Modal';
-import CustomInput from '@components/common/CustomInput';
-import CustomButton from '@components/common/CustomButton';
-import TagInput from '@components/studyRoomList/TagInput';
 import Loader from '@components/common/Loader';
-import { NewRoomInfoData, RoomListData } from 'types/studyRoomList.types';
+import { RoomListData } from 'types/studyRoomList.types';
 import StudyRoomList from '@components/studyRoomList/StudyRoomList';
 import Pagination from '@components/common/Pagination';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import qs from 'qs';
 import useAxios from '@hooks/useAxios';
-import { useRecoilValue } from 'recoil';
-import { userState } from 'recoil/atoms';
 import GlobalChat from '@components/studyRoomList/GlobalChat';
+import CreateNewRoomModal from '@components/studyRoomList/CreateNewRoomModal';
 import getStudyRoomListRequest from '../axios/requests/getStudyRoomListRequest';
-import createStudyRoomRequest from '../axios/requests/createStudyRoomRequest';
 
 const StudyRoomListPageLayout = styled.div`
   display: flex;
@@ -54,7 +48,6 @@ const SearchResultText = styled.h3`
 `;
 
 export default function StudyRoomListPage() {
-  const navigate = useNavigate();
   const location = useLocation();
   const queryString = qs.parse(location.search, {
     ignoreQueryPrefix: true,
@@ -77,75 +70,17 @@ export default function StudyRoomListPage() {
     });
   }, [page, keyword, attendable]);
 
-  const [createRoomRequest, createRoomLoading, , createdRoomId] = useAxios<{
-    studyRoomId: number;
-  }>(createStudyRoomRequest);
-
-  const newRoomInfoInitState = {
-    name: '',
-    content: '',
-    maxPersonnel: 1,
-  };
-
-  const [newRoomInfo, setNewRoomInfo] =
-    useState<NewRoomInfoData>(newRoomInfoInitState);
-  const [tagList, setTagList] = useState<string[]>([]);
   const [modal, setModal] = useState(false);
 
-  const user = useRecoilValue(userState);
-
-  const validateInput = (name: string, value: string) => {
-    switch (name) {
-      case 'name':
-        return value.slice(0, 25);
-      case 'content':
-        return value.slice(0, 100);
-      case 'maxPersonnel':
-        return Number(value);
-      default:
-        return value;
-    }
-  };
-
-  const onChangeNewRoomInfo = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewRoomInfo({
-      ...newRoomInfo,
-      [name]: validateInput(name, value),
-    });
-  };
-
   const openModal = () => {
-    setNewRoomInfo(newRoomInfoInitState);
     setModal(true);
   };
-
-  const createNewStudyRoom = () => {
-    if (newRoomInfo.name === '' || newRoomInfo.maxPersonnel < 1) return;
-
-    if (user) {
-      createRoomRequest({
-        ...newRoomInfo,
-        managerId: user.userId,
-        tags: tagList,
-      });
-    }
-    setTagList([]);
-  };
-
-  useEffect(() => {
-    if (createdRoomId) {
-      navigate(`/study-room/${createdRoomId}`, {
-        state: newRoomInfo,
-      });
-    }
-  }, [createdRoomId]);
 
   return (
     <StudyRoomListPageLayout>
       <MainSideBar />
       <Content>
-        {(createRoomLoading || getRoomListLoading) && <Loader />}
+        {getRoomListLoading && <Loader />}
         <PageTitle>공부방 목록</PageTitle>
         <CreateButton onClick={openModal}>공부방 생성</CreateButton>
         <SearchBar
@@ -178,38 +113,7 @@ export default function StudyRoomListPage() {
         )}
         <GlobalChat />
       </Content>
-      {modal && (
-        <Modal setModal={setModal}>
-          <PageTitle>새로운 공부방 만들기</PageTitle>
-          <CustomInput
-            placeholder="방 이름"
-            guideText="※ 방 이름은 25자 이내로 작성해주세요."
-            name="name"
-            value={newRoomInfo.name}
-            onChange={onChangeNewRoomInfo}
-          />
-          <CustomInput
-            placeholder="방 설명"
-            guideText="※ 방 설명은 100자 이내로 작성해주세요."
-            name="content"
-            value={newRoomInfo.content}
-            onChange={onChangeNewRoomInfo}
-          />
-          <CustomInput
-            placeholder="방 접속 최대 인원 수"
-            guideText="※ 인원수는 최소 1명 이상이어야 합니다."
-            type="number"
-            name="maxPersonnel"
-            min={1}
-            value={newRoomInfo.maxPersonnel}
-            onChange={onChangeNewRoomInfo}
-          />
-          <TagInput tagList={tagList} setTagList={setTagList} />
-          <CustomButton onClick={createNewStudyRoom} margin="20px 0 0">
-            공부하러 GO
-          </CustomButton>
-        </Modal>
-      )}
+      {modal && <CreateNewRoomModal setModal={setModal} />}
     </StudyRoomListPageLayout>
   );
 }
