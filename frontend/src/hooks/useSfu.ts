@@ -2,12 +2,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import SFU_EVENTS from 'constants/sfuEvents';
 import socket from 'sockets/sfuSocket';
+import { RoomInfoData } from 'types/studyRoom.types';
+import { UserData } from 'types/recoil.types';
 
 const RTCConfiguration = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
 };
 
-export function useSfu(roomInfo: any, user: any) {
+export function useSfu(roomInfo: RoomInfoData, user: UserData) {
   const [remoteStreams, setRemoteStreams] = useState<{
     [socketId: string]: MediaStream;
   }>({});
@@ -19,10 +21,9 @@ export function useSfu(roomInfo: any, user: any) {
   }>({});
   const sendPcRef = useRef<RTCPeerConnection | null>(null);
   const sendDcRef = useRef<RTCDataChannel | null>(null);
-  const [userList, setUserList] = useState<any>([]);
+  const [userList, setUserList] = useState<string[]>([]);
   const [isScreenShare, setIsScreenShare] = useState<boolean>(false);
   const [isCameraUsable, setIsCameraUsable] = useState<boolean>(true);
-  // const [noCamPeerIds, setNoCamPeerIds] = useState<string[]>([]);
   const nicknameRef = useRef<{ [socketId: string]: string }>({});
 
   const noCamPeerIds = useMemo(() => {
@@ -114,14 +115,14 @@ export function useSfu(roomInfo: any, user: any) {
           setIsCameraUsable(false);
         }
       } finally {
-        socket.emit(SFU_EVENTS.JOIN, roomInfo.roomId);
+        socket.emit(SFU_EVENTS.JOIN, roomInfo.studyRoomId);
 
         const offer = await createSender();
         socket.emit(SFU_EVENTS.SENDER_OFFER, {
           offer,
           userData: {
-            userId: user.userId,
-            userName: user.nickname,
+            userId: user?.userId,
+            userName: user?.nickname,
             roomId: roomInfo.studyRoomId,
           },
         });
@@ -151,7 +152,7 @@ export function useSfu(roomInfo: any, user: any) {
 
     socket.on(SFU_EVENTS.NEW_PEER, async ({ peerId, userName }) => {
       nicknameRef.current[peerId] = userName;
-      setUserList((prev: any) => [...prev, userName]); // 이동
+      setUserList((prev) => [...prev, userName]);
       const offer = await createReceiver(peerId);
       socket.emit(SFU_EVENTS.RECEIVER_OFFER, {
         offer,
@@ -176,7 +177,7 @@ export function useSfu(roomInfo: any, user: any) {
 
     socket.on(SFU_EVENTS.SOMEONE_LEFT_ROOM, ({ peerId, userName }) => {
       delete nicknameRef.current[peerId];
-      setUserList((prev: any) => [...prev.filter((x: any) => x !== userName)]); // 이동
+      setUserList((prev) => [...prev.filter((x) => x !== userName)]);
       const receivePc = receivePcs.current[peerId];
       receivePc.close();
       delete receivePcs.current[peerId];
