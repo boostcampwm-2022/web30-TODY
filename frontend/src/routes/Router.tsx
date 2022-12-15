@@ -9,6 +9,7 @@ import MeshPage from '@pages/MeshPage';
 import PrivateRoute from '@components/common/PrivateRoute';
 import StudyRoomGuard from '@components/common/StudyRoomGuard';
 import NotFoundPage from '@pages/NotFoundPage';
+import ErrorPage from '@pages/ErrorPage';
 
 export default function Router() {
   return (
@@ -43,6 +44,7 @@ export default function Router() {
         }
       />
       <Route path="/study-room-mesh" element={<MeshPage />} />
+      <Route path="/error" element={<ErrorPage />} />
       <Route path="/*" element={<NotFoundPage />} />
     </Routes>
   );
