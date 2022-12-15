@@ -1,9 +1,7 @@
-import { Body, Controller, Get, Post, Query, UseFilters } from '@nestjs/common';
-import { RedisExceptionFilter } from '../filter/redis-exception.filter';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { RedisCacheService } from './redis-cache.service';
 
 @Controller()
-@UseFilters(RedisExceptionFilter)
 export class RedisCacheController {
   constructor(private redisCacheService: RedisCacheService) {}
 
