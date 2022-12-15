@@ -1,7 +1,6 @@
 import { StudyRoom } from '../../study-room/entities/studyRoom.entity';
 import { Column, Entity, ManyToMany, OneToMany } from 'typeorm';
 import { Comment } from '../../comment/entities/comments.entity';
-import { QuestionBoard } from '../../question-board/entities/questionBoard.entity';
 
 @Entity('T_USER', { schema: 'tody' })
 export class User {
@@ -19,9 +18,6 @@ export class User {
 
   @ManyToMany(() => Comment, (Comment) => Comment.Users)
   Comments: Comment[];
-
-  @ManyToMany(() => QuestionBoard, (QuestionBoard) => QuestionBoard.Users)
-  QuestionBoards: QuestionBoard[];
 
   @OneToMany(() => StudyRoom, (studyRoom) => studyRoom.managerId)
   studyRoom: StudyRoom[];

@@ -3,6 +3,7 @@ import useAxios from '@hooks/useAxios';
 import { userState } from 'recoil/atoms';
 import { useRecoilValue } from 'recoil';
 import { useParams } from 'react-router-dom';
+import { RoomInfoData } from 'types/studyRoom.types';
 import enterRoomRequest from '../axios/requests/enterRoomRequest';
 import getStudyRoomInfoRequest from '../axios/requests/getStudyRoomInfoRequest';
 
@@ -11,7 +12,7 @@ export function useStudyRoomPage() {
   const user = useRecoilValue(userState);
   const [activeSideBar, setActiveSideBar] = useState('');
   const [isActiveCanvas, setIsActiveCanvas] = useState(false);
-  const [requestGetStudyRoomInfo, , , roomInfo] = useAxios<any>(
+  const [requestGetStudyRoomInfo, , , roomInfo] = useAxios<RoomInfoData>(
     getStudyRoomInfoRequest,
   );
   const [, , , enterRoomData] = useAxios<''>(enterRoomRequest, {

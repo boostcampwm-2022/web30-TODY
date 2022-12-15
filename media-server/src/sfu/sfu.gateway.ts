@@ -61,14 +61,10 @@ export class SfuGateway
   }
 
   async handleDisconnect(client: Socket) {
-    try {
-      axios.create({ baseURL: process.env.API_URL }).post('/user/leaveRoom', {
-        studyRoomId: client.data.roomId,
-        userId: client.data.userId,
-      });
-    } catch (e) {
-      console.log(e);
-    }
+    axios.create({ baseURL: process.env.API_URL }).post('/user/leaveRoom', {
+      studyRoomId: client.data.roomId,
+      userId: client.data.userId,
+    });
     console.log(`disconnect: ${client.id}`);
   }
 
@@ -91,12 +87,7 @@ export class SfuGateway
     const peerIdsInRoom = socketsInRoom
       .filter((socket) => socket.id !== client.id)
       .map((socket) => socket.id);
-
-    const userNames = {};
-    socketsInRoom.forEach((socket) => {
-      if (socket.id !== client.id) userNames[socket.id] = socket.data.userName;
-    });
-    client.emit(SFU_EVENTS.NOTICE_ALL_PEERS, { peerIdsInRoom, userNames });
+    client.emit(SFU_EVENTS.NOTICE_ALL_PEERS, peerIdsInRoom);
   }
 
   @SubscribeMessage(SFU_EVENTS.SENDER_OFFER)

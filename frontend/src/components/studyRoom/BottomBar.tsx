@@ -22,6 +22,7 @@ import { userState } from 'recoil/atoms';
 import { useNavigate, useParams } from 'react-router-dom';
 import useAxios from '@hooks/useAxios';
 import socket from 'sockets/sfuSocket';
+import Loader from '@components/common/Loader';
 import deleteRoomRequest from '../../axios/requests/deleteRoomRequest';
 import checkMasterRequest from '../../axios/requests/checkMasterRequest';
 
@@ -124,7 +125,7 @@ export default function BottomBar({
   const user = useRecoilValue(userState);
   const navigate = useNavigate();
   const [myMediaState, setMyMediaState] = useState({ mic: false, video: true });
-  const [requestDeleteRoom, , , deleteRoomData] =
+  const [requestDeleteRoom, deleteRoomLoading, , deleteRoomData] =
     useAxios<''>(deleteRoomRequest);
   const [, , , isMaster] = useAxios<boolean>(checkMasterRequest, {
     onMount: true,
@@ -232,6 +233,7 @@ export default function BottomBar({
 
   return (
     <BottomBarLayout>
+      {deleteRoomLoading && <Loader />}
       <MenuList onClick={onClickButtons}>
         <MenuItem name="mic" className={myMediaState.mic ? '' : 'text-red'}>
           <IconWrapper>
