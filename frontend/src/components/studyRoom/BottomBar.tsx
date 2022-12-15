@@ -155,6 +155,9 @@ export default function BottomBar({
       alert('방장이 공부방을 삭제했습니다 :(');
       leaveRoom();
     });
+    return () => {
+      socket.off('deletedThisRoom');
+    };
   }, []);
 
   useEffect(() => {
