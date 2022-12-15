@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import LoginPage from '@pages/LoginPage';
 import SignupPage from '@pages/SignupPage';
 import StudyRoomListPage from '@pages/StudyRoomListPage';
@@ -12,40 +12,38 @@ import NotFoundPage from '@pages/NotFoundPage';
 
 export default function Router() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<InitPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route
-          path="/home"
-          element={
-            <PrivateRoute>
-              <MainPage />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/study-room/:roomId"
-          element={
-            <PrivateRoute>
-              <StudyRoomGuard>
-                <SfuPage />
-              </StudyRoomGuard>
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/study-rooms"
-          element={
-            <PrivateRoute>
-              <StudyRoomListPage />
-            </PrivateRoute>
-          }
-        />
-        <Route path="/study-room-mesh" element={<MeshPage />} />
-        <Route path="/*" element={<NotFoundPage />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<InitPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route
+        path="/home"
+        element={
+          <PrivateRoute>
+            <MainPage />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/study-room/:roomId"
+        element={
+          <PrivateRoute>
+            <StudyRoomGuard>
+              <SfuPage />
+            </StudyRoomGuard>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/study-rooms"
+        element={
+          <PrivateRoute>
+            <StudyRoomListPage />
+          </PrivateRoute>
+        }
+      />
+      <Route path="/study-room-mesh" element={<MeshPage />} />
+      <Route path="/*" element={<NotFoundPage />} />
+    </Routes>
   );
 }
