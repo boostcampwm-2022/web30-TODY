@@ -1,7 +1,9 @@
+import CustomButton from '@components/common/CustomButton';
 import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
 
 const CanvasLayout = styled.div`
+  position: relative;
   display: none;
 
   &.active {
@@ -9,10 +11,16 @@ const CanvasLayout = styled.div`
     display: block;
   }
 `;
+
 const CanvasArea = styled.canvas`
   max-height: 100%;
   background-color: white;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.25);
+`;
+
+const StyledButton = styled(CustomButton)`
+  position: absolute;
+  transform: translate(-100%, -125%);
 `;
 
 interface Props {
@@ -48,6 +56,15 @@ export default function Canvas({ sendDcRef, receiveDcs, isActive }: Props) {
   const canvasMessageHandler = (e: MessageEvent) => {
     const body = JSON.parse(e.data);
     if (body.type !== 'canvas') return;
+    if (body.isClear && ctxRef.current) {
+      ctxRef.current.clearRect(
+        0,
+        0,
+        canvasRef.current!.width,
+        canvasRef.current!.height,
+      );
+      return;
+    }
     draw(body);
   };
 
@@ -108,6 +125,17 @@ export default function Canvas({ sendDcRef, receiveDcs, isActive }: Props) {
     }
   };
 
+  const canvasClear = () => {
+    if (!ctxRef.current || !sendDcRef.current) return;
+    ctxRef.current.clearRect(
+      0,
+      0,
+      canvasRef.current!.width,
+      canvasRef.current!.height,
+    );
+    sendDcRef.current.send(JSON.stringify({ type: 'canvas', isClear: true }));
+  };
+
   return (
     <CanvasLayout className={isActive ? 'active' : ''}>
       <CanvasArea
@@ -119,6 +147,14 @@ export default function Canvas({ sendDcRef, receiveDcs, isActive }: Props) {
         onMouseUp={sendCanvasEvent}
         onMouseLeave={sendCanvasEvent}
       />
+      <StyledButton
+        width="fit-content"
+        fontSize="17px"
+        padding="8px 16px"
+        margin="0 0 5px"
+        onClick={canvasClear}>
+        CLEAR
+      </StyledButton>
     </CanvasLayout>
   );
 }

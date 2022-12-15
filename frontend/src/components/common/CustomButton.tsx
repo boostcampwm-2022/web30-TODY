@@ -1,14 +1,14 @@
 import styled from 'styled-components';
 
 const Button = styled.button<Props>`
-  padding: 21px 0;
+  padding: ${({ padding }) => `${padding}`};
   margin: ${({ margin }) => `${margin}`};
   width: ${({ width }) => `${width}`};
   height: ${({ height }) => `${height}`};
   background-color: ${({ color }) => color};
   border-radius: 15px;
   color: white;
-  font-size: 20px;
+  font-size: ${({ fontSize }) => `${fontSize}`};
   font-weight: 700;
   &:disabled {
     opacity: 50%;
@@ -22,7 +22,9 @@ interface Props {
   width?: string;
   height?: string;
   color?: string;
+  padding?: string;
   margin?: string;
+  fontSize?: string;
   disabled?: boolean;
 }
 
@@ -38,6 +40,8 @@ CustomButton.defaultProps = {
   width: '100%',
   height: '',
   color: 'var(--orange)',
+  padding: '21px 0',
   margin: '0',
+  fontSize: '20px',
   disabled: false,
 };
