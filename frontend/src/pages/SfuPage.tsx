@@ -146,7 +146,7 @@ export default function SfuPage() {
             }>
             <NicknameWrapper nickname={user?.nickname}>
               {isCameraUsable || isScreenShare ? (
-                <VideoItem autoPlay ref={myVideoRef} />
+                <VideoItem muted autoPlay ref={myVideoRef} />
               ) : (
                 <BlankBox />
               )}
