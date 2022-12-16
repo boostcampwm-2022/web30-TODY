@@ -45,20 +45,23 @@ export default function CreateNewRoomModal({ setModal }: Props) {
     }
   }, [createdRoomId]);
 
-  const createNewStudyRoom = useCallback((e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = Object.fromEntries(new FormData(e.currentTarget));
-    if (formData.name === '') return;
-    if (user) {
-      createRoomRequest({
-        ...formData,
-        maxPersonnel,
-        managerId: user.userId,
-        tags: tagList,
-      });
-    }
-    setTagList([]);
-  }, []);
+  const createNewStudyRoom = useCallback(
+    (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      const formData = Object.fromEntries(new FormData(e.currentTarget));
+      if (formData.name === '') return;
+      if (user) {
+        createRoomRequest({
+          ...formData,
+          maxPersonnel,
+          managerId: user.userId,
+          tags: tagList,
+        });
+      }
+      setTagList([]);
+    },
+    [maxPersonnel],
+  );
 
   const toNumber = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setMaxPersonnel(Number(e.currentTarget.value));
