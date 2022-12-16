@@ -30,9 +30,9 @@ async function bootstrap() {
   });
 
   await globalChatApp.listen(8000);
-  const sfuApp = await NestFactory.create(SfuModule, {
-    cors: true,
-  });
-  await sfuApp.listen(9000);
+  // const sfuApp = await NestFactory.create(SfuModule, {
+  //   cors: true,
+  // });
+  // await sfuApp.listen(9000);
 }
 bootstrap();
