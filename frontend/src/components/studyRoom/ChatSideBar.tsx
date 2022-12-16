@@ -11,6 +11,10 @@ const StudyRoomSideBarLayout = styled.div`
   flex-direction: column;
   background-color: var(--white);
   border-left: 1px solid var(--yellow);
+
+  &.hide {
+    display: none;
+  }
 `;
 const ChatTitle = styled.h1`
   margin-top: 20px;
@@ -66,15 +70,16 @@ const SelectReceiver = styled.select`
 `;
 
 interface Props {
-  sendDcRef: React.RefObject<RTCDataChannel | null>;
+  sendDc: RTCDataChannel | null;
   receiveDcs: { [id: string]: RTCDataChannel };
+  isShow: boolean;
 }
 
-export default function ChatSideBar({ sendDcRef, receiveDcs }: Props) {
+export default function ChatSideBar({ sendDc, receiveDcs, isShow }: Props) {
   const user = useRecoilValue(userState);
   const sendChat = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key !== 'Enter' || !e.currentTarget.value) return;
-    if (!sendDcRef || !sendDcRef.current || !user) return;
+    if (!sendDc || !user) return;
     const { value } = e.currentTarget;
 
     const body = JSON.stringify({
@@ -82,14 +87,14 @@ export default function ChatSideBar({ sendDcRef, receiveDcs }: Props) {
       message: value,
       sender: user.nickname,
     });
-    sendDcRef.current.send(body);
+    sendDc.send(body);
     e.currentTarget.value = '';
   };
 
   return (
-    <StudyRoomSideBarLayout>
+    <StudyRoomSideBarLayout className={isShow ? '' : 'hide'}>
       <ChatTitle>채팅</ChatTitle>
-      <ChatList sendDcRef={sendDcRef} receiveDcs={receiveDcs} />
+      <ChatList sendDc={sendDc} receiveDcs={receiveDcs} />
       <ChatInputLayout>
         <SelectReceiverLayout>
           <span className="to">To.</span>
