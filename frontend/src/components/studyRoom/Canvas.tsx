@@ -75,7 +75,6 @@ export default function Canvas({ sendDc, receiveDcs, isActive }: Props) {
   }, [receiveDcs]);
 
   useEffect(() => {
-    console.log('canvas:', sendDc);
     sendDc?.addEventListener('message', canvasMessageHandler);
 
     const canvas = canvasRef.current;

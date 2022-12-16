@@ -56,7 +56,6 @@ export function useSfu(roomInfo: RoomInfoData, user: UserData) {
 
     const senderDc = sendPc.createDataChannel('chat');
     setSendDc(senderDc);
-    // sendDcRef.current = senderDc;
 
     const offer = await sendPc.createOffer({
       offerToReceiveAudio: false,
