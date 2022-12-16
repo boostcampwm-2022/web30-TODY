@@ -6,6 +6,10 @@ const ParticipantsSideBarLayout = styled.div`
   flex-direction: column;
   background-color: var(--white);
   border-left: 1px solid var(--yellow);
+
+  &.hide {
+    display: none;
+  }
 `;
 const Title = styled.h1`
   margin-top: 20px;
@@ -41,12 +45,13 @@ const NickName = styled.div`
 
 interface Props {
   participants: string[];
+  isShow: boolean;
 }
 
-export default function ParticipantsSideBar({ participants }: Props) {
+export default function ParticipantsSideBar({ participants, isShow }: Props) {
   const participantsList = participants ? Object.values(participants) : [];
   return (
-    <ParticipantsSideBarLayout>
+    <ParticipantsSideBarLayout className={isShow ? '' : 'hide'}>
       <Title>참여자 목록</Title>
       <Content>
         {participantsList.map((participant: string) => (

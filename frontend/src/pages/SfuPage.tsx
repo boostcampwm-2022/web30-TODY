@@ -115,7 +115,7 @@ export default function SfuPage() {
     remoteStreams,
     userList,
     receiveDcs,
-    sendDcRef,
+    sendDc,
     myVideoRef,
     isScreenShare,
     noCamPeerIds,
@@ -167,17 +167,20 @@ export default function SfuPage() {
             ))}
           </VideoList>
           <Canvas
-            sendDcRef={sendDcRef}
+            sendDc={sendDc}
             receiveDcs={receiveDcs}
             isActive={isActiveCanvas}
           />
         </VideoListLayout>
-        {activeSideBar !== '' &&
-          (activeSideBar === 'chat' ? (
-            <ChatSideBar sendDcRef={sendDcRef} receiveDcs={receiveDcs} />
-          ) : (
-            <ParticipantsSideBar participants={userList} />
-          ))}
+        <ChatSideBar
+          sendDc={sendDc}
+          receiveDcs={receiveDcs}
+          isShow={activeSideBar === 'chat'}
+        />
+        <ParticipantsSideBar
+          participants={userList}
+          isShow={activeSideBar === 'member'}
+        />
       </Content>
       <BottomBar
         myStream={myStream}

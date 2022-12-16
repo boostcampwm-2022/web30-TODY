@@ -20,7 +20,7 @@ export function useSfu(roomInfo: RoomInfoData, user: UserData) {
     [socketId: string]: RTCDataChannel;
   }>({});
   const sendPcRef = useRef<RTCPeerConnection | null>(null);
-  const sendDcRef = useRef<RTCDataChannel | null>(null);
+  const [sendDc, setSendDc] = useState<RTCDataChannel | null>(null);
   const [userList, setUserList] = useState<string[]>([]);
   const [isScreenShare, setIsScreenShare] = useState<boolean>(false);
   const [isCameraUsable, setIsCameraUsable] = useState<boolean>(true);
@@ -55,7 +55,8 @@ export function useSfu(roomInfo: RoomInfoData, user: UserData) {
     }
 
     const senderDc = sendPc.createDataChannel('chat');
-    sendDcRef.current = senderDc;
+    setSendDc(senderDc);
+    // sendDcRef.current = senderDc;
 
     const offer = await sendPc.createOffer({
       offerToReceiveAudio: false,
@@ -103,9 +104,12 @@ export function useSfu(roomInfo: RoomInfoData, user: UserData) {
           ? await navigator.mediaDevices.getDisplayMedia()
           : await navigator.mediaDevices.getUserMedia({
               video: true,
-              audio: false,
+              audio: true,
             });
         myStream.current = stream;
+        stream.getAudioTracks().forEach((track: MediaStreamTrack) => {
+          track.enabled = false;
+        });
         if (!myVideoRef.current) return;
         myVideoRef.current.srcObject = stream;
       } catch (err) {
@@ -214,7 +218,7 @@ export function useSfu(roomInfo: RoomInfoData, user: UserData) {
     remoteStreams,
     userList,
     receiveDcs,
-    sendDcRef,
+    sendDc,
     isScreenShare,
     noCamPeerIds,
     nicknameRef,
