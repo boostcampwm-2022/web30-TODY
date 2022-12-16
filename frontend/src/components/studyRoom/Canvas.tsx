@@ -72,19 +72,27 @@ export default function Canvas({ sendDc, receiveDcs, isActive }: Props) {
     Object.values(receiveDcs).forEach((receiveDc) => {
       receiveDc.addEventListener('message', canvasMessageHandler);
     });
+    return () => {
+      Object.values(receiveDcs).forEach((receiveDc) => {
+        receiveDc.removeEventListener('message', canvasMessageHandler);
+      });
+    };
   }, [receiveDcs]);
 
   useEffect(() => {
     sendDc?.addEventListener('message', canvasMessageHandler);
 
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return () => {};
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) return () => {};
     ctx.lineJoin = 'round';
     ctx.lineWidth = 2.5;
     ctx.strokeStyle = '#000000';
     ctxRef.current = ctx;
+    return () => {
+      sendDc?.removeEventListener('message', canvasMessageHandler);
+    };
   }, []);
 
   const sendCanvasEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
