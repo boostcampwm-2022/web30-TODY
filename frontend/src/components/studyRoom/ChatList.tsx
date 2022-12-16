@@ -21,11 +21,11 @@ const ChatContent = styled.div`
 `;
 
 interface Props {
-  sendDcRef: React.RefObject<RTCDataChannel | null>;
+  sendDc: RTCDataChannel | null;
   receiveDcs: { [id: string]: RTCDataChannel };
 }
 
-export default function ChatList({ sendDcRef, receiveDcs }: Props) {
+export default function ChatList({ sendDc, receiveDcs }: Props) {
   const [chats, setChats] = useState<Chat[]>([]);
   const chatListRef = useRef<HTMLDivElement>(null);
 
@@ -47,12 +47,12 @@ export default function ChatList({ sendDcRef, receiveDcs }: Props) {
   }, [receiveDcs]);
 
   useEffect(() => {
-    const sendDc = sendDcRef.current;
-    sendDc?.addEventListener('message', chatMessageHandler);
+    if (!sendDc) return () => {};
+    sendDc.addEventListener('message', chatMessageHandler);
     return () => {
-      sendDc?.removeEventListener('message', chatMessageHandler);
+      sendDc.removeEventListener('message', chatMessageHandler);
     };
-  }, []);
+  }, [sendDc]);
 
   useEffect(() => {
     if (chatListRef.current) {

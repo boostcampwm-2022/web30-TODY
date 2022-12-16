@@ -24,12 +24,12 @@ const StyledButton = styled(CustomButton)`
 `;
 
 interface Props {
-  sendDcRef: React.RefObject<RTCDataChannel | null>;
+  sendDc: RTCDataChannel | null;
   receiveDcs: { [socketId: string]: RTCDataChannel };
   isActive: boolean;
 }
 
-export default function Canvas({ sendDcRef, receiveDcs, isActive }: Props) {
+export default function Canvas({ sendDc, receiveDcs, isActive }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const isPaintingRef = useRef<boolean>(false);
@@ -72,26 +72,34 @@ export default function Canvas({ sendDcRef, receiveDcs, isActive }: Props) {
     Object.values(receiveDcs).forEach((receiveDc) => {
       receiveDc.addEventListener('message', canvasMessageHandler);
     });
+    return () => {
+      Object.values(receiveDcs).forEach((receiveDc) => {
+        receiveDc.removeEventListener('message', canvasMessageHandler);
+      });
+    };
   }, [receiveDcs]);
 
   useEffect(() => {
-    sendDcRef.current?.addEventListener('message', canvasMessageHandler);
+    sendDc?.addEventListener('message', canvasMessageHandler);
 
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return () => {};
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) return () => {};
     ctx.lineJoin = 'round';
     ctx.lineWidth = 2.5;
     ctx.strokeStyle = '#000000';
     ctxRef.current = ctx;
+    return () => {
+      sendDc?.removeEventListener('message', canvasMessageHandler);
+    };
   }, []);
 
   const sendCanvasEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = canvasRef.current!.getBoundingClientRect();
     const scaleX = 1200 / rect.width;
     const scaleY = 900 / rect.height;
-    if (!sendDcRef.current) return;
+    if (!sendDc) return;
     const mouseEvent = e.type;
     const coor = {
       x1: currentCoor.current.x,
@@ -111,12 +119,12 @@ export default function Canvas({ sendDcRef, receiveDcs, isActive }: Props) {
       case 'mouseup':
         isPaintingRef.current = false;
         draw(coor);
-        sendDcRef.current.send(JSON.stringify({ type: 'canvas', ...coor }));
+        sendDc.send(JSON.stringify({ type: 'canvas', ...coor }));
         break;
       case 'mousemove':
         if (!isPaintingRef.current) return;
         draw(coor);
-        sendDcRef.current.send(JSON.stringify({ type: 'canvas', ...coor }));
+        sendDc.send(JSON.stringify({ type: 'canvas', ...coor }));
         currentCoor.current.x = e.nativeEvent.offsetX * scaleX;
         currentCoor.current.y = e.nativeEvent.offsetY * scaleY;
         break;
@@ -126,14 +134,14 @@ export default function Canvas({ sendDcRef, receiveDcs, isActive }: Props) {
   };
 
   const canvasClear = () => {
-    if (!ctxRef.current || !sendDcRef.current) return;
+    if (!ctxRef.current || !sendDc) return;
     ctxRef.current.clearRect(
       0,
       0,
       canvasRef.current!.width,
       canvasRef.current!.height,
     );
-    sendDcRef.current.send(JSON.stringify({ type: 'canvas', isClear: true }));
+    sendDc.send(JSON.stringify({ type: 'canvas', isClear: true }));
   };
 
   return (
