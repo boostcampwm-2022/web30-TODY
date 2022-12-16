@@ -57,7 +57,7 @@ const VideoList = styled.div`
   width: 100%;
 
   &.alone {
-    width: auto;
+    width: 40%;
   }
 
   & > div {
