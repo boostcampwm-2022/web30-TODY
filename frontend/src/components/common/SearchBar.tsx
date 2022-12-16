@@ -1,7 +1,8 @@
 import styled from 'styled-components';
 import { ReactComponent as SearchIcon } from '@assets/icons/searchBarButton.svg';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import qs from 'qs';
 
 const SearchBarLayout = styled.div`
   width: 100%;
@@ -48,27 +49,24 @@ const SearchBarButton = styled.button`
 
 interface Props {
   guideText?: string;
-  setKeyword: React.Dispatch<React.SetStateAction<string>>;
-  setPage: React.Dispatch<React.SetStateAction<number>>;
-  attendable: boolean;
 }
 
-export default function SearchBar({
-  guideText,
-  setKeyword,
-  setPage,
-  attendable,
-}: Props) {
+export default function SearchBar({ guideText }: Props) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryString = qs.parse(location.search, {
+    ignoreQueryPrefix: true,
+  });
+
   const [input, setInput] = useState('');
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
   };
 
   const searchRoomList = () => {
-    navigate(`/study-rooms?page=1&keyword=${input}&attendable=${attendable}`);
-    setKeyword(input);
-    setPage(1);
+    navigate(
+      `/study-rooms?page=1&keyword=${input}&attendable=${queryString.attendable}`,
+    );
     setInput('');
   };
 

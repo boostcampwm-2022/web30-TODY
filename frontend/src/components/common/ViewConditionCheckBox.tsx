@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import CheckIcon from '@assets/icons/check.svg';
+import { useNavigate } from 'react-router-dom';
 
 const ViewConditionCheckBoxLayout = styled.div`
   display: flex;
@@ -28,12 +29,21 @@ const StyledInput = styled.input`
 
 interface Props {
   children: string;
-  setState: React.Dispatch<React.SetStateAction<boolean>>;
+  getRoomConditions: { page: string; keyword: string };
 }
 
-export default function ViewConditionCheckBox({ children, setState }: Props) {
+export default function ViewConditionCheckBox({
+  children,
+  getRoomConditions,
+}: Props) {
+  const { page, keyword } = getRoomConditions;
+  const navigate = useNavigate();
   const handleCheckBox = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setState(e.target.checked);
+    navigate(
+      `/study-rooms?page=${page || 1}&keyword=${keyword || ''}&attendable=${
+        e.target.checked
+      }`,
+    );
   };
   return (
     <ViewConditionCheckBoxLayout>
