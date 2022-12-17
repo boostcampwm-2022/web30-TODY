@@ -82,6 +82,7 @@ export default function CreateNewRoomModal({ setModal }: Props) {
             guideText="※ 방 이름은 25자 이내로 작성해주세요."
             name="name"
             maxLength={25}
+            required
           />
           <CustomInput
             placeholder="방 설명"
