@@ -84,7 +84,7 @@ const socket = io(process.env.REACT_APP_SOCKET_URL!, {
   path: '/globalChat/socket.io',
 });
 
-export default function GlobalChat() {
+function GlobalChat() {
   const user = useRecoilValue(userState);
   const chatListRef = useRef<HTMLDivElement>(null);
   const [chatList, setChatList] = useState<
@@ -149,3 +149,5 @@ export default function GlobalChat() {
     </ChatLayout>
   );
 }
+
+export default React.memo(GlobalChat);

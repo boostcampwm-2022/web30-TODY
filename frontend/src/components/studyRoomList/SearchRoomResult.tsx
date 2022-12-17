@@ -3,7 +3,7 @@ import Pagination from '@components/common/Pagination';
 import ViewConditionCheckBox from '@components/common/ViewConditionCheckBox';
 import useAxios from '@hooks/useAxios';
 import qs from 'qs';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { RoomListData } from 'types/studyRoomList.types';
@@ -21,7 +21,7 @@ const SearchResultText = styled.h3`
   font-size: 20px;
 `;
 
-export default function SearchRoomResult() {
+function SearchRoomResult() {
   const location = useLocation();
   const queryString = qs.parse(location.search, {
     ignoreQueryPrefix: true,
@@ -81,3 +81,5 @@ export default function SearchRoomResult() {
     </>
   );
 }
+
+export default React.memo(SearchRoomResult);
