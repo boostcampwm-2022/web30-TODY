@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { ReactComponent as SearchIcon } from '@assets/icons/searchBarButton.svg';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import qs from 'qs';
 
@@ -51,7 +51,7 @@ interface Props {
   guideText?: string;
 }
 
-export default function SearchBar({ guideText }: Props) {
+function SearchBar({ guideText }: Props) {
   const navigate = useNavigate();
   const location = useLocation();
   const queryString = qs.parse(location.search, {
@@ -91,3 +91,5 @@ export default function SearchBar({ guideText }: Props) {
 SearchBar.defaultProps = {
   guideText: '',
 };
+
+export default React.memo(SearchBar);

@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
-import { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import useAxios from '@hooks/useAxios';
 import { useSetRecoilState } from 'recoil';
 import { userState } from 'recoil/atoms';
@@ -45,7 +45,7 @@ interface Props {
   color?: string;
 }
 
-export default function MainSideBar(props: Props) {
+function MainSideBar(props: Props) {
   const navigate = useNavigate();
   const [requestLogout, logoutLoading, , logoutData] =
     useAxios<''>(logoutRequest);
@@ -80,3 +80,5 @@ MainSideBar.defaultProps = {
   width: '296px',
   color: 'var(--yellow1)',
 };
+
+export default React.memo(MainSideBar);
