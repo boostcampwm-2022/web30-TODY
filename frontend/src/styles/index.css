@@ -5,6 +5,7 @@
     format('woff');
   font-weight: 400;
   font-style: normal;
+  font-display: swap;
 }
 
 /* 폰트: 여기어때 잘난체 */
@@ -14,6 +15,7 @@
     format('woff');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 :root {
