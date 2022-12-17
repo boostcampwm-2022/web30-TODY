@@ -45,6 +45,7 @@ interface Props {
   min?: number;
   maxLength?: number;
   inputRef?: React.MutableRefObject<HTMLInputElement | null>;
+  required?: boolean;
 }
 
 export default function CustomInput(props: Props) {
@@ -60,6 +61,7 @@ export default function CustomInput(props: Props) {
     maxLength,
     min,
     inputRef,
+    required,
   } = props;
 
   return (
@@ -74,6 +76,7 @@ export default function CustomInput(props: Props) {
         min={min}
         maxLength={maxLength}
         ref={inputRef}
+        required={required}
       />
       {guideText && <GuideText>{guideText}</GuideText>}
       {warningText && <WarningText>{warningText}</WarningText>}
@@ -93,4 +96,5 @@ CustomInput.defaultProps = {
   min: undefined,
   maxLength: undefined,
   inputRef: null,
+  required: false,
 };
