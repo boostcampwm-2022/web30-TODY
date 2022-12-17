@@ -67,7 +67,8 @@ export default function CreateNewRoomModal({ setModal }: Props) {
   }, []);
 
   const preventDefault = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') e.preventDefault();
+    const el = e.target as Element;
+    if (e.key === 'Enter' && el.tagName !== 'BUTTON') e.preventDefault();
   }, []);
 
   return (
