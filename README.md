@@ -54,7 +54,7 @@
 ### 캔버스 공유
 
 - 공부방 내 참여자 간 **실시간 캔버스** 공유
-    [캔버스 공유](https://user-images.githubusercontent.com/109154976/207522916-31fafde5-6a11-400f-9b83-b5d55e2beb91.gif)
+    ![캔버스 공유](https://user-images.githubusercontent.com/109154976/207522916-31fafde5-6a11-400f-9b83-b5d55e2beb91.gif)
 
 
 ## 기술 스택
