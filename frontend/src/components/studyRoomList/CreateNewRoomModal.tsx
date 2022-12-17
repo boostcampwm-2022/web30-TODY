@@ -58,9 +58,8 @@ export default function CreateNewRoomModal({ setModal }: Props) {
           tags: tagList,
         });
       }
-      setTagList([]);
     },
-    [maxPersonnel],
+    [maxPersonnel, tagList],
   );
 
   const toNumber = useCallback((e: ChangeEvent<HTMLInputElement>) => {
