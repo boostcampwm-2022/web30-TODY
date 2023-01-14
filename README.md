@@ -1,4 +1,5 @@
 # 프로젝트 소개
+> [tody 사이트 바로가기](https://www.tody.kr)
 > [wiki 바로가기](https://github.com/boostcampwm-2022/web30-TODY/wiki)
 
 ## TODY (TOgether stuDY)
