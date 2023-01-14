@@ -20,7 +20,7 @@ export class globalChatGateway
   @WebSocketServer() server: Server;
 
   afterInit(server: Server) {
-    console.log('globalChat socket server is running!');
+    console.log('globalChat socket server is running!!');
   }
 
   async handleConnection(@ConnectedSocket() client: Socket) {
