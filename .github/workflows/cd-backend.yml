@@ -20,6 +20,8 @@ jobs:
           port: ${{secrets.BE_PORT}}
           script: |
             cd tody
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             git checkout main
             git pull origin main
             cd backend
